@@ -35,6 +35,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getStatus = FunctionTemplate::New(Repository::GetStatus)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getStatus"), getStatus);
 
+  Local<Function> checkoutHead = FunctionTemplate::New(Repository::CheckoutHead)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("checkoutHead"), checkoutHead);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -166,6 +169,28 @@ Handle<Value> Repository::GetStatus(const Arguments& args) {
     return scope.Close(Number::New(status));
   else
     return scope.Close(Number::New(0));
+}
+
+Handle<Value> Repository::CheckoutHead(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Boolean::New(FALSE));
+
+  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+  string path(*utf8Path);
+  char *copiedPath = (char*) malloc(sizeof(char) * (path.length() + 1));
+  strcpy(copiedPath, path.c_str());
+
+  git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
+  options.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
+  git_strarray paths;
+  paths.count = 1;
+  paths.strings = &copiedPath;
+  options.paths = paths;
+
+  int result = git_checkout_head(GetRepository(args), &options);
+  free(copiedPath);
+  return scope.Close(Boolean::New(result == GIT_OK));
 }
 
 Repository::Repository(Handle<String> path) {

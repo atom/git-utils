@@ -139,3 +139,22 @@ describe "git", ->
       it 'returns the full path to the branch', ->
         repo = git.open(path.join(__dirname, 'fixtures/upstream.git'))
         expect(repo.getUpstreamBranch()).toBe 'refs/remotes/origin/master'
+
+  describe '.checkoutHead(path)', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    describe 'when the path exists', ->
+      it 'replaces the file contents with the HEAD revision and returns true', ->
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'changing a.txt', 'utf8')
+        expect(repo.checkoutHead('a.txt')).toBe true
+        expect(fs.readFileSync(filePath, 'utf8')).toBe ''
+
+    describe 'when the path is undefined', ->
+      it 'returns false', ->
+        expect(repo.checkoutHead()).toBe false
