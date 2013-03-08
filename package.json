@@ -1,0 +1,30 @@
+{
+  "name": "git",
+  "description": "A package for using Git repositories",
+  "version": "0.1.0",
+  "author": {
+    "name" : "Kevin Sawicki",
+    "email" : "kevin@github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atom/node-git.git"
+  },
+  "main": "lib/git",
+  "devDependencies": {
+    "grunt": "~0.4.0",
+    "grunt-contrib-coffee": "~0.4.0",
+    "grunt-shell": "~0.2.1",
+    "jasmine-node": "~1.3.0",
+    "coffee-script": "~1.6.1",
+    "grunt-cli": "~0.1.6",
+    "node-gyp": "~0.8.5"
+  },
+  "dependencies": {
+    "bindings": "~1.0.0"
+  },
+  "scripts": {
+    "prepublish": "grunt coffee",
+    "test": "jasmine-node --coffee spec/"
+  }
+}

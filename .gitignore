@@ -1,0 +1,4 @@
+/node_modules
+/build
+/deps/libgit2/.npmignore
+/lib/*.js
