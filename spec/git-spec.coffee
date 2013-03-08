@@ -85,7 +85,7 @@ describe "git", ->
       expect(repo.getConfigValue("core.ignorecase")).toBe 'true'
       expect(repo.getConfigValue("not.section")).toBe null
 
-  describe 'isPathModified(path)', ->
+  describe '.isPathModified(path)', ->
     repo = null
 
     beforeEach ->
@@ -107,7 +107,7 @@ describe "git", ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathModified('new.txt')).toBe false
 
-  describe 'isPathNew(path)', ->
+  describe '.isPathNew(path)', ->
     repo = null
 
     beforeEach ->
