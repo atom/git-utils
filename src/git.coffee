@@ -34,6 +34,22 @@ Repository.prototype.isPathModified = (path) ->
 Repository.prototype.isPathNew = (path) ->
   (@getStatus(path) & newStatusFlags) > 0
 
+Repository.prototype.getUpstreamBranch = (branch) ->
+  branch ?= @getHead()
+  return null unless branch?.length > 11
+  return null unless branch.indexOf('refs/heads/') is 0
+
+  shortBranch = branch.substring(11)
+
+  branchMerge = @getConfigValue("branch.#{shortBranch}.merge")
+  return null unless branchMerge?.length > 11
+  return null unless branchMerge.indexOf('refs/heads/') is 0
+
+  branchRemote = @getConfigValue("branch.#{shortBranch}.remote")
+  return null unless branchRemote?.length > 0
+
+  "refs/remotes/#{branchRemote}/#{branchMerge.substring(11)}"
+
 exports.open = (path) ->
   repository = new Repository(path)
   if repository.exists()

@@ -128,3 +128,14 @@ describe "git", ->
       it 'returns true', ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathNew('new.txt')).toBe true
+
+  describe '.getUpstreamBranch()', ->
+    describe 'when no upstream branch exists', ->
+      it 'returns null', ->
+        repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+        expect(repo.getUpstreamBranch()).toBe null
+
+    describe 'when an upstream branch exists', ->
+      it 'returns the full path to the branch', ->
+        repo = git.open(path.join(__dirname, 'fixtures/upstream.git'))
+        expect(repo.getUpstreamBranch()).toBe 'refs/remotes/origin/master'
