@@ -38,6 +38,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> checkoutHead = FunctionTemplate::New(Repository::CheckoutHead)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("checkoutHead"), checkoutHead);
 
+  Local<Function> getReferenceTarget = FunctionTemplate::New(Repository::GetReferenceTarget)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getReferenceTarget"), getReferenceTarget);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -191,6 +194,22 @@ Handle<Value> Repository::CheckoutHead(const Arguments& args) {
   int result = git_checkout_head(GetRepository(args), &options);
   free(copiedPath);
   return scope.Close(Boolean::New(result == GIT_OK));
+}
+
+Handle<Value> Repository::GetReferenceTarget(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Null());
+
+  String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
+  string refName(*utf8RefName);
+  git_oid sha;
+  if (git_reference_name_to_id(&sha, GetRepository(args), refName.c_str()) == GIT_OK) {
+    char oid[GIT_OID_HEXSZ + 1];
+    git_oid_tostr(oid, GIT_OID_HEXSZ + 1, &sha);
+    return scope.Close(String::NewSymbol(oid));
+  } else
+    return scope.Close(Null());
 }
 
 Repository::Repository(Handle<String> path) {
