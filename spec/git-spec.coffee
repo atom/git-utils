@@ -42,3 +42,19 @@ describe "git", ->
       it "return the abbreviated SHA-1 that is checked out", ->
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getShortHead()).toBe '50719ab'
+
+  describe ".isIgnored()", ->
+    describe "when the path is undefined", ->
+      it "return false", ->
+        repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
+        expect(repo.isIgnored()).toBe false
+
+    describe "when the path is ignored", ->
+      it "returns true", ->
+        repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
+        expect(repo.isIgnored('a.txt')).toBe true
+
+    describe "when the path is not ignored", ->
+      it "return false", ->
+        repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
+        expect(repo.isIgnored('b.txt')).toBe false

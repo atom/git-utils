@@ -23,6 +23,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> refreshIndex = FunctionTemplate::New(Repository::RefreshIndex)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("refreshIndex"), refreshIndex);
 
+  Local<Function> IsIgnored = FunctionTemplate::New(Repository::IsIgnored)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isIgnored"), IsIgnored);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -83,6 +86,21 @@ Handle<Value> Repository::RefreshIndex(const Arguments& args) {
   }
   HandleScope scope;
   return scope.Close(Undefined());
+}
+
+Handle<Value> Repository::IsIgnored(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Boolean::New(FALSE));
+
+  git_repository* repository = GetRepository(args);
+  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+  string path(*utf8Path);
+  int ignored;
+  if (git_ignore_path_is_ignored(&ignored, repository, path.c_str()) == GIT_OK)
+    return scope.Close(Boolean::New(ignored == 1));
+  else
+    return scope.Close(Boolean::New(FALSE));
 }
 
 Repository::Repository(Handle<String> path) {
