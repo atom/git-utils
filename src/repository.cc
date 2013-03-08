@@ -29,6 +29,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> isSubmodule = FunctionTemplate::New(Repository::IsSubmodule)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isSubmodule"), isSubmodule);
 
+  Local<Function> getConfigValue = FunctionTemplate::New(Repository::GetConfigValue)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getConfigValue"), getConfigValue);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -123,6 +126,30 @@ Handle<Value> Repository::IsSubmodule(const Arguments& args) {
   } else
     return scope.Close(Boolean::New(FALSE));
 }
+
+Handle<Value> Repository::GetConfigValue(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Null());
+
+  git_config* config;
+  git_repository* repository = GetRepository(args);
+  if (git_repository_config(&config, repository) != GIT_OK)
+    return scope.Close(Null());
+
+  String::Utf8Value utf8ConfigKey(Local<String>::Cast(args[0]));
+  string configKey(*utf8ConfigKey);
+  const char* configValue;
+  if (git_config_get_string(&configValue, config, configKey.c_str()) == GIT_OK) {
+    Handle<String> configValueHandle = String::NewSymbol(configValue);
+    git_config_free(config);
+    return scope.Close(configValueHandle);
+  } else {
+    git_config_free(config);
+    return scope.Close(Null());
+  }
+}
+
 
 Repository::Repository(Handle<String> path) {
   String::Utf8Value utf8Path(path);

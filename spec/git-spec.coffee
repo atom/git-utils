@@ -74,3 +74,10 @@ describe "git", ->
       it "return false", ->
         repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
         expect(repo.isSubmodule('b')).toBe false
+
+  describe ".getConfigValue()", ->
+    it "returns the value for the key", ->
+      repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+      expect(repo.getConfigValue("core.repositoryformatversion")).toBe '0'
+      expect(repo.getConfigValue("core.ignorecase")).toBe 'true'
+      expect(repo.getConfigValue("not.section")).toBe null

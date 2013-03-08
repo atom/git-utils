@@ -16,6 +16,7 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> RefreshIndex(const Arguments& args);
     static Handle<Value> IsIgnored(const Arguments& args);
     static Handle<Value> IsSubmodule(const Arguments& args);
+    static Handle<Value> GetConfigValue(const Arguments& args);
     static git_repository* GetRepository(const Arguments& args);
 
     Repository(Handle<String> path);
