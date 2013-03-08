@@ -106,3 +106,25 @@ describe "git", ->
       it 'returns false', ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathModified('new.txt')).toBe false
+
+  describe 'isPathNew(path)', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    describe 'when a path is deleted', ->
+      it 'returns false', ->
+        expect(repo.isPathNew('a.txt')).toBe false
+
+    describe 'when a path is modified', ->
+      it 'returns false', ->
+        fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'a.txt'), 'changing a.txt', 'utf8')
+        expect(repo.isPathNew('a.txt')).toBe false
+
+    describe 'when a path is new', ->
+      it 'returns true', ->
+        fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
+        expect(repo.isPathNew('new.txt')).toBe true

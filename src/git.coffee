@@ -11,13 +11,11 @@ statusWorkingDirDelete = 1 << 9
 statusWorkingDirTypeChange = 1 << 10
 statusIgnore = 1 << 14
 
-modifiedStatusFlags = statusWorkingDirModified |
-                      statusWorkingDirDelete |
-                      statusWorkingDirTypeChange |
-                      statusIndexModified |
-                      statusIndexDeleted |
-                      statusIndexTypeChange
+modifiedStatusFlags = statusWorkingDirModified | statusIndexModified |
+                      statusWorkingDirDelete | statusIndexDeleted |
+                      statusWorkingDirTypeChange | statusIndexTypeChange
 
+newStatusFlags = statusWorkingDirNew | statusIndexNew
 
 Repository.prototype.getWorkingDirectory = ->
   @getPath()?.replace(/\/\.git\/?$/, '')
@@ -32,6 +30,9 @@ Repository.prototype.getShortHead = ->
 
 Repository.prototype.isPathModified = (path) ->
   (@getStatus(path) & modifiedStatusFlags) > 0
+
+Repository.prototype.isPathNew = (path) ->
+  (@getStatus(path) & newStatusFlags) > 0
 
 exports.open = (path) ->
   repository = new Repository(path)
