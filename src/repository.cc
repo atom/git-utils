@@ -32,6 +32,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getConfigValue = FunctionTemplate::New(Repository::GetConfigValue)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getConfigValue"), getConfigValue);
 
+  Local<Function> getStatus = FunctionTemplate::New(Repository::GetStatus)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getStatus"), getStatus);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -150,6 +153,20 @@ Handle<Value> Repository::GetConfigValue(const Arguments& args) {
   }
 }
 
+Handle<Value> Repository::GetStatus(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Null());
+
+  git_repository* repository = GetRepository(args);
+  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+  string path(*utf8Path);
+  unsigned int status = 0;
+  if (git_status_file(&status, repository, path.c_str()) == GIT_OK)
+    return scope.Close(Number::New(status));
+  else
+    return scope.Close(Number::New(0));
+}
 
 Repository::Repository(Handle<String> path) {
   String::Utf8Value utf8Path(path);
