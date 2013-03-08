@@ -20,3 +20,14 @@ describe "git", ->
     it "returns the path to the working directory", ->
       workingDirectory = git.open(__dirname).getWorkingDirectory()
       expect(workingDirectory).toBe path.dirname(__dirname)
+
+  describe ".getHead()", ->
+    describe "when a branch is checked out", ->
+      it "returns the branch's full path", ->
+        repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+        expect(repo.getHead()).toBe 'refs/heads/master'
+
+    describe "when the HEAD is detached", ->
+      it "return the SHA-1 that is checked out", ->
+        repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
+        expect(repo.getHead()).toBe '50719ab369dcbbc2fb3b7a0167c52accbd0eb40e'

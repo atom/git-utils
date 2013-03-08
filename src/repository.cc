@@ -12,6 +12,7 @@ void Repository::Init(Handle<Object> target) {
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getPath"), FunctionTemplate::New(Repository::GetPath)->GetFunction());
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("exists"), FunctionTemplate::New(Repository::Exists)->GetFunction());
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getHead"), FunctionTemplate::New(Repository::GetHead)->GetFunction());
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
@@ -29,7 +30,7 @@ Handle<Value> Repository::New(const Arguments& args) {
 Handle<Value> Repository::Exists(const Arguments& args) {
   HandleScope scope;
   Repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This());
-  return Boolean::New(repository->repository != NULL);
+  return scope.Close(Boolean::New(repository->repository != NULL));
 }
 
 Handle<Value> Repository::GetPath(const Arguments& args) {
@@ -37,6 +38,28 @@ Handle<Value> Repository::GetPath(const Arguments& args) {
   Repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This());
   const char* path = repository->GetPath();
   return scope.Close(String::NewSymbol(path));
+}
+
+Handle<Value> Repository::GetHead(const Arguments& args) {
+  HandleScope scope;
+  git_repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+  git_reference *head;
+  if (git_repository_head(&head, repository) != GIT_OK)
+    return scope.Close(Null());
+
+  if (git_repository_head_detached(repository) == 1) {
+    const git_oid* sha = git_reference_target(head);
+    if (sha != NULL) {
+      char oid[GIT_OID_HEXSZ + 1];
+      git_oid_tostr(oid, GIT_OID_HEXSZ + 1, sha);
+      git_reference_free(head);
+      return scope.Close(String::NewSymbol(oid));
+    }
+  }
+
+  Local<String> referenceName =  String::NewSymbol(git_reference_name(head));
+  git_reference_free(head);
+  return scope.Close(referenceName);
 }
 
 Repository::Repository(Handle<String> path) {
