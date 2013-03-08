@@ -23,11 +23,11 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> refreshIndex = FunctionTemplate::New(Repository::RefreshIndex)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("refreshIndex"), refreshIndex);
 
-  Local<Function> IsIgnored = FunctionTemplate::New(Repository::IsIgnored)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isIgnored"), IsIgnored);
+  Local<Function> isIgnored = FunctionTemplate::New(Repository::IsIgnored)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isIgnored"), isIgnored);
 
-  Local<Function> IsSubmodule = FunctionTemplate::New(Repository::IsSubmodule)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isSubmodule"), IsSubmodule);
+  Local<Function> isSubmodule = FunctionTemplate::New(Repository::IsSubmodule)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isSubmodule"), isSubmodule);
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
