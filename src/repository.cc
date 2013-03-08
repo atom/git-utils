@@ -10,10 +10,18 @@ void Repository::Init(Handle<Object> target) {
   Local<FunctionTemplate> tpl = FunctionTemplate::New(Repository::New);
   tpl->SetClassName(v8::String::NewSymbol("Repository"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getPath"), FunctionTemplate::New(Repository::GetPath)->GetFunction());
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("exists"), FunctionTemplate::New(Repository::Exists)->GetFunction());
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getHead"), FunctionTemplate::New(Repository::GetHead)->GetFunction());
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("refreshIndex"), FunctionTemplate::New(Repository::RefreshIndex)->GetFunction());
+
+  Local<Function> getPath = FunctionTemplate::New(Repository::GetPath)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getPath"), getPath);
+
+  Local<Function> exists = FunctionTemplate::New(Repository::Exists)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("exists"), exists);
+
+  Local<Function> getHead = FunctionTemplate::New(Repository::GetHead)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getHead"), getHead);
+
+  Local<Function> refreshIndex = FunctionTemplate::New(Repository::RefreshIndex)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("refreshIndex"), refreshIndex);
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
