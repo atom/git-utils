@@ -36,22 +36,25 @@ Handle<Value> Repository::New(const Arguments& args) {
   return args.This();
 }
 
+git_repository* Repository::GetRepository(const Arguments& args) {
+  return node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+}
+
 Handle<Value> Repository::Exists(const Arguments& args) {
   HandleScope scope;
-  Repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This());
-  return scope.Close(Boolean::New(repository->repository != NULL));
+  return scope.Close(Boolean::New(GetRepository(args) != NULL));
 }
 
 Handle<Value> Repository::GetPath(const Arguments& args) {
   HandleScope scope;
-  git_repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+  git_repository* repository = GetRepository(args);
   const char* path = git_repository_path(repository);
   return scope.Close(String::NewSymbol(path));
 }
 
 Handle<Value> Repository::GetHead(const Arguments& args) {
   HandleScope scope;
-  git_repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+  git_repository* repository = GetRepository(args);
   git_reference *head;
   if (git_repository_head(&head, repository) != GIT_OK)
     return scope.Close(Null());
@@ -72,7 +75,7 @@ Handle<Value> Repository::GetHead(const Arguments& args) {
 }
 
 Handle<Value> Repository::RefreshIndex(const Arguments& args) {
-  git_repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+  git_repository* repository = GetRepository(args);
   git_index* index;
   if (git_repository_index(&index, repository) == GIT_OK) {
     git_index_read(index);
