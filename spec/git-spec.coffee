@@ -31,3 +31,14 @@ describe "git", ->
       it "return the SHA-1 that is checked out", ->
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getHead()).toBe '50719ab369dcbbc2fb3b7a0167c52accbd0eb40e'
+
+  describe ".getShortHead()", ->
+    describe "when a branch is checked out", ->
+      it "returns the branch's name", ->
+        repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+        expect(repo.getShortHead()).toBe 'master'
+
+    describe "when the HEAD is detached", ->
+      it "return the abbreviated SHA-1 that is checked out", ->
+        repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
+        expect(repo.getShortHead()).toBe '50719ab'
