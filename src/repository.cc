@@ -26,6 +26,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> IsIgnored = FunctionTemplate::New(Repository::IsIgnored)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isIgnored"), IsIgnored);
 
+  Local<Function> IsSubmodule = FunctionTemplate::New(Repository::IsSubmodule)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isSubmodule"), IsSubmodule);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -100,6 +103,24 @@ Handle<Value> Repository::IsIgnored(const Arguments& args) {
   if (git_ignore_path_is_ignored(&ignored, repository, path.c_str()) == GIT_OK)
     return scope.Close(Boolean::New(ignored == 1));
   else
+    return scope.Close(Boolean::New(FALSE));
+}
+
+Handle<Value> Repository::IsSubmodule(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Boolean::New(FALSE));
+
+  git_index* index;
+  git_repository* repository = GetRepository(args);
+  if (git_repository_index(&index, repository) == GIT_OK) {
+    String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+    string path(*utf8Path);
+    const git_index_entry *entry = git_index_get_bypath(index, path.c_str(), 0);
+    Handle<Boolean> isSubmodule = Boolean::New(entry != NULL && (entry->mode & S_IFMT) == GIT_FILEMODE_COMMIT);
+    git_index_free(index);
+    return scope.Close(isSubmodule);
+  } else
     return scope.Close(Boolean::New(FALSE));
 }
 

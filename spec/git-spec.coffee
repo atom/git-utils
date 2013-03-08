@@ -58,3 +58,19 @@ describe "git", ->
       it "return false", ->
         repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
         expect(repo.isIgnored('b.txt')).toBe false
+
+  describe ".isSubmodule()", ->
+    describe "when the path is undefined", ->
+      it "return false", ->
+        repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
+        expect(repo.isSubmodule()).toBe false
+
+    describe "when the path is a submodule", ->
+      it "returns true", ->
+        repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
+        expect(repo.isSubmodule('a')).toBe true
+
+    describe "when the path is not a submodule", ->
+      it "return false", ->
+        repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
+        expect(repo.isSubmodule('b')).toBe false
