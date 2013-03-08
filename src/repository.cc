@@ -159,7 +159,7 @@ Handle<Value> Repository::GetConfigValue(const Arguments& args) {
 Handle<Value> Repository::GetStatus(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1)
-    return scope.Close(Null());
+    return scope.Close(Number::New(0));
 
   git_repository* repository = GetRepository(args);
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
