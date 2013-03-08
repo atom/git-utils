@@ -5,6 +5,8 @@ using namespace v8;
 using namespace std;
 
 void Repository::Init(Handle<Object> target) {
+  git_threads_init();
+
   Local<FunctionTemplate> tpl = FunctionTemplate::New(Repository::New);
   tpl->SetClassName(v8::String::NewSymbol("Repository"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
