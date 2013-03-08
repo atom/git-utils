@@ -13,6 +13,7 @@ void Repository::Init(Handle<Object> target) {
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getPath"), FunctionTemplate::New(Repository::GetPath)->GetFunction());
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("exists"), FunctionTemplate::New(Repository::Exists)->GetFunction());
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getHead"), FunctionTemplate::New(Repository::GetHead)->GetFunction());
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("refreshIndex"), FunctionTemplate::New(Repository::RefreshIndex)->GetFunction());
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
@@ -60,6 +61,17 @@ Handle<Value> Repository::GetHead(const Arguments& args) {
   Local<String> referenceName =  String::NewSymbol(git_reference_name(head));
   git_reference_free(head);
   return scope.Close(referenceName);
+}
+
+Handle<Value> Repository::RefreshIndex(const Arguments& args) {
+  git_repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+  git_index* index;
+  if (git_repository_index(&index, repository) == GIT_OK) {
+    git_index_read(index);
+    git_index_free(index);
+  }
+  HandleScope scope;
+  return scope.Close(Undefined());
 }
 
 Repository::Repository(Handle<String> path) {

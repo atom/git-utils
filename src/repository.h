@@ -13,6 +13,7 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> GetPath(const Arguments& args);
     static Handle<Value> Exists(const Arguments& args);
     static Handle<Value> GetHead(const Arguments& args);
+    static Handle<Value> RefreshIndex(const Arguments& args);
 
     Repository(Handle<String> path);
     ~Repository();
