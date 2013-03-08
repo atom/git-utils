@@ -43,7 +43,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getShortHead()).toBe '50719ab'
 
-  describe ".isIgnored()", ->
+  describe ".isIgnored(path)", ->
     describe "when the path is undefined", ->
       it "return false", ->
         repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
@@ -59,7 +59,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
         expect(repo.isIgnored('b.txt')).toBe false
 
-  describe ".isSubmodule()", ->
+  describe ".isSubmodule(path)", ->
     describe "when the path is undefined", ->
       it "return false", ->
         repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
@@ -75,7 +75,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
         expect(repo.isSubmodule('b')).toBe false
 
-  describe ".getConfigValue()", ->
+  describe ".getConfigValue(key)", ->
     it "returns the value for the key", ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
       expect(repo.getConfigValue("core.repositoryformatversion")).toBe '0'
