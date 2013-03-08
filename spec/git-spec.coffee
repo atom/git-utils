@@ -1,4 +1,5 @@
 git = require '../lib/git'
+path = require 'path'
 
 describe "git", ->
   describe ".open(path)", ->
@@ -12,5 +13,10 @@ describe "git", ->
 
   describe ".getPath()", ->
     it "returns the path to the .git directory", ->
-      path = git.open(__dirname).getPath()
-      expect(/\/\.git\/?$/.test(path)).toBeTruthy()
+      repositoryPath = git.open(__dirname).getPath()
+      expect(repositoryPath).toBe path.join(path.dirname(__dirname), '.git/')
+
+  describe ".getWorkingDirectory()", ->
+    it "returns the path to the working directory", ->
+      workingDirectory = git.open(__dirname).getWorkingDirectory()
+      expect(workingDirectory).toBe path.dirname(__dirname)
