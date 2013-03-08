@@ -17,7 +17,6 @@ class Repository : public node::ObjectWrap {
 
     Repository(Handle<String> path);
     ~Repository();
-    const char* GetPath();
 
     git_repository* repository;
 };

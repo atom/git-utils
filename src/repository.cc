@@ -44,8 +44,8 @@ Handle<Value> Repository::Exists(const Arguments& args) {
 
 Handle<Value> Repository::GetPath(const Arguments& args) {
   HandleScope scope;
-  Repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This());
-  const char* path = repository->GetPath();
+  git_repository* repository = node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+  const char* path = git_repository_path(repository);
   return scope.Close(String::NewSymbol(path));
 }
 
@@ -92,8 +92,4 @@ Repository::Repository(Handle<String> path) {
 Repository::~Repository() {
   if (repository != NULL)
     git_repository_free(repository);
-}
-
-const char* Repository::GetPath() {
-  return git_repository_path(repository);
 }
