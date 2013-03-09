@@ -20,6 +20,7 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> GetStatus(const Arguments& args);
     static Handle<Value> CheckoutHead(const Arguments& args);
     static Handle<Value> GetReferenceTarget(const Arguments& args);
+    static Handle<Value> GetDiffStats(const Arguments& args);
     static git_repository* GetRepository(const Arguments& args);
 
     Repository(Handle<String> path);

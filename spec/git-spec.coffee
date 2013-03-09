@@ -153,7 +153,7 @@ describe "git", ->
         filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
         fs.writeFileSync(filePath, 'changing a.txt', 'utf8')
         expect(repo.checkoutHead('a.txt')).toBe true
-        expect(fs.readFileSync(filePath, 'utf8')).toBe ''
+        expect(fs.readFileSync(filePath, 'utf8')).toBe 'first line\n'
 
     describe 'when the path is undefined', ->
       it 'returns false', ->
@@ -163,5 +163,28 @@ describe "git", ->
     it 'returns the SHA-1 for a reference', ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
       expect(repo.getReferenceTarget('HEAD2')).toBe null
-      expect(repo.getReferenceTarget('HEAD')).toBe '50719ab369dcbbc2fb3b7a0167c52accbd0eb40e'
-      expect(repo.getReferenceTarget('refs/heads/master')).toBe '50719ab369dcbbc2fb3b7a0167c52accbd0eb40e'
+      expect(repo.getReferenceTarget('HEAD')).toBe 'b2c96bdffe1a8f239c2d450863e4a6caa6dcb655'
+      expect(repo.getReferenceTarget('refs/heads/master')).toBe 'b2c96bdffe1a8f239c2d450863e4a6caa6dcb655'
+
+  describe '.getDiffStats(path)', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    describe 'when the path is deleted', ->
+      it 'returns of number of lines deleted', ->
+        expect(repo.getDiffStats('a.txt')).toEqual {added: 0, deleted: 1}
+    describe 'when the path is modified', ->
+      it 'returns the number of lines added and deleted', ->
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'changing\na.txt', 'utf8')
+        expect(repo.getDiffStats('a.txt')).toEqual {added: 2, deleted: 1}
+
+    describe 'when the path is new', ->
+      it 'returns that no lines were added or deleted', ->
+        filePath = path.join(repo.getWorkingDirectory(), 'b.txt')
+        fs.writeFileSync(filePath, 'changing\nb.txt\nwith lines', 'utf8')
+        expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}

@@ -41,6 +41,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getReferenceTarget = FunctionTemplate::New(Repository::GetReferenceTarget)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getReferenceTarget"), getReferenceTarget);
 
+  Local<Function> getDiffStats = FunctionTemplate::New(Repository::GetDiffStats)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getDiffStats"), getDiffStats);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -210,6 +213,84 @@ Handle<Value> Repository::GetReferenceTarget(const Arguments& args) {
     return scope.Close(String::NewSymbol(oid));
   } else
     return scope.Close(Null());
+}
+
+Handle<Value> Repository::GetDiffStats(const Arguments& args) {
+  HandleScope scope;
+  int added = 0;
+  int deleted = 0;
+  Local<Object> result = Object::New();
+  result->Set(String::NewSymbol("added"), Number::New(added));
+  result->Set(String::NewSymbol("deleted"), Number::New(deleted));
+
+  if (args.Length() < 1)
+    return scope.Close(result);
+
+  git_repository *repository = GetRepository(args);
+  git_reference *head;
+  if (git_repository_head(&head, repository) != GIT_OK)
+    return scope.Close(Null());
+
+  const git_oid* sha = git_reference_target(head);
+  git_commit *commit;
+  int commitStatus = git_commit_lookup(&commit, repository, sha);
+  git_reference_free(head);
+  if (commitStatus != GIT_OK)
+    return scope.Close(result);
+
+  git_tree *tree;
+  int treeStatus = git_commit_tree(&tree, commit);
+  git_commit_free(commit);
+  if (treeStatus != GIT_OK)
+    return scope.Close(result);
+
+  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+  string path(*utf8Path);
+  char *copiedPath = (char*) malloc(sizeof(char) * (path.length() + 1));
+  strcpy(copiedPath, path.c_str());
+  git_diff_options options = GIT_DIFF_OPTIONS_INIT;
+  git_strarray paths;
+  paths.count = 1;
+  paths.strings = &copiedPath;
+  options.pathspec = paths;
+  options.context_lines = 1;
+  options.flags = GIT_DIFF_DISABLE_PATHSPEC_MATCH;
+
+  git_diff_list *diffs;
+  int diffStatus = git_diff_tree_to_workdir(&diffs, repository, tree, &options);
+  git_tree_free(tree);
+  free(copiedPath);
+  if (diffStatus != GIT_OK || git_diff_num_deltas(diffs) != 1)
+    return scope.Close(result);
+
+  git_diff_patch *patch;
+  int patchStatus = git_diff_get_patch(&patch, NULL, diffs, 0);
+  git_diff_list_free(diffs);
+  if (patchStatus != GIT_OK)
+    return scope.Close(result);
+
+  int hunks = git_diff_patch_num_hunks(patch);
+  for (int i = 0; i < hunks; i++) {
+    int lines = git_diff_patch_num_lines_in_hunk(patch, i);
+    for (int j = 0; j < lines; j++) {
+      char lineType;
+      if (git_diff_patch_get_line_in_hunk(&lineType, NULL, NULL, NULL, NULL, patch, i, j) == GIT_OK) {
+        switch (lineType) {
+          case GIT_DIFF_LINE_ADDITION:
+            added++;
+            break;
+          case GIT_DIFF_LINE_DELETION:
+            deleted++;
+            break;
+        }
+      }
+    }
+  }
+  git_diff_patch_free(patch);
+
+  result->Set(String::NewSymbol("added"), Number::New(added));
+  result->Set(String::NewSymbol("deleted"), Number::New(deleted));
+  return scope.Close(result);
 }
 
 Repository::Repository(Handle<String> path) {
