@@ -188,3 +188,19 @@ describe "git", ->
         filePath = path.join(repo.getWorkingDirectory(), 'b.txt')
         fs.writeFileSync(filePath, 'changing\nb.txt\nwith lines', 'utf8')
         expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
+
+  describe '.getStatuses()', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+      newFilePath = path.join(repo.getWorkingDirectory(), 'b.txt')
+      fs.writeFileSync(newFilePath, '', 'utf8')
+
+
+    it 'returns the status of all modified paths', ->
+      statuses = repo.getStatuses()
+      expect(statuses['a.txt']).toBe 1 << 9
+      expect(statuses['b.txt']).toBe 1 << 7

@@ -1,5 +1,6 @@
 #include "repository.h"
 #include <string>
+#include <map>
 
 using namespace v8;
 using namespace std;
@@ -43,6 +44,9 @@ void Repository::Init(Handle<Object> target) {
 
   Local<Function> getDiffStats = FunctionTemplate::New(Repository::GetDiffStats)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getDiffStats"), getDiffStats);
+
+  Local<Function> getStatuses = FunctionTemplate::New(Repository::GetStatuses)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getStatuses"), getStatuses);
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
@@ -290,6 +294,26 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
 
   result->Set(String::NewSymbol("added"), Number::New(added));
   result->Set(String::NewSymbol("deleted"), Number::New(deleted));
+  return scope.Close(result);
+}
+
+int Repository::StatusCallback(const char *path, unsigned int status, void *payload) {
+  if ((status & GIT_STATUS_IGNORED) == 0) {
+    map<const char*, unsigned int> *statuses = (map<const char*, unsigned int> *) payload;
+    statuses->insert(pair<const char*, unsigned int>(path, status));
+  }
+  return 0;
+}
+
+Handle<Value> Repository::GetStatuses(const Arguments& args) {
+  HandleScope scope;
+  Local<Object> result = Object::New();
+  map<const char*, unsigned int> statuses;
+  if (git_status_foreach(GetRepository(args), StatusCallback, &statuses) == GIT_OK) {
+    map<const char*, unsigned int>::iterator iter = statuses.begin();
+    for (; iter != statuses.end(); ++iter)
+      result->Set(String::NewSymbol(iter->first), Number::New(iter->second));
+  }
   return scope.Close(result);
 }
 
