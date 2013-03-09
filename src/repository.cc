@@ -119,7 +119,7 @@ Handle<Value> Repository::RefreshIndex(const Arguments& args) {
 Handle<Value> Repository::IsIgnored(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(FALSE));
+    return scope.Close(Boolean::New(false));
 
   git_repository* repository = GetRepository(args);
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
@@ -128,13 +128,13 @@ Handle<Value> Repository::IsIgnored(const Arguments& args) {
   if (git_ignore_path_is_ignored(&ignored, repository, path.c_str()) == GIT_OK)
     return scope.Close(Boolean::New(ignored == 1));
   else
-    return scope.Close(Boolean::New(FALSE));
+    return scope.Close(Boolean::New(false));
 }
 
 Handle<Value> Repository::IsSubmodule(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(FALSE));
+    return scope.Close(Boolean::New(false));
 
   git_index* index;
   git_repository* repository = GetRepository(args);
@@ -146,7 +146,7 @@ Handle<Value> Repository::IsSubmodule(const Arguments& args) {
     git_index_free(index);
     return scope.Close(isSubmodule);
   } else
-    return scope.Close(Boolean::New(FALSE));
+    return scope.Close(Boolean::New(false));
 }
 
 Handle<Value> Repository::GetConfigValue(const Arguments& args) {
@@ -190,7 +190,7 @@ Handle<Value> Repository::GetStatus(const Arguments& args) {
 Handle<Value> Repository::CheckoutHead(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(FALSE));
+    return scope.Close(Boolean::New(false));
 
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
