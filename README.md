@@ -6,7 +6,7 @@ Helpers for working with Git repositories built natively on
 ## Installing
 
 ```sh
-npm install git-helpers
+npm install git-utils
 ```
 ## Building
   * Clone the repository

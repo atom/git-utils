@@ -1,5 +1,5 @@
 {
-  "name": "git-helpers",
+  "name": "git-utils",
   "description": "A package for using Git repositories",
   "version": "0.1.0",
   "author": {
