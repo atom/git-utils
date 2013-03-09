@@ -205,7 +205,6 @@ describe "git", ->
       expect(statuses['a.txt']).toBe 1 << 9
       expect(statuses['b.txt']).toBe 1 << 7
 
-
   describe '.getAheadBehindCount()', ->
     repo = null
 
