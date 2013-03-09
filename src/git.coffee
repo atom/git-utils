@@ -28,11 +28,17 @@ Repository.prototype.getShortHead = ->
   return head.substring(0, 7) if head.match(/[a-fA-F0-9]{40}/)
   return head
 
+Repository.prototype.isStatusModified = (status=0) ->
+  (status & modifiedStatusFlags) > 0
+
 Repository.prototype.isPathModified = (path) ->
-  (@getStatus(path) & modifiedStatusFlags) > 0
+  @isStatusModified(@getStatus(path))
+
+Repository.prototype.isStatusNew = (status=0) ->
+  (status & newStatusFlags) > 0
 
 Repository.prototype.isPathNew = (path) ->
-  (@getStatus(path) & newStatusFlags) > 0
+  @isStatusNew(@getStatus(path))
 
 Repository.prototype.getUpstreamBranch = (branch) ->
   branch ?= @getHead()
