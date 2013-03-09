@@ -199,7 +199,6 @@ describe "git", ->
       newFilePath = path.join(repo.getWorkingDirectory(), 'b.txt')
       fs.writeFileSync(newFilePath, '', 'utf8')
 
-
     it 'returns the status of all modified paths', ->
       statuses = repo.getStatuses()
       expect(statuses['a.txt']).toBe 1 << 9
