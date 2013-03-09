@@ -160,7 +160,7 @@ describe "git", ->
         expect(repo.checkoutHead()).toBe false
 
   describe '.getReferenceTarget(branch)', ->
-    it "returns the SHA-1 for a reference", ->
+    it 'returns the SHA-1 for a reference', ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
       expect(repo.getReferenceTarget('HEAD2')).toBe null
       expect(repo.getReferenceTarget('HEAD')).toBe '50719ab369dcbbc2fb3b7a0167c52accbd0eb40e'
