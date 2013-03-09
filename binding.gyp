@@ -4,11 +4,17 @@
       'target_name': 'git2',
       'variables': {
         'git2-arch-flag': '',
+        'git2-link-flag': ''
       },
       'conditions': [
         ['target_arch=="ia32"', {
           'variables': {
             'git2-arch-flag': '-m32'
+          }
+        }],
+        ['OS=="linux"', {
+          'variables': {
+            'git2-link-flag': '-fPIC'
           }
         }]
       ],
@@ -20,7 +26,7 @@
           'action': [
             'sh',
             'build-libgit2.sh',
-            '<(git2-arch-flag)'
+            '<(git2-arch-flag) <(git2-link-flag)'
           ]
         }
       ]
