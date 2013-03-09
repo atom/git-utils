@@ -14,7 +14,7 @@ npm install git-helpers
 ### git.open(path)
 
 ```coffeescript
-git = require 'git'
+git = require 'git-helpers'
 
 repository = git.open('/Users/me/repos/node')
 ```
