@@ -48,6 +48,12 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getStatuses = FunctionTemplate::New(Repository::GetStatuses)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getStatuses"), getStatuses);
 
+  Local<Function> getCommitCount = FunctionTemplate::New(Repository::GetCommitCount)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getCommitCount"), getCommitCount);
+
+  Local<Function> getMergeBase = FunctionTemplate::New(Repository::GetMergeBase)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getMergeBase"), getMergeBase);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -315,6 +321,64 @@ Handle<Value> Repository::GetStatuses(const Arguments& args) {
       result->Set(String::NewSymbol(iter->first), Number::New(iter->second));
   }
   return scope.Close(result);
+}
+
+Handle<Value> Repository::GetCommitCount(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 2)
+    return scope.Close(Number::New(0));
+
+  String::Utf8Value utf8FromCommitId(Local<String>::Cast(args[0]));
+  string fromCommitId(*utf8FromCommitId);
+  git_oid fromCommit;
+  if (git_oid_fromstr(&fromCommit, fromCommitId.c_str()) != GIT_OK)
+    return scope.Close(Number::New(0));
+
+  String::Utf8Value utf8ToCommitId(Local<String>::Cast(args[1]));
+  string toCommitId(*utf8ToCommitId);
+  git_oid toCommit;
+  if (git_oid_fromstr(&toCommit, toCommitId.c_str()) != GIT_OK)
+    return scope.Close(Number::New(0));
+
+  git_revwalk *revWalk;
+  if (git_revwalk_new(&revWalk, GetRepository(args)) != GIT_OK)
+    return scope.Close(Number::New(0));
+
+  git_revwalk_push(revWalk, &fromCommit);
+  git_revwalk_hide(revWalk, &toCommit);
+  git_oid currentCommit;
+  int count = 0;
+  while (git_revwalk_next(&currentCommit, revWalk) == GIT_OK)
+    count++;
+  git_revwalk_free(revWalk);
+  return scope.Close(Number::New(count));
+}
+
+Handle<Value> Repository::GetMergeBase(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 2)
+    return scope.Close(Null());
+
+  String::Utf8Value utf8CommitOneId(Local<String>::Cast(args[0]));
+  string commitOneId(*utf8CommitOneId);
+  git_oid commitOne;
+  if (git_oid_fromstr(&commitOne, commitOneId.c_str()) != GIT_OK)
+    return scope.Close(Null());
+
+  String::Utf8Value utf8CommitTwoId(Local<String>::Cast(args[1]));
+  string commitTwoId(*utf8CommitTwoId);
+  git_oid commitTwo;
+  if (git_oid_fromstr(&commitTwo, commitTwoId.c_str()) != GIT_OK)
+    return scope.Close(Null());
+
+  git_oid mergeBase;
+  if (git_merge_base(&mergeBase, GetRepository(args), &commitOne, &commitTwo) == GIT_OK) {
+    char mergeBaseId[GIT_OID_HEXSZ + 1];
+    git_oid_tostr(mergeBaseId, GIT_OID_HEXSZ + 1, &mergeBase);
+    return scope.Close(String::NewSymbol(mergeBaseId));
+  }
+
+  return scope.Close(Null());
 }
 
 Repository::Repository(Handle<String> path) {

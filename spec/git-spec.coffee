@@ -204,3 +204,16 @@ describe "git", ->
       statuses = repo.getStatuses()
       expect(statuses['a.txt']).toBe 1 << 9
       expect(statuses['b.txt']).toBe 1 << 7
+
+
+  describe '.getAheadBehindCount()', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/ahead-behind.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    it 'returns the number of commits ahead of and behind the upstream branch', ->
+      counts = repo.getAheadBehindCount()
+      expect(counts).toEqual {ahead: 3, behind: 2}

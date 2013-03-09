@@ -22,6 +22,8 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> GetReferenceTarget(const Arguments& args);
     static Handle<Value> GetDiffStats(const Arguments& args);
     static Handle<Value> GetStatuses(const Arguments& args);
+    static Handle<Value> GetCommitCount(const Arguments& args);
+    static Handle<Value> GetMergeBase(const Arguments& args);
     static int StatusCallback(const char *path, unsigned int status, void *payload);
     static git_repository* GetRepository(const Arguments& args);
 

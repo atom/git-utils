@@ -50,6 +50,25 @@ Repository.prototype.getUpstreamBranch = (branch) ->
 
   "refs/remotes/#{branchRemote}/#{branchMerge.substring(11)}"
 
+Repository.prototype.getAheadBehindCount = ->
+  counts =
+    ahead: 0
+    behind: 0
+  headCommit = @getReferenceTarget('HEAD')
+  return counts unless headCommit?.length > 0
+
+  upstream = @getUpstreamBranch()
+  return counts unless upstream?.length > 0
+  upstreamCommit = @getReferenceTarget(upstream)
+  return counts unless upstreamCommit?.length > 0
+
+  mergeBase = @getMergeBase(headCommit, upstreamCommit)
+  return counts unless mergeBase?.length > 0
+
+  counts.ahead = @getCommitCount(headCommit, mergeBase)
+  counts.behind = @getCommitCount(upstreamCommit, mergeBase)
+  counts
+
 exports.open = (path) ->
   repository = new Repository(path)
   if repository.exists()
