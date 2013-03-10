@@ -5,7 +5,7 @@ wrench = require 'wrench'
 temp = require 'temp'
 
 describe "git", ->
-  describe ".open(path)", ->
+  xdescribe ".open(path)", ->
     describe "when the path is a repository", ->
       it "returns a repository", ->
         expect(git.open(__dirname)).not.toBeNull()
@@ -14,17 +14,17 @@ describe "git", ->
       it "returns null", ->
         expect(git.open('/tmp/path/does/not/exist')).toBeNull()
 
-  describe ".getPath()", ->
+  xdescribe ".getPath()", ->
     it "returns the path to the .git directory", ->
       repositoryPath = git.open(__dirname).getPath()
       expect(repositoryPath).toBe path.join(path.dirname(__dirname), '.git/')
 
-  describe ".getWorkingDirectory()", ->
+  xdescribe ".getWorkingDirectory()", ->
     it "returns the path to the working directory", ->
       workingDirectory = git.open(__dirname).getWorkingDirectory()
       expect(workingDirectory).toBe path.dirname(__dirname)
 
-  describe ".getHead()", ->
+  xdescribe ".getHead()", ->
     describe "when a branch is checked out", ->
       it "returns the branch's full path", ->
         repo = git.open(path.join(__dirname, 'fixtures/master.git'))
@@ -35,7 +35,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getHead()).toBe '50719ab369dcbbc2fb3b7a0167c52accbd0eb40e'
 
-  describe ".getShortHead()", ->
+  xdescribe ".getShortHead()", ->
     describe "when a branch is checked out", ->
       it "returns the branch's name", ->
         repo = git.open(path.join(__dirname, 'fixtures/master.git'))
@@ -46,7 +46,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getShortHead()).toBe '50719ab'
 
-  describe ".isIgnored(path)", ->
+  xdescribe ".isIgnored(path)", ->
     describe "when the path is undefined", ->
       it "return false", ->
         repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
@@ -62,7 +62,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
         expect(repo.isIgnored('b.txt')).toBe false
 
-  describe ".isSubmodule(path)", ->
+  xdescribe ".isSubmodule(path)", ->
     describe "when the path is undefined", ->
       it "return false", ->
         repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
@@ -78,14 +78,14 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/submodule.git'))
         expect(repo.isSubmodule('b')).toBe false
 
-  describe ".getConfigValue(key)", ->
+  xdescribe ".getConfigValue(key)", ->
     it "returns the value for the key", ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
       expect(repo.getConfigValue("core.repositoryformatversion")).toBe '0'
       expect(repo.getConfigValue("core.ignorecase")).toBe 'true'
       expect(repo.getConfigValue("not.section")).toBe null
 
-  describe '.isPathModified(path)', ->
+  xdescribe '.isPathModified(path)', ->
     repo = null
 
     beforeEach ->
@@ -107,7 +107,7 @@ describe "git", ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathModified('new.txt')).toBe false
 
-  describe '.isPathNew(path)', ->
+  xdescribe '.isPathNew(path)', ->
     repo = null
 
     beforeEach ->
@@ -129,7 +129,7 @@ describe "git", ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathNew('new.txt')).toBe true
 
-  describe '.getUpstreamBranch()', ->
+  xdescribe '.getUpstreamBranch()', ->
     describe 'when no upstream branch exists', ->
       it 'returns null', ->
         repo = git.open(path.join(__dirname, 'fixtures/master.git'))
@@ -140,7 +140,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/upstream.git'))
         expect(repo.getUpstreamBranch()).toBe 'refs/remotes/origin/master'
 
-  describe '.checkoutHead(path)', ->
+  xdescribe '.checkoutHead(path)', ->
     repo = null
 
     beforeEach ->
@@ -159,14 +159,14 @@ describe "git", ->
       it 'returns false', ->
         expect(repo.checkoutHead()).toBe false
 
-  describe '.getReferenceTarget(branch)', ->
+  xdescribe '.getReferenceTarget(branch)', ->
     it 'returns the SHA-1 for a reference', ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
       expect(repo.getReferenceTarget('HEAD2')).toBe null
       expect(repo.getReferenceTarget('HEAD')).toBe 'b2c96bdffe1a8f239c2d450863e4a6caa6dcb655'
       expect(repo.getReferenceTarget('refs/heads/master')).toBe 'b2c96bdffe1a8f239c2d450863e4a6caa6dcb655'
 
-  describe '.getDiffStats(path)', ->
+  xdescribe '.getDiffStats(path)', ->
     repo = null
 
     beforeEach ->
@@ -194,6 +194,7 @@ describe "git", ->
 
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
+      console.log 'repo directory', repoDirectory
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
       newFilePath = path.join(repo.getWorkingDirectory(), 'b.txt')
@@ -201,10 +202,11 @@ describe "git", ->
 
     it 'returns the status of all modified paths', ->
       statuses = repo.getStatuses()
+      console.log 'statuses', statuses
       expect(statuses['a.txt']).toBe 1 << 9
       expect(statuses['b.txt']).toBe 1 << 7
 
-  describe '.getAheadBehindCount()', ->
+  xdescribe '.getAheadBehindCount()', ->
     repo = null
 
     beforeEach ->
