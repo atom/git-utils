@@ -194,6 +194,7 @@ describe "git", ->
 
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
+      console.log 'repo directory', repoDirectory
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
       newFilePath = path.join(repo.getWorkingDirectory(), 'b.txt')
@@ -201,6 +202,7 @@ describe "git", ->
 
     it 'returns the status of all modified paths', ->
       statuses = repo.getStatuses()
+      console.log 'statuses', statuses
       expect(statuses['a.txt']).toBe 1 << 9
       expect(statuses['b.txt']).toBe 1 << 7
 
