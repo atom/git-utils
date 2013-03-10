@@ -263,7 +263,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   paths.count = 1;
   paths.strings = &copiedPath;
   options.pathspec = paths;
-  options.context_lines = 1;
+  options.context_lines = 0;
   options.flags = GIT_DIFF_DISABLE_PATHSPEC_MATCH;
 
   git_diff_list *diffs;
