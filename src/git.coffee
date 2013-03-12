@@ -22,6 +22,7 @@ Repository.prototype.getWorkingDirectory = ->
 
 Repository.prototype.getShortHead = ->
   head = @getHead()
+  return head unless head?
   return head.substring(11) if head.indexOf('refs/heads/') is 0
   return head.substring(10) if head.indexOf('refs/tags/') is 0
   return head.substring(13) if head.indexOf('refs/remotes/') is 0
