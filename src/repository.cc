@@ -270,8 +270,14 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   int diffStatus = git_diff_tree_to_workdir(&diffs, repository, tree, &options);
   git_tree_free(tree);
   free(copiedPath);
-  if (diffStatus != GIT_OK || git_diff_num_deltas(diffs) != 1)
+  if (diffStatus != GIT_OK)
     return scope.Close(result);
+
+  int deltas = git_diff_num_deltas(diffs);
+  if (deltas != 1) {
+    git_diff_list_free(diffs);
+    return scope.Close(result);
+  }
 
   git_diff_patch *patch;
   int patchStatus = git_diff_get_patch(&patch, NULL, diffs, 0);
