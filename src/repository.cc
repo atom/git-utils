@@ -54,6 +54,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getMergeBase = FunctionTemplate::New(Repository::GetMergeBase)->GetFunction();
   tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getMergeBase"), getMergeBase);
 
+  Local<Function> release = FunctionTemplate::New(Repository::Release)->GetFunction();
+  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("release"), release);
+
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(v8::String::NewSymbol("Repository"), constructor);
 }
@@ -329,6 +332,17 @@ Handle<Value> Repository::GetStatuses(const Arguments& args) {
   return scope.Close(result);
 }
 
+Handle<Value> Repository::Release(const Arguments& args) {
+  Repository *repo = node::ObjectWrap::Unwrap<Repository>(args.This());
+  if (repo->repository != NULL) {
+    git_repository_free(repo->repository);
+    repo->repository = NULL;
+  }
+
+  HandleScope scope;
+  return scope.Close(Undefined());
+}
+
 Handle<Value> Repository::GetCommitCount(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 2)
@@ -395,6 +409,8 @@ Repository::Repository(Handle<String> path) {
 }
 
 Repository::~Repository() {
-  if (repository != NULL)
+  if (repository != NULL) {
     git_repository_free(repository);
+    repository = NULL;
+  }
 }
