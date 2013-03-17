@@ -27,7 +27,8 @@
     "grunt-cli": "~0.1.6",
     "node-gyp": "~0.8.5",
     "wrench": "~1.4.4",
-    "temp": "~0.5.0"
+    "temp": "~0.5.0",
+    "underscore": "~1.4.4"
   },
   "dependencies": {
     "bindings": "~1.0.0"

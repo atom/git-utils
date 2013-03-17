@@ -3,6 +3,7 @@ path = require 'path'
 fs = require 'fs'
 wrench = require 'wrench'
 temp = require 'temp'
+_ = require 'underscore'
 
 describe "git", ->
   describe ".open(path)", ->
@@ -201,6 +202,7 @@ describe "git", ->
 
     it 'returns the status of all modified paths', ->
       statuses = repo.getStatuses()
+      expect(_.keys(statuses).length).toBe 2
       expect(statuses['a.txt']).toBe 1 << 9
       expect(statuses['b.txt']).toBe 1 << 7
 
