@@ -317,7 +317,7 @@ int Repository::StatusCallback(const char *path, unsigned int status, void *payl
     map<string, unsigned int> *statuses = (map<string, unsigned int> *) payload;
     statuses->insert(pair<string, unsigned int>(string(path), status));
   }
-  return 0;
+  return GIT_OK;
 }
 
 Handle<Value> Repository::GetStatuses(const Arguments& args) {
