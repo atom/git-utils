@@ -191,16 +191,20 @@ describe "git", ->
         expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
 
   describe '.getStatuses()', ->
-    repo = null
-
-    beforeEach ->
+    it 'returns the status of all modified paths', ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
+
       newFilePath = path.join(repo.getWorkingDirectory(), 'b.txt')
       fs.writeFileSync(newFilePath, '', 'utf8')
 
-    it 'returns the status of all modified paths', ->
+      fs.mkdirSync(path.join(repo.getWorkingDirectory(), '.git/info'))
+      ignoreFile = path.join(repo.getWorkingDirectory(), '.git/info/exclude')
+      fs.writeFileSync(ignoreFile, 'c.txt', 'utf8')
+      ignoredFilePath = path.join(repo.getWorkingDirectory(), 'c.txt')
+      fs.writeFileSync(ignoredFilePath, '', 'utf8')
+
       statuses = repo.getStatuses()
       expect(_.keys(statuses).length).toBe 2
       expect(statuses['a.txt']).toBe 1 << 9

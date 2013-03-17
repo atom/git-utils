@@ -313,10 +313,8 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
 }
 
 int Repository::StatusCallback(const char *path, unsigned int status, void *payload) {
-  if ((status & GIT_STATUS_IGNORED) == 0) {
-    map<string, unsigned int> *statuses = (map<string, unsigned int> *) payload;
-    statuses->insert(pair<string, unsigned int>(string(path), status));
-  }
+  map<string, unsigned int> *statuses = (map<string, unsigned int> *) payload;
+  statuses->insert(pair<string, unsigned int>(string(path), status));
   return GIT_OK;
 }
 
@@ -324,7 +322,9 @@ Handle<Value> Repository::GetStatuses(const Arguments& args) {
   HandleScope scope;
   Local<Object> result = Object::New();
   map<string, unsigned int> statuses;
-  if (git_status_foreach(GetRepository(args), StatusCallback, &statuses) == GIT_OK) {
+  git_status_options options = GIT_STATUS_OPTIONS_INIT;
+  options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+  if (git_status_foreach_ext(GetRepository(args), &options, StatusCallback, &statuses) == GIT_OK) {
     map<string, unsigned int>::iterator iter = statuses.begin();
     for (; iter != statuses.end(); ++iter)
       result->Set(String::NewSymbol(iter->first.c_str()), Number::New(iter->second));
