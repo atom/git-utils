@@ -44,6 +44,18 @@
       ],
       'include_dirs': [
         'deps/libgit2/include'
+      ],
+      'conditions': [
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+          'cflags': [ '-Wno-missing-field-initializers' ]
+        }],
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'WARNING_CFLAGS+': [
+              '-Wno-missing-field-initializers'
+            ]
+          }
+        }]
       ]
     }
   ]
