@@ -1,3 +1,5 @@
+#!/bin/sh
+
 cd deps/libgit2
 touch .npmignore
 mkdir build
