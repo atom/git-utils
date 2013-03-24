@@ -221,3 +221,28 @@ describe "git", ->
     it 'returns the number of commits ahead of and behind the upstream branch', ->
       counts = repo.getAheadBehindCount()
       expect(counts).toEqual {ahead: 3, behind: 2}
+
+  describe '.getLineDiffs(path, text)', ->
+    it 'returns all hunks that differ', ->
+      repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+
+      diffs = repo.getLineDiffs('a.txt', 'first line is different')
+      expect(diffs.length).toBe 1
+      expect(diffs[0].oldStart).toBe 1
+      expect(diffs[0].oldLines).toBe 1
+      expect(diffs[0].newStart).toBe 1
+      expect(diffs[0].newLines).toBe 1
+
+      diffs = repo.getLineDiffs('a.txt', 'first line\nsecond line')
+      expect(diffs.length).toBe 1
+      expect(diffs[0].oldStart).toBe 1
+      expect(diffs[0].oldLines).toBe 0
+      expect(diffs[0].newStart).toBe 2
+      expect(diffs[0].newLines).toBe 1
+
+      diffs = repo.getLineDiffs('a.txt', '')
+      expect(diffs.length).toBe 1
+      expect(diffs[0].oldStart).toBe 1
+      expect(diffs[0].oldLines).toBe 1
+      expect(diffs[0].newStart).toBe 0
+      expect(diffs[0].newLines).toBe 0

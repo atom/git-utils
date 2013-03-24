@@ -1,6 +1,7 @@
 #include "repository.h"
 #include <string>
 #include <map>
+#include <vector>
 
 using namespace std;
 
@@ -55,6 +56,9 @@ void Repository::Init(Handle<Object> target) {
 
   Local<Function> release = FunctionTemplate::New(Repository::Release)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("release"), release);
+
+  Local<Function> getLineDiffs = FunctionTemplate::New(Repository::GetLineDiffs)->GetFunction();
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getLineDiffs"), getLineDiffs);
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
   target->Set(String::NewSymbol("Repository"), constructor);
@@ -398,6 +402,77 @@ Handle<Value> Repository::GetMergeBase(const Arguments& args) {
   }
 
   return scope.Close(Null());
+}
+
+int Repository::DiffHunkCallback(const git_diff_delta *delta,
+                                 const git_diff_range *range,
+                                 const char *header, size_t header_len,
+                                 void *payload) {
+  vector<git_diff_range> *ranges = (vector<git_diff_range> *) payload;
+  ranges->push_back(*range);
+  return GIT_OK;
+}
+
+Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 2)
+    return scope.Close(Null());
+
+  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+  string path(*utf8Path);
+  String::Utf8Value utf8Text(Local<String>::Cast(args[1]));
+  string text(*utf8Text);
+
+  git_repository *repo = GetRepository(args);
+  git_reference *head;
+  if (git_repository_head(&head, repo) != GIT_OK)
+    return scope.Close(Null());
+
+  const git_oid *sha = git_reference_target(head);
+  git_commit *commit;
+  int commitStatus = git_commit_lookup(&commit, repo, sha);
+  git_reference_free(head);
+  if (commitStatus != GIT_OK)
+    return scope.Close(Null());
+
+  git_tree *tree;
+  int treeStatus = git_commit_tree(&tree, commit);
+  git_commit_free(commit);
+  if (treeStatus != GIT_OK)
+    return scope.Close(Null());
+
+  git_tree_entry *treeEntry;
+  git_tree_entry_bypath(&treeEntry, tree, path.data());
+  git_blob *blob = NULL;
+  if (treeEntry != NULL) {
+    const git_oid *blobSha = git_tree_entry_id(treeEntry);
+    if (blobSha == NULL || git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+  }
+  git_tree_free(tree);
+  if (blob == NULL)
+    return scope.Close(Null());
+
+  vector<git_diff_range> ranges;
+  git_diff_options options = GIT_DIFF_OPTIONS_INIT;
+  options.context_lines = 0;
+  if (git_diff_blob_to_buffer(blob, text.data(), text.length(), &options, NULL,
+                              DiffHunkCallback, NULL, &ranges) == GIT_OK) {
+    Local<Object> v8Ranges = Array::New(ranges.size());
+    for(size_t i = 0; i < ranges.size(); i++) {
+      Local<Object> v8Range = Object::New();
+      v8Range->Set(String::NewSymbol("oldStart"), Number::New(ranges[i].old_start));
+      v8Range->Set(String::NewSymbol("oldLines"), Number::New(ranges[i].old_lines));
+      v8Range->Set(String::NewSymbol("newStart"), Number::New(ranges[i].new_start));
+      v8Range->Set(String::NewSymbol("newLines"), Number::New(ranges[i].new_lines));
+      v8Ranges->Set(i, v8Range);
+    }
+    git_blob_free(blob);
+    return v8Ranges;
+  } else {
+    git_blob_free(blob);
+    return scope.Close(Null());
+  }
 }
 
 Repository::Repository(Handle<String> path) {
