@@ -53,7 +53,7 @@ repository = git.open('/Users/me/repos/node')
 
 ### Repository.getStatuses()
 
-### Repository.getUpstreamBranch(branch)
+### Repository.getUpstreamBranch([branch])
 
 ### Repository.getWorkingDirectory()
 
