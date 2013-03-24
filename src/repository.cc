@@ -128,7 +128,7 @@ Handle<Value> Repository::IsIgnored(const Arguments& args) {
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
   int ignored;
-  if (git_ignore_path_is_ignored(&ignored, repository, path.c_str()) == GIT_OK)
+  if (git_ignore_path_is_ignored(&ignored, repository, path.data()) == GIT_OK)
     return scope.Close(Boolean::New(ignored == 1));
   else
     return scope.Close(Boolean::New(false));
@@ -144,7 +144,7 @@ Handle<Value> Repository::IsSubmodule(const Arguments& args) {
   if (git_repository_index(&index, repository) == GIT_OK) {
     String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
     string path(*utf8Path);
-    const git_index_entry *entry = git_index_get_bypath(index, path.c_str(), 0);
+    const git_index_entry *entry = git_index_get_bypath(index, path.data(), 0);
     Handle<Boolean> isSubmodule = Boolean::New(entry != NULL && (entry->mode & S_IFMT) == GIT_FILEMODE_COMMIT);
     git_index_free(index);
     return scope.Close(isSubmodule);
@@ -165,7 +165,7 @@ Handle<Value> Repository::GetConfigValue(const Arguments& args) {
   String::Utf8Value utf8ConfigKey(Local<String>::Cast(args[0]));
   string configKey(*utf8ConfigKey);
   const char* configValue;
-  if (git_config_get_string(&configValue, config, configKey.c_str()) == GIT_OK) {
+  if (git_config_get_string(&configValue, config, configKey.data()) == GIT_OK) {
     Handle<String> configValueHandle = String::NewSymbol(configValue);
     git_config_free(config);
     return scope.Close(configValueHandle);
@@ -184,7 +184,7 @@ Handle<Value> Repository::GetStatus(const Arguments& args) {
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
   unsigned int status = 0;
-  if (git_status_file(&status, repository, path.c_str()) == GIT_OK)
+  if (git_status_file(&status, repository, path.data()) == GIT_OK)
     return scope.Close(Number::New(status));
   else
     return scope.Close(Number::New(0));
@@ -198,7 +198,7 @@ Handle<Value> Repository::CheckoutHead(const Arguments& args) {
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
   char *copiedPath = (char*) malloc(sizeof(char) * (path.length() + 1));
-  strcpy(copiedPath, path.c_str());
+  strcpy(copiedPath, path.data());
 
   git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
   options.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
@@ -220,7 +220,7 @@ Handle<Value> Repository::GetReferenceTarget(const Arguments& args) {
   String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
   string refName(*utf8RefName);
   git_oid sha;
-  if (git_reference_name_to_id(&sha, GetRepository(args), refName.c_str()) == GIT_OK) {
+  if (git_reference_name_to_id(&sha, GetRepository(args), refName.data()) == GIT_OK) {
     char oid[GIT_OID_HEXSZ + 1];
     git_oid_tostr(oid, GIT_OID_HEXSZ + 1, &sha);
     return scope.Close(String::NewSymbol(oid));
@@ -260,7 +260,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
   char *copiedPath = (char*) malloc(sizeof(char) * (path.length() + 1));
-  strcpy(copiedPath, path.c_str());
+  strcpy(copiedPath, path.data());
   git_diff_options options = GIT_DIFF_OPTIONS_INIT;
   git_strarray paths;
   paths.count = 1;
@@ -327,7 +327,7 @@ Handle<Value> Repository::GetStatuses(const Arguments& args) {
   if (git_status_foreach_ext(GetRepository(args), &options, StatusCallback, &statuses) == GIT_OK) {
     map<string, unsigned int>::iterator iter = statuses.begin();
     for (; iter != statuses.end(); ++iter)
-      result->Set(String::NewSymbol(iter->first.c_str()), Number::New(iter->second));
+      result->Set(String::NewSymbol(iter->first.data()), Number::New(iter->second));
   }
   return scope.Close(result);
 }
@@ -351,13 +351,13 @@ Handle<Value> Repository::GetCommitCount(const Arguments& args) {
   String::Utf8Value utf8FromCommitId(Local<String>::Cast(args[0]));
   string fromCommitId(*utf8FromCommitId);
   git_oid fromCommit;
-  if (git_oid_fromstr(&fromCommit, fromCommitId.c_str()) != GIT_OK)
+  if (git_oid_fromstr(&fromCommit, fromCommitId.data()) != GIT_OK)
     return scope.Close(Number::New(0));
 
   String::Utf8Value utf8ToCommitId(Local<String>::Cast(args[1]));
   string toCommitId(*utf8ToCommitId);
   git_oid toCommit;
-  if (git_oid_fromstr(&toCommit, toCommitId.c_str()) != GIT_OK)
+  if (git_oid_fromstr(&toCommit, toCommitId.data()) != GIT_OK)
     return scope.Close(Number::New(0));
 
   git_revwalk *revWalk;
@@ -382,13 +382,13 @@ Handle<Value> Repository::GetMergeBase(const Arguments& args) {
   String::Utf8Value utf8CommitOneId(Local<String>::Cast(args[0]));
   string commitOneId(*utf8CommitOneId);
   git_oid commitOne;
-  if (git_oid_fromstr(&commitOne, commitOneId.c_str()) != GIT_OK)
+  if (git_oid_fromstr(&commitOne, commitOneId.data()) != GIT_OK)
     return scope.Close(Null());
 
   String::Utf8Value utf8CommitTwoId(Local<String>::Cast(args[1]));
   string commitTwoId(*utf8CommitTwoId);
   git_oid commitTwo;
-  if (git_oid_fromstr(&commitTwo, commitTwoId.c_str()) != GIT_OK)
+  if (git_oid_fromstr(&commitTwo, commitTwoId.data()) != GIT_OK)
     return scope.Close(Null());
 
   git_oid mergeBase;
@@ -404,7 +404,7 @@ Handle<Value> Repository::GetMergeBase(const Arguments& args) {
 Repository::Repository(Handle<String> path) {
   String::Utf8Value utf8Path(path);
   string repositoryPath(*utf8Path);
-  if (git_repository_open_ext(&repository, repositoryPath.c_str(), 0, NULL) != GIT_OK)
+  if (git_repository_open_ext(&repository, repositoryPath.data(), 0, NULL) != GIT_OK)
     repository = NULL;
 }
 
