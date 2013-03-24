@@ -190,8 +190,10 @@ describe "git", ->
         fs.writeFileSync(filePath, 'changing\nb.txt\nwith lines', 'utf8')
         expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
 
-  describe '.getStatuses()', ->
-    it 'returns the status of all modified paths', ->
+  describe '.getStatus([path])', ->
+    repo = null
+
+    beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
@@ -205,10 +207,16 @@ describe "git", ->
       ignoredFilePath = path.join(repo.getWorkingDirectory(), 'c.txt')
       fs.writeFileSync(ignoredFilePath, '', 'utf8')
 
-      statuses = repo.getStatuses()
-      expect(_.keys(statuses).length).toBe 2
-      expect(statuses['a.txt']).toBe 1 << 9
-      expect(statuses['b.txt']).toBe 1 << 7
+    describe 'when no path is specified', ->
+      it 'returns the status of all modified paths', ->
+        statuses = repo.getStatus()
+        expect(_.keys(statuses).length).toBe 2
+        expect(statuses['a.txt']).toBe 1 << 9
+        expect(statuses['b.txt']).toBe 1 << 7
+
+    describe 'when a path is specified', ->
+      it 'returns the status of the given path', ->
+        expect(repo.getStatus('a.txt')).toBe 1 << 9
 
   describe '.getAheadBehindCount()', ->
     repo = null

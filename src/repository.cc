@@ -45,9 +45,6 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getDiffStats = FunctionTemplate::New(Repository::GetDiffStats)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("getDiffStats"), getDiffStats);
 
-  Local<Function> getStatuses = FunctionTemplate::New(Repository::GetStatuses)->GetFunction();
-  tpl->PrototypeTemplate()->Set(String::NewSymbol("getStatuses"), getStatuses);
-
   Local<Function> getCommitCount = FunctionTemplate::New(Repository::GetCommitCount)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("getCommitCount"), getCommitCount);
 
@@ -180,17 +177,28 @@ Handle<Value> Repository::GetConfigValue(const Arguments& args) {
 
 Handle<Value> Repository::GetStatus(const Arguments& args) {
   HandleScope scope;
-  if (args.Length() < 1)
-    return scope.Close(Number::New(0));
-
-  git_repository* repository = GetRepository(args);
-  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-  string path(*utf8Path);
-  unsigned int status = 0;
-  if (git_status_file(&status, repository, path.data()) == GIT_OK)
-    return scope.Close(Number::New(status));
-  else
-    return scope.Close(Number::New(0));
+  if (args.Length() < 1) {
+    HandleScope scope;
+    Local<Object> result = Object::New();
+    map<string, unsigned int> statuses;
+    git_status_options options = GIT_STATUS_OPTIONS_INIT;
+    options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+    if (git_status_foreach_ext(GetRepository(args), &options, StatusCallback, &statuses) == GIT_OK) {
+      map<string, unsigned int>::iterator iter = statuses.begin();
+      for (; iter != statuses.end(); ++iter)
+        result->Set(String::NewSymbol(iter->first.data()), Number::New(iter->second));
+    }
+    return scope.Close(result);
+  } else {
+    git_repository* repository = GetRepository(args);
+    String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+    string path(*utf8Path);
+    unsigned int status = 0;
+    if (git_status_file(&status, repository, path.data()) == GIT_OK)
+      return scope.Close(Number::New(status));
+    else
+      return scope.Close(Number::New(0));
+  }
 }
 
 Handle<Value> Repository::CheckoutHead(const Arguments& args) {
@@ -319,20 +327,6 @@ int Repository::StatusCallback(const char *path, unsigned int status, void *payl
   map<string, unsigned int> *statuses = (map<string, unsigned int> *) payload;
   statuses->insert(pair<string, unsigned int>(string(path), status));
   return GIT_OK;
-}
-
-Handle<Value> Repository::GetStatuses(const Arguments& args) {
-  HandleScope scope;
-  Local<Object> result = Object::New();
-  map<string, unsigned int> statuses;
-  git_status_options options = GIT_STATUS_OPTIONS_INIT;
-  options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
-  if (git_status_foreach_ext(GetRepository(args), &options, StatusCallback, &statuses) == GIT_OK) {
-    map<string, unsigned int>::iterator iter = statuses.begin();
-    for (; iter != statuses.end(); ++iter)
-      result->Set(String::NewSymbol(iter->first.data()), Number::New(iter->second));
-  }
-  return scope.Close(result);
 }
 
 Handle<Value> Repository::Release(const Arguments& args) {
