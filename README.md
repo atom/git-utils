@@ -26,3 +26,49 @@ git = require 'git-utils'
 
 repository = git.open('/Users/me/repos/node')
 ```
+
+### Repository.checkoutHead(path)
+
+### Repository.getAheadBehindCount()
+
+### Repository.getCommitCount(fromCommit, toCommit)
+
+### Repository.getConfigValue(key)
+
+### Repository.getDiffStats(path)
+
+### Repository.getHead()
+
+### Repository.getLineDiffs(path, text)
+
+### Repository.getMergeBase(commit1, commit2)
+
+### Repository.getPath()
+
+### Repository.getReferenceTarget(ref)
+
+### Repository.getShortHead()
+
+### Repository.getStatus(path)
+
+### Repository.getStatuses()
+
+### Repository.getUpstreamBranch(branch)
+
+### Repository.getWorkingDirectory()
+
+### Repository.isIgnored(path)
+
+### Repository.isPathModified(path)
+
+### Repository.isPathNew(path)
+
+### Repository.isStatusModified(status)
+
+### Repository.isStatusNew(status)
+
+### Repository.isSubmodule(path)
+
+### Repository.refreshIndex()
+
+### Repository.release()
