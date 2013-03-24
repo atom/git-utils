@@ -8,56 +8,56 @@ void Repository::Init(Handle<Object> target) {
   git_threads_init();
 
   Local<FunctionTemplate> tpl = FunctionTemplate::New(Repository::New);
-  tpl->SetClassName(v8::String::NewSymbol("Repository"));
+  tpl->SetClassName(String::NewSymbol("Repository"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   Local<Function> getPath = FunctionTemplate::New(Repository::GetPath)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getPath"), getPath);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getPath"), getPath);
 
   Local<Function> exists = FunctionTemplate::New(Repository::Exists)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("exists"), exists);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("exists"), exists);
 
   Local<Function> getHead = FunctionTemplate::New(Repository::GetHead)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getHead"), getHead);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getHead"), getHead);
 
   Local<Function> refreshIndex = FunctionTemplate::New(Repository::RefreshIndex)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("refreshIndex"), refreshIndex);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("refreshIndex"), refreshIndex);
 
   Local<Function> isIgnored = FunctionTemplate::New(Repository::IsIgnored)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isIgnored"), isIgnored);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("isIgnored"), isIgnored);
 
   Local<Function> isSubmodule = FunctionTemplate::New(Repository::IsSubmodule)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("isSubmodule"), isSubmodule);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("isSubmodule"), isSubmodule);
 
   Local<Function> getConfigValue = FunctionTemplate::New(Repository::GetConfigValue)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getConfigValue"), getConfigValue);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getConfigValue"), getConfigValue);
 
   Local<Function> getStatus = FunctionTemplate::New(Repository::GetStatus)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getStatus"), getStatus);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getStatus"), getStatus);
 
   Local<Function> checkoutHead = FunctionTemplate::New(Repository::CheckoutHead)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("checkoutHead"), checkoutHead);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("checkoutHead"), checkoutHead);
 
   Local<Function> getReferenceTarget = FunctionTemplate::New(Repository::GetReferenceTarget)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getReferenceTarget"), getReferenceTarget);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getReferenceTarget"), getReferenceTarget);
 
   Local<Function> getDiffStats = FunctionTemplate::New(Repository::GetDiffStats)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getDiffStats"), getDiffStats);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getDiffStats"), getDiffStats);
 
   Local<Function> getStatuses = FunctionTemplate::New(Repository::GetStatuses)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getStatuses"), getStatuses);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getStatuses"), getStatuses);
 
   Local<Function> getCommitCount = FunctionTemplate::New(Repository::GetCommitCount)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getCommitCount"), getCommitCount);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getCommitCount"), getCommitCount);
 
   Local<Function> getMergeBase = FunctionTemplate::New(Repository::GetMergeBase)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("getMergeBase"), getMergeBase);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getMergeBase"), getMergeBase);
 
   Local<Function> release = FunctionTemplate::New(Repository::Release)->GetFunction();
-  tpl->PrototypeTemplate()->Set(v8::String::NewSymbol("release"), release);
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("release"), release);
 
   Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
-  target->Set(v8::String::NewSymbol("Repository"), constructor);
+  target->Set(String::NewSymbol("Repository"), constructor);
 }
 
 NODE_MODULE(git, Repository::Init)
