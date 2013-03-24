@@ -18,6 +18,9 @@ npm install git-utils
 
 ### git.open(path)
 
+Open the repository at the given path.  This will return `null` if the
+repository at the given path does not exist or cannot be opened.
+
 ```coffeescript
 git = require 'git-utils'
 
