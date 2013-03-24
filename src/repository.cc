@@ -2,7 +2,6 @@
 #include <string>
 #include <map>
 
-using namespace v8;
 using namespace std;
 
 void Repository::Init(Handle<Object> target) {
