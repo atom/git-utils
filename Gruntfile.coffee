@@ -16,12 +16,14 @@ module.exports = (grunt) ->
         options:
           stdout: true
           stderr: true
+          failOnError: true
 
       test:
         command: 'jasmine-node --coffee spec/'
         options:
           stdout: true
           stderr: true
+          failOnError: true
 
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
