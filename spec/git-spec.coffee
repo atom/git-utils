@@ -190,6 +190,24 @@ describe "git", ->
         fs.writeFileSync(filePath, 'changing\nb.txt\nwith lines', 'utf8')
         expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
 
+  describe '.getHeadBlob(path)', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    describe 'when a path is modified', ->
+      it 'returns the original', ->
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'changing\na.txt', 'utf8')
+        expect(repo.getHeadBlob('a.txt')).toBe 'first line\n'
+
+    describe 'when a path is not modified', ->
+      it 'returns the original', ->
+        expect(repo.getHeadBlob('a.txt')).toBe 'first line\n'
+
   describe '.getStatus([path])', ->
     repo = null
 
