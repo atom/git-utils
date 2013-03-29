@@ -45,8 +45,8 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getDiffStats = FunctionTemplate::New(Repository::GetDiffStats)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("getDiffStats"), getDiffStats);
 
-  Local<Function> GetHeadOriginal = FunctionTemplate::New(Repository::GetHeadOriginal)->GetFunction();
-  tpl->PrototypeTemplate()->Set(String::NewSymbol("getHeadOriginal"), GetHeadOriginal);
+  Local<Function> GetHeadBlob = FunctionTemplate::New(Repository::GetHeadBlob)->GetFunction();
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getHeadBlob"), GetHeadBlob);
 
   Local<Function> getCommitCount = FunctionTemplate::New(Repository::GetCommitCount)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("getCommitCount"), getCommitCount);
@@ -326,7 +326,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   return scope.Close(result);
 }
 
-Handle<Value> Repository::GetHeadOriginal(const Arguments& args) {
+Handle<Value> Repository::GetHeadBlob(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1)
     return scope.Close(Null());
@@ -363,8 +363,10 @@ Handle<Value> Repository::GetHeadOriginal(const Arguments& args) {
   git_tree_free(tree);
   if (blob == NULL)
     return scope.Close(Null());
-  const char *content = (const char *) git_blob_rawcontent(blob);
 
+  const char *content = (const char *) git_blob_rawcontent(blob);
+  git_blob_free(blob);
+  
   return scope.Close(String::NewSymbol(content));
 }
 
