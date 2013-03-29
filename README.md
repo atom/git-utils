@@ -37,6 +37,10 @@ repository = git.open('/Users/me/repos/node')
 
 ### Repository.getDiffStats(path)
 
+### Repository.getHeadOriginal(path)
+
+Similar to `git show HEAD:<path>`. Retrieves the blob as defined in HEAD.
+
 ### Repository.getHead()
 
 ### Repository.getLineDiffs(path, text)

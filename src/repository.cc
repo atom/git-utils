@@ -45,6 +45,9 @@ void Repository::Init(Handle<Object> target) {
   Local<Function> getDiffStats = FunctionTemplate::New(Repository::GetDiffStats)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("getDiffStats"), getDiffStats);
 
+  Local<Function> GetHeadOriginal = FunctionTemplate::New(Repository::GetHeadOriginal)->GetFunction();
+  tpl->PrototypeTemplate()->Set(String::NewSymbol("getHeadOriginal"), GetHeadOriginal);
+
   Local<Function> getCommitCount = FunctionTemplate::New(Repository::GetCommitCount)->GetFunction();
   tpl->PrototypeTemplate()->Set(String::NewSymbol("getCommitCount"), getCommitCount);
 
@@ -321,6 +324,48 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   result->Set(String::NewSymbol("added"), Number::New(added));
   result->Set(String::NewSymbol("deleted"), Number::New(deleted));
   return scope.Close(result);
+}
+
+Handle<Value> Repository::GetHeadOriginal(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Null());
+
+  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
+  string path(*utf8Path);
+
+  git_repository *repo = GetRepository(args);
+  git_reference *head;
+  if (git_repository_head(&head, repo) != GIT_OK)
+    return scope.Close(Null());
+
+  const git_oid *sha = git_reference_target(head);
+  git_commit *commit;
+  int commitStatus = git_commit_lookup(&commit, repo, sha);
+  git_reference_free(head);
+  if (commitStatus != GIT_OK)
+    return scope.Close(Null());
+
+  git_tree *tree;
+  int treeStatus = git_commit_tree(&tree, commit);
+  git_commit_free(commit);
+  if (treeStatus != GIT_OK)
+    return scope.Close(Null());
+
+  git_tree_entry *treeEntry;
+  git_tree_entry_bypath(&treeEntry, tree, path.data());
+  git_blob *blob = NULL;
+  if (treeEntry != NULL) {
+    const git_oid *blobSha = git_tree_entry_id(treeEntry);
+    if (blobSha == NULL || git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+  }
+  git_tree_free(tree);
+  if (blob == NULL)
+    return scope.Close(Null());
+  const char *content = (const char *) git_blob_rawcontent(blob);
+
+  return scope.Close(String::NewSymbol(content));
 }
 
 int Repository::StatusCallback(const char *path, unsigned int status, void *payload) {
