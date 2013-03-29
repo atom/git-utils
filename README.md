@@ -42,7 +42,7 @@ Returns `true` if the checkout was successful, `false` otherwise
 
 Get the number of commits the HEAD branch is ahead/behind the remote branch it
 is tracking.  Similar to the commit numbers reported by `git status` when a
-remote tracking branch exists
+remote tracking branch exists.
 
 Returns an object with `ahead` and `behind` keys pointing to integer values
 that will always be >= 0.
@@ -51,9 +51,9 @@ that will always be >= 0.
 
 Get the number of commits between `fromCommit` and `toCommit`.
 
-`fromCommit` - The string commit SHA-1 to start the rev walk at
+`fromCommit` - The string commit SHA-1 to start the rev walk at.
 
-`toCommit` - The string commit SHA-1 to end the rev walk at
+`toCommit` - The string commit SHA-1 to end the rev walk at.
 
 Returns the number of commits between the two, always >= 0.
 
