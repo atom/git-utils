@@ -21,6 +21,7 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> CheckoutHead(const Arguments& args);
     static Handle<Value> GetReferenceTarget(const Arguments& args);
     static Handle<Value> GetDiffStats(const Arguments& args);
+    static Handle<Value> GetHeadBlob(const Arguments& args);
     static Handle<Value> GetCommitCount(const Arguments& args);
     static Handle<Value> GetMergeBase(const Arguments& args);
     static Handle<Value> Release(const Arguments& args);
