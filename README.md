@@ -52,6 +52,7 @@ that will always be >= 0.
 Get the number of commits between `fromCommit` and `toCommit`.
 
 `fromCommit` - The string commit SHA-1 to start the rev walk at
+
 `toCommit` - The string commit SHA-1 to end the rev walk at
 
 Returns the number of commits between the two, always >= 0.
@@ -96,6 +97,7 @@ Get the line diffs comparing the HEAD version of the given path and the given
 text.
 
 `path` - The string repository-relative path.
+
 `text` - The string text to diff the HEAD contents of the path against.
 
 Returns an array of objects that have `oldStart`, `oldLines`, `newStart`, and
@@ -106,6 +108,7 @@ Returns an array of objects that have `oldStart`, `oldLines`, `newStart`, and
 Get the merge base of two commits.
 
 `commit1` - The string SHA-1 of the first commit.
+
 `commit2` - The string SHA-1 of the second commit.
 
 Returns the string SHA-1 of the merge base of `commit1` and `commit2` or `null`
@@ -193,7 +196,7 @@ Returns `true` if the status is a modified one, `false` otherwise.
 
 Check if a status value represents a new path.
 
-`status` - The integer status value
+`status` - The integer status value.
 
 Returns `true` if the status is a new one, `false` otherwise
 
