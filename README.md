@@ -10,8 +10,8 @@ npm install git-utils
 ```
 
 ## Building
-  * Clone the repository
-  * `git submodule init`, then `git submodule update` to get the libgit2 bindings
+  * Clone the repository with the `--recurse` option to get the libgit2
+    submodule
   * Run `npm install`
   * Run `grunt` to compile the native and CoffeeScript code
 
