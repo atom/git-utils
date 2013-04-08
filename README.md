@@ -3,6 +3,9 @@
 Helpers for working with Git repositories built natively on top of
 [libgit2](http://libgit2.github.com).
 
+This module requires [CMake](http://www.cmake.org/) for building libgit2 and is
+it a prerequisite for both installing this module and building it locally.
+
 ## Installing
 
 ```sh
@@ -12,6 +15,7 @@ npm install git-utils
 ## Building
   * Clone the repository with the `--recurse` option to get the libgit2
     submodule
+  * Install [CMake](http://www.cmake.org/)
   * Run `npm install`
   * Run `grunt` to compile the native and CoffeeScript code
 
