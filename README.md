@@ -18,6 +18,7 @@ npm install git-utils
   * Install [CMake](http://www.cmake.org/)
   * Run `npm install`
   * Run `grunt` to compile the native and CoffeeScript code
+  * Run `grunt test` to run the specs
 
 ## Docs
 
