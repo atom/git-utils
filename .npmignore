@@ -8,3 +8,4 @@
 *.log
 *~
 .travis.yml
+.node-version
