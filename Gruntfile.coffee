@@ -12,14 +12,14 @@ module.exports = (grunt) ->
 
     shell:
       rebuild:
-        command: 'node-gyp rebuild'
+        command: 'npm install'
         options:
           stdout: true
           stderr: true
           failOnError: true
 
       test:
-        command: 'jasmine-node --coffee spec/'
+        command: 'npm test'
         options:
           stdout: true
           stderr: true
