@@ -488,11 +488,10 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
     return scope.Close(Null());
   }
   git_blob *blob = NULL;
-  if (treeEntry != NULL) {
-    const git_oid *blobSha = git_tree_entry_id(treeEntry);
-    if (blobSha == NULL || git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
-      blob = NULL;
-  }
+  const git_oid *blobSha = git_tree_entry_id(treeEntry);
+  if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+    blob = NULL;
+  git_tree_entry_free(treeEntry);
   git_tree_free(tree);
   if (blob == NULL)
     return scope.Close(Null());
