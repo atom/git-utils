@@ -198,15 +198,19 @@ describe "git", ->
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
 
-    describe 'when a path is modified', ->
-      it 'returns the original', ->
+    describe 'when the path is modified', ->
+      it 'returns the HEAD blob contents', ->
         filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
         fs.writeFileSync(filePath, 'changing\na.txt', 'utf8')
         expect(repo.getHeadBlob('a.txt')).toBe 'first line\n'
 
-    describe 'when a path is not modified', ->
-      it 'returns the original', ->
+    describe 'when the path is not modified', ->
+      it 'returns the HEAD blob contents', ->
         expect(repo.getHeadBlob('a.txt')).toBe 'first line\n'
+
+    describe 'when the path does not exist', ->
+      it 'returns null', ->
+        expect(repo.getHeadBlob('i-do-not-exist.txt')).toBeNull()
 
   describe '.getStatus([path])', ->
     repo = null
@@ -277,7 +281,7 @@ describe "git", ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
 
       diffs = repo.getLineDiffs('i-dont-exists.txt', 'content')
-      expect(diffs).toBe null
+      expect(diffs).toBeNull()
 
   describe '.relativize(path)', ->
     it 'relativizes the given path to the working directory of the repository', ->
