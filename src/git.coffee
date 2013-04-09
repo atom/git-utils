@@ -76,6 +76,16 @@ Repository.prototype.getAheadBehindCount = ->
   counts.behind = @getCommitCount(upstreamCommit, mergeBase)
   counts
 
+Repository.prototype.relativize = (path) ->
+  return path unless path?
+  return path unless path[0] is '/'
+
+  workingDirectory = @getWorkingDirectory()
+  if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
+    path.substring(workingDirectory.length + 1)
+  else
+    path
+
 exports.open = (path) ->
   repository = new Repository(path)
   if repository.exists()

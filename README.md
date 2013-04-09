@@ -217,6 +217,15 @@ Returns `true` if the path is a submodule, false otherwise.
 Reread the index to update any values that have changed since the last time the
 index was read.
 
+### Repository.relativize(path)
+
+Relativize the given path to the repository's working directory.
+
+`path` - The string path to relativize.
+
+Returns a repository-relative path if the given path is prefixed with the
+repository's working directory path.
+
 ### Repository.release()
 
 Release the repository and close all file handles it has open.  No other methods

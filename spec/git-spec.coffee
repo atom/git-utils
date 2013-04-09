@@ -272,3 +272,16 @@ describe "git", ->
       expect(diffs[0].oldLines).toBe 1
       expect(diffs[0].newStart).toBe 0
       expect(diffs[0].newLines).toBe 0
+
+  describe '.relativize(path)', ->
+    it 'relativizes the given path to the working directory of the repository', ->
+      repo = git.open(__dirname)
+      workingDirectory = repo.getWorkingDirectory()
+
+      expect(repo.relativize(path.join(workingDirectory, 'a.txt'))).toBe 'a.txt'
+      expect(repo.relativize(path.join(workingDirectory, 'a/b/c.txt'))).toBe 'a/b/c.txt'
+      expect(repo.relativize('a.txt')).toBe 'a.txt'
+      expect(repo.relativize('/not/in/working/dir')).toBe '/not/in/working/dir'
+      expect(repo.relativize(null)).toBe null
+      expect(repo.relativize()).toBeUndefined()
+      expect(repo.relativize('')).toBe ''
