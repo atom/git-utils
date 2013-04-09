@@ -7,3 +7,4 @@
 *.coffee
 *.log
 *~
+.travis.yml
