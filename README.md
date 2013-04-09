@@ -3,8 +3,8 @@
 Helpers for working with Git repositories built natively on top of
 [libgit2](http://libgit2.github.com).
 
-This module requires [CMake](http://www.cmake.org/) for building libgit2 and is
-it a prerequisite for both installing this module and building it locally.
+This module requires [CMake](http://www.cmake.org/) for building libgit2 and it
+is a prerequisite for both installing this module and building it locally.
 
 ## Installing
 
