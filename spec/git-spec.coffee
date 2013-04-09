@@ -273,6 +273,12 @@ describe "git", ->
       expect(diffs[0].newStart).toBe 0
       expect(diffs[0].newLines).toBe 0
 
+    it "returns null for paths that don't exist", ->
+      repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+
+      diffs = repo.getLineDiffs('i-dont-exists.txt', 'content')
+      expect(diffs).toBe null
+
   describe '.relativize(path)', ->
     it 'relativizes the given path to the working directory of the repository', ->
       repo = git.open(__dirname)
