@@ -171,7 +171,7 @@ Get the ignored status of a given path.
 
 `path` - The string repository-relative path.
 
-Returns `true` if the path is ignored, `false otherwise.
+Returns `true` if the path is ignored, `false` otherwise.
 
 ### Repository.isPathModified(path)
 
@@ -179,7 +179,7 @@ Get the modified status of a given path.
 
 `path` - The string repository-relative path.
 
-Returns `true` if the path is modified, `false otherwise.
+Returns `true` if the path is modified, `false` otherwise.
 
 ### Repository.isPathNew(path)
 
@@ -187,7 +187,7 @@ Get the new status of a given path.
 
 `path` - The string repository-relative path.
 
-Returns `true` if the path is new, `false otherwise.
+Returns `true` if the path is new, `false` otherwise.
 
 ### Repository.isStatusModified(status)
 
@@ -211,7 +211,7 @@ Check if the path is a submodule in the index.
 
 `path` - The string repository-relative path.
 
-Returns `true` if the path is a submodule, false otherwise.
+Returns `true` if the path is a submodule, `false` otherwise.
 
 ### Repository.refreshIndex()
 
