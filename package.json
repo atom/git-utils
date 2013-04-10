@@ -21,7 +21,7 @@
     "git",
     "libgit2"
   ],
-  "main": "./lib/git",
+  "main": "./lib/git.js",
   "devDependencies": {
     "grunt": "~0.4.0",
     "grunt-contrib-coffee": "~0.4.0",
