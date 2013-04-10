@@ -9,3 +9,5 @@
 *~
 .travis.yml
 .node-version
+.npmignore
+.gitmodules
