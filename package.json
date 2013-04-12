@@ -1,15 +1,17 @@
 {
   "name": "git-utils",
   "description": "A package for using Git repositories",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "author": {
     "name": "Kevin Sawicki",
     "email": "kevin@github.com"
   },
-  "contributors": [{
-    "name": "Garen J. Torikian",
-    "email": "gjtorikian@gmail.com"
-  }],
+  "contributors": [
+    {
+      "name": "Garen J. Torikian",
+      "email": "gjtorikian@gmail.com"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/atom/node-git.git"
