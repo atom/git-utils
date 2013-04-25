@@ -190,6 +190,14 @@ describe "git", ->
         fs.writeFileSync(filePath, 'changing\nb.txt\nwith lines', 'utf8')
         expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
 
+    describe 'when the repository has no HEAD', ->
+      it 'returns that no lines were added and deleted', ->
+        repoDirectory = temp.mkdirSync('node-git-repo-')
+        wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+        repo = git.open(repoDirectory)
+        fs.unlinkSync(path.join(repoDirectory, '.git/HEAD'))
+        expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
+
   describe '.getHeadBlob(path)', ->
     repo = null
 

@@ -256,7 +256,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   git_repository *repository = GetRepository(args);
   git_reference *head;
   if (git_repository_head(&head, repository) != GIT_OK)
-    return scope.Close(Null());
+    return scope.Close(result);
 
   const git_oid* sha = git_reference_target(head);
   git_commit *commit;
