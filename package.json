@@ -2,6 +2,12 @@
   "name": "git-utils",
   "description": "A package for using Git repositories",
   "version": "0.15.0",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/atom/node-git/raw/master/LICENSE.md"
+    }
+  ],
   "author": {
     "name": "Kevin Sawicki",
     "email": "kevin@github.com"
