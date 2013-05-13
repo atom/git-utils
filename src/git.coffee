@@ -1,3 +1,5 @@
+fs = require 'fs'
+path = require 'path'
 {Repository} = require('bindings')('git.node')
 
 statusIndexNew = 1 << 0
@@ -83,12 +85,29 @@ Repository.prototype.relativize = (path) ->
   workingDirectory = @getWorkingDirectory()
   if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
     path.substring(workingDirectory.length + 1)
+  else if @openedWorkingDirectory and path.indexOf("#{@openedWorkingDirectory}/") is 0
+    path.substring(@openedWorkingDirectory.length + 1)
   else
     path
 
-exports.open = (path) ->
-  repository = new Repository(path)
+realpath = (unrealPath) ->
+  try
+    fs.realpathSync(unrealPath)
+  catch e
+    unrealPath
+
+exports.open = (repositoryPath) ->
+  symlink = realpath(repositoryPath) isnt repositoryPath
+
+  repository = new Repository(repositoryPath)
   if repository.exists()
+    if symlink
+      workingDirectory = repository.getWorkingDirectory()
+      while repositoryPath isnt path.sep
+        if realpath(repositoryPath) is workingDirectory
+          repository.openedWorkingDirectory = repositoryPath
+          break
+        repositoryPath = path.resolve(repositoryPath, '..')
     repository
   else
     null

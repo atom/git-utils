@@ -303,3 +303,16 @@ describe "git", ->
       expect(repo.relativize(null)).toBe null
       expect(repo.relativize()).toBeUndefined()
       expect(repo.relativize('')).toBe ''
+
+    describe 'when the opened path is a symlink', ->
+      it 'relativizes against both the linked path and the real path', ->
+        repoDirectory = fs.realpathSync(temp.mkdirSync('node-git-repo-'))
+        linkDirectory = path.join(fs.realpathSync(temp.mkdirSync('node-git-repo-')), 'link')
+        wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+        fs.symlinkSync(repoDirectory, linkDirectory)
+
+        repo = git.open(linkDirectory)
+        expect(repo.relativize(path.join(repoDirectory, 'test1'))).toBe 'test1'
+        expect(repo.relativize(path.join(linkDirectory, 'test2'))).toBe 'test2'
+        expect(repo.relativize(path.join(linkDirectory, 'test2/test3'))).toBe 'test2/test3'
+        expect(repo.relativize('test2/test3')).toBe 'test2/test3'
