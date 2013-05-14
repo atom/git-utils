@@ -25,15 +25,12 @@ module.exports = (grunt) ->
           stderr: true
           failOnError: true
 
-      clean:
-        command: 'rm -fr build deps/libgit2/build'
-        options:
-          stdout: true
-          stderr: true
-          failOnError: true
-
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
   grunt.registerTask('default', ['coffee', 'shell:rebuild'])
   grunt.registerTask('test', ['default', 'shell:test'])
-  grunt.registerTask('clean', ['shell:clean'])
+  grunt.registerTask 'clean', ->
+    path = require 'path'
+    rm = require('rimraf').sync
+    rm('build')
+    rm(path.join('deps', 'libgit2', 'build'))
