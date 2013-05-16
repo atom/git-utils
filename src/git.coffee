@@ -19,10 +19,10 @@ modifiedStatusFlags = statusWorkingDirModified | statusIndexModified |
 
 newStatusFlags = statusWorkingDirNew | statusIndexNew
 
-Repository.prototype.getWorkingDirectory = ->
+Repository::getWorkingDirectory = ->
   @getPath()?.replace(/\/\.git\/?$/, '')
 
-Repository.prototype.getShortHead = ->
+Repository::getShortHead = ->
   head = @getHead()
   return head unless head?
   return head.substring(11) if head.indexOf('refs/heads/') is 0
@@ -31,19 +31,19 @@ Repository.prototype.getShortHead = ->
   return head.substring(0, 7) if head.match(/[a-fA-F0-9]{40}/)
   return head
 
-Repository.prototype.isStatusModified = (status=0) ->
+Repository::isStatusModified = (status=0) ->
   (status & modifiedStatusFlags) > 0
 
-Repository.prototype.isPathModified = (path) ->
+Repository::isPathModified = (path) ->
   @isStatusModified(@getStatus(path))
 
-Repository.prototype.isStatusNew = (status=0) ->
+Repository::isStatusNew = (status=0) ->
   (status & newStatusFlags) > 0
 
-Repository.prototype.isPathNew = (path) ->
+Repository::isPathNew = (path) ->
   @isStatusNew(@getStatus(path))
 
-Repository.prototype.getUpstreamBranch = (branch) ->
+Repository::getUpstreamBranch = (branch) ->
   branch ?= @getHead()
   return null unless branch?.length > 11
   return null unless branch.indexOf('refs/heads/') is 0
@@ -59,7 +59,7 @@ Repository.prototype.getUpstreamBranch = (branch) ->
 
   "refs/remotes/#{branchRemote}/#{branchMerge.substring(11)}"
 
-Repository.prototype.getAheadBehindCount = ->
+Repository::getAheadBehindCount = ->
   counts =
     ahead: 0
     behind: 0
@@ -78,7 +78,7 @@ Repository.prototype.getAheadBehindCount = ->
   counts.behind = @getCommitCount(upstreamCommit, mergeBase)
   counts
 
-Repository.prototype.relativize = (path) ->
+Repository::relativize = (path) ->
   return path unless path?
   return path unless path[0] is '/'
 
