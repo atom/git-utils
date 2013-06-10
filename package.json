@@ -28,7 +28,9 @@
   "homepage": "http://atom.github.io/node-git",
   "keywords": [
     "git",
-    "libgit2"
+    "libgit2",
+    "dvcs",
+    "vcs"
   ],
   "main": "./lib/git.js",
   "devDependencies": {
