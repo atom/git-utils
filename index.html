@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>git-utils by atom</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>git-utils</h1>
+        <p>Native Git Node Module</p>
+
+        <p class="view"><a href="https://github.com/atom/node-git">View the Project on GitHub <small>atom/node-git</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/atom/node-git/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/atom/node-git/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/atom/node-git">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="git-node-module-" class="anchor" href="#git-node-module-"><span class="octicon octicon-link"></span></a>Git Node module <a href="https://travis-ci.org/atom/node-git"><img src="https://travis-ci.org/atom/node-git.png" alt="Build Status"></a>
+</h1>
+
+<p>Helpers for working with Git repositories built natively on top of
+<a href="http://libgit2.github.com">libgit2</a>.</p>
+
+<p>This module requires <a href="http://www.cmake.org/">CMake</a> for building libgit2 and it
+is a prerequisite for both installing this module and building it locally.</p>
+
+<h2>
+<a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
+
+<div class="highlight"><pre>npm install git-utils
+</pre></div>
+
+<h2>
+<a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h2>
+
+<ul>
+<li>Clone the repository with the <code>--recurse</code> option to get the libgit2
+submodule</li>
+<li>Install <a href="http://www.cmake.org/">CMake</a>
+</li>
+<li>Run <code>npm install</code>
+</li>
+<li>Run <code>grunt</code> to compile the native and CoffeeScript code</li>
+<li>Run <code>grunt test</code> to run the specs</li>
+</ul><h2>
+<a name="docs" class="anchor" href="#docs"><span class="octicon octicon-link"></span></a>Docs</h2>
+
+<h3>
+<a name="gitopenpath" class="anchor" href="#gitopenpath"><span class="octicon octicon-link"></span></a>git.open(path)</h3>
+
+<p>Open the repository at the given path.  This will return <code>null</code> if the
+repository at the given path does not exist or cannot be opened.</p>
+
+<div class="highlight"><pre><span class="nv">git = </span><span class="nx">require</span> <span class="s">'git-utils'</span>
+
+<span class="nv">repository = </span><span class="nx">git</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s">'/Users/me/repos/node'</span><span class="p">)</span>
+</pre></div>
+
+<h3>
+<a name="repositorycheckoutheadpath" class="anchor" href="#repositorycheckoutheadpath"><span class="octicon octicon-link"></span></a>Repository.checkoutHead(path)</h3>
+
+<p>Restore the contents of a path in the working directory and index to the
+version at HEAD. Similar to running <code>git reset HEAD -- &lt;path&gt;</code> and then a
+<code>git checkout HEAD -- &lt;path&gt;</code>.</p>
+
+<p><code>path</code> - The string repository-relative path to checkout.</p>
+
+<p>Returns <code>true</code> if the checkout was successful, <code>false</code> otherwise</p>
+
+<h3>
+<a name="repositorygetaheadbehindcount" class="anchor" href="#repositorygetaheadbehindcount"><span class="octicon octicon-link"></span></a>Repository.getAheadBehindCount()</h3>
+
+<p>Get the number of commits the HEAD branch is ahead/behind the remote branch it
+is tracking.  Similar to the commit numbers reported by <code>git status</code> when a
+remote tracking branch exists.</p>
+
+<p>Returns an object with <code>ahead</code> and <code>behind</code> keys pointing to integer values
+that will always be &gt;= 0.</p>
+
+<h3>
+<a name="repositorygetcommitcountfromcommit-tocommit" class="anchor" href="#repositorygetcommitcountfromcommit-tocommit"><span class="octicon octicon-link"></span></a>Repository.getCommitCount(fromCommit, toCommit)</h3>
+
+<p>Get the number of commits between <code>fromCommit</code> and <code>toCommit</code>.</p>
+
+<p><code>fromCommit</code> - The string commit SHA-1 to start the rev walk at.</p>
+
+<p><code>toCommit</code> - The string commit SHA-1 to end the rev walk at.</p>
+
+<p>Returns the number of commits between the two, always &gt;= 0.</p>
+
+<h3>
+<a name="repositorygetconfigvaluekey" class="anchor" href="#repositorygetconfigvaluekey"><span class="octicon octicon-link"></span></a>Repository.getConfigValue(key)</h3>
+
+<p>Get the config value of the given key.</p>
+
+<p><code>key</code> - The string key to retrieve the value for.</p>
+
+<p>Returns the configuration value, may be <code>null</code>.</p>
+
+<h3>
+<a name="repositorygetdiffstatspath" class="anchor" href="#repositorygetdiffstatspath"><span class="octicon octicon-link"></span></a>Repository.getDiffStats(path)</h3>
+
+<p>Get the number of lines added and removed comparing the working directory
+contents of the given path to the HEAD version of the given path.</p>
+
+<p><code>path</code> - The string repository-relative path to diff.</p>
+
+<p>Returns an object with <code>added</code> and <code>deleted</code> keys pointing to integer values
+that always be &gt;= 0.</p>
+
+<h3>
+<a name="repositorygetheadblobpath" class="anchor" href="#repositorygetheadblobpath"><span class="octicon octicon-link"></span></a>Repository.getHeadBlob(path)</h3>
+
+<p>Get the blob contents of the given path at HEAD. Similar to
+<code>git show HEAD:&lt;path&gt;</code>.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns the string contents of the HEAD version of the path.</p>
+
+<h3>
+<a name="repositorygethead" class="anchor" href="#repositorygethead"><span class="octicon octicon-link"></span></a>Repository.getHead()</h3>
+
+<p>Get the reference or SHA-1 that HEAD points to such as <code>refs/heads/master</code>
+or a full SHA-1 if the repository is in a detached HEAD state.</p>
+
+<p>Returns the string reference name or SHA-1.</p>
+
+<h3>
+<a name="repositorygetlinediffspath-text" class="anchor" href="#repositorygetlinediffspath-text"><span class="octicon octicon-link"></span></a>Repository.getLineDiffs(path, text)</h3>
+
+<p>Get the line diffs comparing the HEAD version of the given path and the given
+text.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p><code>text</code> - The string text to diff the HEAD contents of the path against.</p>
+
+<p>Returns an array of objects that have <code>oldStart</code>, <code>oldLines</code>, <code>newStart</code>, and
+<code>newLines</code> keys pointing to integer values, may be <code>null</code> if the diff fails.</p>
+
+<h3>
+<a name="repositorygetmergebasecommit1-commit2" class="anchor" href="#repositorygetmergebasecommit1-commit2"><span class="octicon octicon-link"></span></a>Repository.getMergeBase(commit1, commit2)</h3>
+
+<p>Get the merge base of two commits.</p>
+
+<p><code>commit1</code> - The string SHA-1 of the first commit.</p>
+
+<p><code>commit2</code> - The string SHA-1 of the second commit.</p>
+
+<p>Returns the string SHA-1 of the merge base of <code>commit1</code> and <code>commit2</code> or <code>null</code>
+if there isn't one.</p>
+
+<h3>
+<a name="repositorygetpath" class="anchor" href="#repositorygetpath"><span class="octicon octicon-link"></span></a>Repository.getPath()</h3>
+
+<p>Get the path of the repository.</p>
+
+<p>Returns the string absolute path of the opened repository.</p>
+
+<h3>
+<a name="repositorygetreferencetargetref" class="anchor" href="#repositorygetreferencetargetref"><span class="octicon octicon-link"></span></a>Repository.getReferenceTarget(ref)</h3>
+
+<p>Get the target of the given reference.</p>
+
+<p><code>ref</code> - The string reference.</p>
+
+<p>Returns the string target of the given reference.</p>
+
+<h3>
+<a name="repositorygetshorthead" class="anchor" href="#repositorygetshorthead"><span class="octicon octicon-link"></span></a>Repository.getShortHead()</h3>
+
+<p>Get a possibly shortened version of value returns by <code>getHead()</code>. This will
+remove leading segments of <code>refs/heads</code>, <code>refs/tags</code>, or <code>refs/remotes</code> and will
+also shorten the SHA-1 of a detached HEAD to 7 characters.</p>
+
+<p>Returns a string shortened reference name or SHA-1.</p>
+
+<h3>
+<a name="repositorygetstatuspath" class="anchor" href="#repositorygetstatuspath"><span class="octicon octicon-link"></span></a>Repository.getStatus([path])</h3>
+
+<p>Get the status of a single path or all paths in the repository.  This will not
+include ignored paths.</p>
+
+<p><code>path</code> - An optional repository-relative path to limit the status reporting to.</p>
+
+<p>Returns an integer status number if a path is specified and returns an object
+with path keys and integer status values if no path is specified.</p>
+
+<h3>
+<a name="repositorygetupstreambranchbranch" class="anchor" href="#repositorygetupstreambranchbranch"><span class="octicon octicon-link"></span></a>Repository.getUpstreamBranch([branch])</h3>
+
+<p>Get the upstream branch of the given branch.</p>
+
+<p><code>branch</code> - The branch to find the upstream branch of (default: <code>HEAD</code>)</p>
+
+<p>Returns the string upstream branch reference name.</p>
+
+<h3>
+<a name="repositorygetworkingdirectory" class="anchor" href="#repositorygetworkingdirectory"><span class="octicon octicon-link"></span></a>Repository.getWorkingDirectory()</h3>
+
+<p>Get the working directory of the repository.</p>
+
+<p>Returns the string absolute path to the repository's working directory.</p>
+
+<h3>
+<a name="repositoryisignoredpath" class="anchor" href="#repositoryisignoredpath"><span class="octicon octicon-link"></span></a>Repository.isIgnored(path)</h3>
+
+<p>Get the ignored status of a given path.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns <code>true</code> if the path is ignored, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositoryispathmodifiedpath" class="anchor" href="#repositoryispathmodifiedpath"><span class="octicon octicon-link"></span></a>Repository.isPathModified(path)</h3>
+
+<p>Get the modified status of a given path.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns <code>true</code> if the path is modified, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositoryispathnewpath" class="anchor" href="#repositoryispathnewpath"><span class="octicon octicon-link"></span></a>Repository.isPathNew(path)</h3>
+
+<p>Get the new status of a given path.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns <code>true</code> if the path is new, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositoryisstatusmodifiedstatus" class="anchor" href="#repositoryisstatusmodifiedstatus"><span class="octicon octicon-link"></span></a>Repository.isStatusModified(status)</h3>
+
+<p>Check if a status value represents a modified path.</p>
+
+<p><code>status</code> - The integer status value.</p>
+
+<p>Returns <code>true</code> if the status is a modified one, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositoryisstatusnewstatus" class="anchor" href="#repositoryisstatusnewstatus"><span class="octicon octicon-link"></span></a>Repository.isStatusNew(status)</h3>
+
+<p>Check if a status value represents a new path.</p>
+
+<p><code>status</code> - The integer status value.</p>
+
+<p>Returns <code>true</code> if the status is a new one, <code>false</code> otherwise</p>
+
+<h3>
+<a name="repositoryissubmodulepath" class="anchor" href="#repositoryissubmodulepath"><span class="octicon octicon-link"></span></a>Repository.isSubmodule(path)</h3>
+
+<p>Check if the path is a submodule in the index.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns <code>true</code> if the path is a submodule, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositoryrefreshindex" class="anchor" href="#repositoryrefreshindex"><span class="octicon octicon-link"></span></a>Repository.refreshIndex()</h3>
+
+<p>Reread the index to update any values that have changed since the last time the
+index was read.</p>
+
+<h3>
+<a name="repositoryrelativizepath" class="anchor" href="#repositoryrelativizepath"><span class="octicon octicon-link"></span></a>Repository.relativize(path)</h3>
+
+<p>Relativize the given path to the repository's working directory.</p>
+
+<p><code>path</code> - The string path to relativize.</p>
+
+<p>Returns a repository-relative path if the given path is prefixed with the
+repository's working directory path.</p>
+
+<h3>
+<a name="repositoryrelease" class="anchor" href="#repositoryrelease"><span class="octicon octicon-link"></span></a>Repository.release()</h3>
+
+<p>Release the repository and close all file handles it has open.  No other methods
+can be called on the <code>Repository</code> object once it has been released.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/atom">atom</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
