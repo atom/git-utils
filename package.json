@@ -25,6 +25,7 @@
   "bugs": {
     "url": "https://github.com/atom/node-git/issues"
   },
+  "homepage": "http://atom.github.io/node-git",
   "keywords": [
     "git",
     "libgit2"
