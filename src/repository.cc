@@ -3,7 +3,10 @@
 #include <map>
 #include <vector>
 
-using namespace std;
+using ::std::map;
+using ::std::pair;
+using ::std::string;
+using ::std::vector;
 
 void Repository::Init(Handle<Object> target) {
   git_threads_init();
