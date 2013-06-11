@@ -218,7 +218,7 @@ Handle<Value> Repository::CheckoutHead(const Arguments& args) {
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
   char *copiedPath = reinterpret_cast<char*>(malloc(sizeof(char) * (path.length() + 1)));
-  strcpy(copiedPath, path.data());
+  snprintf(copiedPath, path.length() + 1, "%s", path.data());
 
   git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
   options.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
@@ -279,8 +279,8 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
 
   String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
   string path(*utf8Path);
-  char *copiedPath = greinterpret_cast<char*>(malloc(sizeof(char) * (path.length() + 1)));
-  strcpy(copiedPath, path.data());
+  char *copiedPath = reinterpret_cast<char*>(malloc(sizeof(char) * (path.length() + 1)));
+  snprintf(copiedPath, path.length() + 1, "%s", path.data());
   git_diff_options options = GIT_DIFF_OPTIONS_INIT;
   git_strarray paths;
   paths.count = 1;
