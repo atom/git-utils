@@ -511,7 +511,7 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   if (git_diff_blob_to_buffer(blob, text.data(), text.length(), &options, NULL,
                               DiffHunkCallback, NULL, &ranges) == GIT_OK) {
     Local<Object> v8Ranges = Array::New(ranges.size());
-    for(size_t i = 0; i < ranges.size(); i++) {
+    for (size_t i = 0; i < ranges.size(); i++) {
       Local<Object> v8Range = Object::New();
       v8Range->Set(String::NewSymbol("oldStart"), Number::New(ranges[i].old_start));
       v8Range->Set(String::NewSymbol("oldLines"), Number::New(ranges[i].old_lines));
