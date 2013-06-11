@@ -10,6 +10,30 @@ module.exports = (grunt) ->
         dest: 'lib'
         ext: '.js'
 
+    coffeelint:
+      options:
+        max_line_length:
+          level: 'ignore'
+
+      src: ['src/**/*.coffee']
+      test: ['spec/**/*.coffee']
+
+    cpplint:
+      files: ['src/**/*.cc']
+      reporter: 'spec'
+      verbosity: 1
+      filters:
+        build:
+          include: false
+        legal:
+          copyright: false
+        readability:
+          braces: false
+        runtime:
+          sizeof: false
+        whitespace:
+          line_length: false
+
     shell:
       rebuild:
         command: 'npm build .'
@@ -27,7 +51,10 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
-  grunt.registerTask('default', ['coffee', 'shell:rebuild'])
+  grunt.loadNpmTasks('grunt-coffeelint')
+  grunt.loadNpmTasks('node-cpplint')
+  grunt.registerTask('lint', ['coffeelint', 'cpplint'])
+  grunt.registerTask('default', ['lint', 'coffee', 'shell:rebuild'])
   grunt.registerTask('test', ['default', 'shell:test'])
   grunt.registerTask 'clean', ->
     path = require 'path'

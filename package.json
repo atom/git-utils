@@ -44,7 +44,9 @@
     "temp": "~0.5.0",
     "underscore": "~1.4.4",
     "jasmine-focused": "~0.1.0",
-    "rimraf": "~2.1.4"
+    "rimraf": "~2.1.4",
+    "node-cpplint": "~0.1.4",
+    "grunt-coffeelint": "0.0.6"
   },
   "dependencies": {
     "bindings": "~1.0.0"
