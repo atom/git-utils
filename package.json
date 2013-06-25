@@ -53,6 +53,6 @@
   },
   "scripts": {
     "prepublish": "grunt clean lint coffee",
-    "test": "jasmine-focused --captureExceptions --coffee spec/"
+    "test": "grunt test"
   }
 }
