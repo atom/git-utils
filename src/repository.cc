@@ -509,8 +509,9 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   vector<git_diff_range> ranges;
   git_diff_options options = GIT_DIFF_OPTIONS_INIT;
   options.context_lines = 0;
-  if (git_diff_blob_to_buffer(blob, text.data(), text.length(), &options, NULL,
-                              DiffHunkCallback, NULL, &ranges) == GIT_OK) {
+  if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
+                              &options, NULL, DiffHunkCallback, NULL,
+                              &ranges) == GIT_OK) {
     Local<Object> v8Ranges = Array::New(ranges.size());
     for (size_t i = 0; i < ranges.size(); i++) {
       Local<Object> v8Range = Object::New();
