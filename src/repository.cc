@@ -374,9 +374,9 @@ Handle<Value> Repository::GetHeadBlob(const Arguments& args) {
     return scope.Close(Null());
 
   const char *content = (const char *) git_blob_rawcontent(blob);
+  Handle<Value> value = scope.Close(String::NewSymbol(content));
   git_blob_free(blob);
-
-  return scope.Close(String::NewSymbol(content));
+  return value;
 }
 
 int Repository::StatusCallback(const char *path, unsigned int status, void *payload) {
