@@ -4,6 +4,18 @@
 #include <utility>
 #include <vector>
 
+using ::v8::Array;
+using ::v8::Boolean;
+using ::v8::Function;
+using ::v8::FunctionTemplate;
+using ::v8::HandleScope;
+using ::v8::Local;
+using ::v8::Number;
+using ::v8::Null;
+using ::v8::ObjectTemplate;
+using ::v8::Persistent;
+using ::v8::Undefined;
+
 using ::std::map;
 using ::std::pair;
 using ::std::string;

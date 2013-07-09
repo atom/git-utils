@@ -1,8 +1,15 @@
+#ifndef SRC_REPOSITORY_H_
+#define SRC_REPOSITORY_H_
+
 #include <node.h>
 #include <v8.h>
 #include "git2.h"
 
-using namespace v8;
+using ::v8::Arguments;
+using ::v8::Handle;
+using ::v8::Object;
+using ::v8::String;
+using ::v8::Value;
 
 class Repository : public node::ObjectWrap {
   public:
@@ -35,8 +42,10 @@ class Repository : public node::ObjectWrap {
                                 void *payload);
     static git_repository* GetRepository(const Arguments& args);
 
-    Repository(Handle<String> path);
+    explicit Repository(Handle<String> path);
     ~Repository();
 
     git_repository* repository;
 };
+
+#endif  // SRC_REPOSITORY_H_

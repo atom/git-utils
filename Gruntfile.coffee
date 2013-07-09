@@ -21,7 +21,10 @@ module.exports = (grunt) ->
       test: ['spec/**/*.coffee']
 
     cpplint:
-      files: ['src/**/*.cc']
+      files: [
+        'src/**/*.cc'
+        'src/**/*.h'
+      ]
       reporter: 'spec'
       verbosity: 1
       filters:
