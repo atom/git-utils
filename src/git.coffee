@@ -59,11 +59,14 @@ Repository::getUpstreamBranch = (branch) ->
 
   "refs/remotes/#{branchRemote}/#{branchMerge.substring(11)}"
 
-Repository::getAheadBehindCount = ->
+Repository::getAheadBehindCount = (branch='HEAD')->
+  if branch isnt 'HEAD' and branch.indexOf('refs/heads/') isnt 0
+    branch = "refs/heads/#{branch}"
+
   counts =
     ahead: 0
     behind: 0
-  headCommit = @getReferenceTarget('HEAD')
+  headCommit = @getReferenceTarget(branch)
   return counts unless headCommit?.length > 0
 
   upstream = @getUpstreamBranch()

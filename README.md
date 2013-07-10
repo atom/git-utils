@@ -43,11 +43,13 @@ version at HEAD. Similar to running `git reset HEAD -- <path>` and then a
 
 Returns `true` if the checkout was successful, `false` otherwise
 
-### Repository.getAheadBehindCount()
+### Repository.getAheadBehindCount(branch)
 
-Get the number of commits the HEAD branch is ahead/behind the remote branch it
+Get the number of commits the branch is ahead/behind the remote branch it
 is tracking.  Similar to the commit numbers reported by `git status` when a
 remote tracking branch exists.
+
+`branch` - The branch name to lookup ahead/behind counts for. (default: `HEAD`)
 
 Returns an object with `ahead` and `behind` keys pointing to integer values
 that will always be >= 0.

@@ -260,6 +260,18 @@ describe "git", ->
       counts = repo.getAheadBehindCount()
       expect(counts).toEqual {ahead: 3, behind: 2}
 
+      counts = repo.getAheadBehindCount('refs/heads/master')
+      expect(counts).toEqual {ahead: 3, behind: 2}
+
+      counts = repo.getAheadBehindCount('master')
+      expect(counts).toEqual {ahead: 3, behind: 2}
+
+      counts = repo.getAheadBehindCount('refs/heads/masterblaster')
+      expect(counts).toEqual {ahead: 0, behind: 0}
+
+      counts = repo.getAheadBehindCount('')
+      expect(counts).toEqual {ahead: 0, behind: 0}
+
   describe '.getLineDiffs(path, text)', ->
     it 'returns all hunks that differ', ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
