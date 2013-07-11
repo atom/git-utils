@@ -19,6 +19,8 @@ modifiedStatusFlags = statusWorkingDirModified | statusIndexModified |
 
 newStatusFlags = statusWorkingDirNew | statusIndexNew
 
+deletedStatusFlags = statusWorkingDirDelete | statusIndexDeleted
+
 Repository::getWorkingDirectory = ->
   @getPath()?.replace(/\/\.git\/?$/, '')
 
@@ -42,6 +44,12 @@ Repository::isStatusNew = (status=0) ->
 
 Repository::isPathNew = (path) ->
   @isStatusNew(@getStatus(path))
+
+Repository::isStatusDeleted = (status=0) ->
+  (status & deletedStatusFlags) > 0
+
+Repository::isPathDeleted = (path) ->
+  @isStatusDeleted(@getStatus(path))
 
 Repository::getUpstreamBranch = (branch) ->
   branch ?= @getHead()
