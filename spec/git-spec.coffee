@@ -86,6 +86,22 @@ describe "git", ->
       expect(repo.getConfigValue("core.ignorecase")).toBe 'true'
       expect(repo.getConfigValue("not.section")).toBe null
 
+  describe ".setConfigValue(key, value)", ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    it "sets the key to the value in the config", ->
+      expect(repo.setConfigValue()).toBe false
+      expect(repo.setConfigValue('1')).toBe false
+      expect(repo.setConfigValue('a.b', 'test')).toBe true
+      expect(repo.getConfigValue('a.b')).toBe 'test'
+      expect(repo.setConfigValue('a.b.c', 'foo')).toBe true
+      expect(repo.getConfigValue('a.b.c')).toBe 'foo'
+
   describe '.isPathModified(path)', ->
     repo = null
 

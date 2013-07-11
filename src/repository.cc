@@ -51,6 +51,9 @@ void Repository::Init(Handle<Object> target) {
   prototype->Set(String::NewSymbol("getConfigValue"),
                  FunctionTemplate::New(Repository::GetConfigValue)->GetFunction());
 
+  prototype->Set(String::NewSymbol("setConfigValue"),
+                 FunctionTemplate::New(Repository::SetConfigValue)->GetFunction());
+
   prototype->Set(String::NewSymbol("getStatus"),
                  FunctionTemplate::New(Repository::GetStatus)->GetFunction());
 
@@ -195,6 +198,28 @@ Handle<Value> Repository::GetConfigValue(const Arguments& args) {
     return scope.Close(Null());
   }
 }
+
+Handle<Value> Repository::SetConfigValue(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() != 2)
+    return scope.Close(Boolean::New(false));
+
+  git_config* config;
+  git_repository* repository = GetRepository(args);
+  if (git_repository_config(&config, repository) != GIT_OK)
+    return scope.Close(Boolean::New(false));
+
+  String::Utf8Value utf8ConfigKey(Local<String>::Cast(args[0]));
+  string configKey(*utf8ConfigKey);
+
+  String::Utf8Value utf8ConfigValue(Local<String>::Cast(args[1]));
+  string configValue(*utf8ConfigValue);
+
+  int errorCode = git_config_set_string(config, configKey.data(), configValue.data());
+  git_config_free(config);
+  return scope.Close(Boolean::New(errorCode == GIT_OK));
+}
+
 
 Handle<Value> Repository::GetStatus(const Arguments& args) {
   HandleScope scope;

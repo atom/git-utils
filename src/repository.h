@@ -24,6 +24,7 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> IsIgnored(const Arguments& args);
     static Handle<Value> IsSubmodule(const Arguments& args);
     static Handle<Value> GetConfigValue(const Arguments& args);
+    static Handle<Value> SetConfigValue(const Arguments& args);
     static Handle<Value> GetStatus(const Arguments& args);
     static Handle<Value> CheckoutHead(const Arguments& args);
     static Handle<Value> GetReferenceTarget(const Arguments& args);
