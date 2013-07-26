@@ -41,7 +41,7 @@ version at HEAD. Similar to running `git reset HEAD -- <path>` and then a
 
 `path` - The string repository-relative path to checkout.
 
-Returns `true` if the checkout was successful, `false` otherwise
+Returns `true` if the checkout was successful, `false` otherwise.
 
 ### Repository.getAheadBehindCount(branch)
 
@@ -71,6 +71,16 @@ Get the config value of the given key.
 `key` - The string key to retrieve the value for.
 
 Returns the configuration value, may be `null`.
+
+### Repository.setConfigValue(key, value)
+
+Get the config value of the given key.
+
+`key` - The string key to set in the config.
+
+`value` - The string value to set in the config for the given key.
+
+Returns `true` if setting the config value was successful, `false` otherwise.
 
 ### Repository.getDiffStats(path)
 
@@ -191,6 +201,14 @@ Get the new status of a given path.
 
 Returns `true` if the path is new, `false` otherwise.
 
+### Repository.isPathDeleted(path)
+
+Get the deleted status of a given path.
+
+`path` - The string repository-relative path.
+
+Returns `true` if the path is deleted, `false` otherwise.
+
 ### Repository.isStatusModified(status)
 
 Check if a status value represents a modified path.
@@ -205,7 +223,15 @@ Check if a status value represents a new path.
 
 `status` - The integer status value.
 
-Returns `true` if the status is a new one, `false` otherwise
+Returns `true` if the status is a new one, `false` otherwise.
+
+### Repository.isStatusDeleted(status)
+
+Check if a status value represents a deleted path.
+
+`status` - The integer status value.
+
+Returns `true` if the status is a deleted one, `false` otherwise.
 
 ### Repository.isSubmodule(path)
 
