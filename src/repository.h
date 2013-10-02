@@ -42,6 +42,7 @@ class Repository : public node::ObjectWrap {
                                 const git_diff_range *range,
                                 const char *header, size_t header_len,
                                 void *payload);
+    static int RefCallback(git_reference *ref, void *payload);
     static git_repository* GetRepository(const Arguments& args);
 
     explicit Repository(Handle<String> path);

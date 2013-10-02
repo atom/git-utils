@@ -569,7 +569,7 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   }
 }
 
-int each_ref(git_reference *ref, void *payload) {
+int Repository::RefCallback(git_reference *ref, void *payload) {
   // intentionally skipping GIT_REF_SYMBOLIC
   if (git_reference_type(ref) == GIT_REF_OID) {
     vector<string> *references = (vector<string> *) payload;
@@ -584,16 +584,14 @@ Handle<Value> Repository::GetReferences(const Arguments& args) {
   git_repository* repo = GetRepository(args);
   vector<string> references;
 
-  if (git_reference_foreach(repo, each_ref, &references) == GIT_OK) {
+  if (git_reference_foreach(repo, RefCallback, &references) == GIT_OK) {
     Local<Object> v8References = Array::New(references.size());
-    for (size_t i = 0; i < references.size(); i++) {
+    for (size_t i = 0; i < references.size(); i++)
       v8References->Set(i, String::NewSymbol(references[i].c_str()));
-    }
 
     return v8References;
   } else {
-    HandleScope scope;
-    return scope.Close(Undefined());
+    return scope.Close(Null());
   }
 }
 
