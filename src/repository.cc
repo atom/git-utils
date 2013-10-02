@@ -81,6 +81,9 @@ void Repository::Init(Handle<Object> target) {
   prototype->Set(String::NewSymbol("getLineDiffs"),
                  FunctionTemplate::New(Repository::GetLineDiffs)->GetFunction());
 
+  prototype->Set(String::NewSymbol("getReferences"),
+                 FunctionTemplate::New(Repository::GetReferences)->GetFunction());
+
   target->Set(String::NewSymbol("Repository"),
               Persistent<Function>::New(newTemplate->GetFunction()));
 }
@@ -563,6 +566,34 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   } else {
     git_blob_free(blob);
     return scope.Close(Null());
+  }
+}
+
+int each_ref(git_reference *ref, void *payload) {
+  // intentionally skipping GIT_REF_SYMBOLIC
+  if (git_reference_type(ref) == GIT_REF_OID) {
+    vector<string> *references = (vector<string> *) payload;
+    references->push_back(git_reference_name(ref));
+  }
+
+  return GIT_OK;
+}
+
+Handle<Value> Repository::GetReferences(const Arguments& args) {
+  HandleScope scope;
+  git_repository* repo = GetRepository(args);
+  vector<string> references;
+
+  if (git_reference_foreach(repo, each_ref, &references) == GIT_OK) {
+    Local<Object> v8References = Array::New(references.size());
+    for (size_t i = 0; i < references.size(); i++) {
+      v8References->Set(i, String::NewSymbol(references[i].c_str()));
+    }
+
+    return v8References;
+  } else {
+    HandleScope scope;
+    return scope.Close(Undefined());
   }
 }
 
