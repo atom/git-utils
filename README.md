@@ -137,6 +137,13 @@ Get the path of the repository.
 
 Returns the string absolute path of the opened repository.
 
+### Repository.getReferences()
+
+Gets all the local and remote references.
+
+Returns an object with three keys: `heads`, `remotes`, and `tags`.
+Each key can be an array of strings containing the reference names.
+
 ### Repository.getReferenceTarget(ref)
 
 Get the target of the given reference.
