@@ -3,6 +3,8 @@
 
 #include <node.h>
 #include <v8.h>
+#include <string>
+#include <vector>
 #include "git2.h"
 
 using ::v8::Arguments;
@@ -10,6 +12,9 @@ using ::v8::Handle;
 using ::v8::Object;
 using ::v8::String;
 using ::v8::Value;
+
+using ::std::string;
+using ::std::vector;
 
 class Repository : public node::ObjectWrap {
   public:
@@ -42,7 +47,8 @@ class Repository : public node::ObjectWrap {
                                 const git_diff_range *range,
                                 const char *header, size_t header_len,
                                 void *payload);
-    static int RefCallback(git_reference *ref, void *payload);
+    static Handle<Value> ConvertStringVectorToV8Array(vector<string> vector);
+
     static git_repository* GetRepository(const Arguments& args);
 
     explicit Repository(Handle<String> path);

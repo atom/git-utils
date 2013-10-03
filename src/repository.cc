@@ -569,30 +569,40 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   }
 }
 
-int Repository::RefCallback(git_reference *ref, void *payload) {
-  // intentionally skipping GIT_REF_SYMBOLIC
-  if (git_reference_type(ref) == GIT_REF_OID) {
-    vector<string> *references = (vector<string> *) payload;
-    references->push_back(git_reference_name(ref));
+Handle<Value> Repository::ConvertStringVectorToV8Array(vector<string> vector) {
+  size_t i = 0, size = vector.size();
+  Local<Object> array = Array::New(size);
+  for (i = 0; i < size; i++) {
+    array->Set(i, String::NewSymbol(vector[i].c_str()));
   }
-
-  return GIT_OK;
+  return array;
 }
 
 Handle<Value> Repository::GetReferences(const Arguments& args) {
   HandleScope scope;
-  git_repository* repo = GetRepository(args);
-  vector<string> references;
 
-  if (git_reference_foreach(repo, RefCallback, &references) == GIT_OK) {
-    Local<Object> v8References = Array::New(references.size());
-    for (size_t i = 0; i < references.size(); i++)
-      v8References->Set(i, String::NewSymbol(references[i].c_str()));
+  Local<Object> references = Object::New();
+  vector<string> heads, remotes, tags;
 
-    return v8References;
-  } else {
-    return scope.Close(Null());
+  git_strarray strarray;
+  git_reference_list(&strarray, GetRepository(args));
+
+  for (unsigned int i = 0; i < strarray.count; i++) {
+    if (strncmp(strarray.strings[i], "refs/heads", 10) == 0) {
+      heads.push_back(strarray.strings[i]);
+    } else if (strncmp(strarray.strings[i], "refs/remotes", 12) == 0) {
+      remotes.push_back(strarray.strings[i]);
+    } else if (strncmp(strarray.strings[i], "refs/tags", 9) == 0) {
+      tags.push_back(strarray.strings[i]);
+    }
   }
+  git_strarray_free(&strarray);
+
+  references->Set(String::NewSymbol("heads"), ConvertStringVectorToV8Array(heads));
+  references->Set(String::NewSymbol("remotes"), ConvertStringVectorToV8Array(remotes));
+  references->Set(String::NewSymbol("tags"), ConvertStringVectorToV8Array(tags));
+
+  return references;
 }
 
 Repository::Repository(Handle<String> path) {
