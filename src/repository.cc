@@ -592,11 +592,11 @@ Handle<Value> Repository::GetReferences(const Arguments& args) {
   git_reference_list(&strarray, GetRepository(args));
 
   for (unsigned int i = 0; i < strarray.count; i++) {
-    if (strncmp(strarray.strings[i], "refs/heads", 10) == 0) {
+    if (strncmp(strarray.strings[i], "refs/heads/", 11) == 0) {
       heads.push_back(strarray.strings[i]);
-    } else if (strncmp(strarray.strings[i], "refs/remotes", 12) == 0) {
+    } else if (strncmp(strarray.strings[i], "refs/remotes/", 13) == 0) {
       remotes.push_back(strarray.strings[i]);
-    } else if (strncmp(strarray.strings[i], "refs/tags", 9) == 0) {
+    } else if (strncmp(strarray.strings[i], "refs/tags/", 10) == 0) {
       tags.push_back(strarray.strings[i]);
     }
   }
@@ -626,6 +626,10 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
   string strRefName(*utf8RefName);
   const char* refName = strRefName.data();
+
+  // first param must start with 'refs/heads/'
+  if (strncmp(refName, "refs/heads/", 11) != 0)
+    return scope.Close(Boolean::New(false));
 
   int refLookupStatus = git_reference_lookup(&ref, repo, refName);
   git_reference_free(ref);

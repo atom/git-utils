@@ -189,6 +189,10 @@ describe "git", ->
       expect(repo.getHead()).toBe 'refs/heads/master'
 
     describe 'when a local reference exists', ->
+      it 'does nothing if passed a misformatted reference', ->
+        expect(repo.checkoutReference('getHeadOriginal')).toBe false
+        expect(repo.getHead()).toBe 'refs/heads/master'
+
       it 'checks the branch out', ->
         expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
         expect(repo.getHead()).toBe 'refs/heads/getHeadOriginal'
@@ -200,6 +204,14 @@ describe "git", ->
       it 'creates the new branch (if asked to)', ->
         expect(repo.checkoutReference('refs/heads/whoop-whoop', true)).toBe true
         expect(repo.getHead()).toBe 'refs/heads/whoop-whoop'
+
+      describe 'when a misformatted reference is passed', ->
+        it 'does nothing if branch creation was not specified', ->
+          expect(repo.checkoutReference('bananas')).toBe false
+
+        it 'does not create the new branch (if asked to)', ->
+          expect(repo.checkoutReference('bananas', true)).toBe false
+          expect(repo.getHead()).toBe 'refs/heads/master'
 
   describe '.checkoutHead(path)', ->
     repo = null
