@@ -651,7 +651,9 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
     size_t length = strRefName.copy(shortRefName, kShortNameLength + 1, 11);
     shortRefName[length] = '\0';
 
-    if (git_branch_create(&branch, repo, shortRefName, commit, 0) == GIT_OK) {
+    int branchCreateStatus = git_branch_create(&branch, repo, shortRefName, commit, 0);
+    git_reference_free(branch);
+    if (branchCreateStatus == GIT_OK) {
       if (git_repository_set_head(repo, refName) == GIT_OK)
         return scope.Close(Boolean::New(true));
     }
