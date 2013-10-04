@@ -1,4 +1,5 @@
 #include "repository.h"
+#include <cstring>
 #include <string>
 #include <map>
 #include <utility>
