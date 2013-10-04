@@ -179,6 +179,28 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/upstream.git'))
         expect(repo.getUpstreamBranch()).toBe 'refs/remotes/origin/master'
 
+  describe '.checkoutReference(reference, [bool])', ->
+    repo = null
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/references.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+      expect(repo.getHead()).toBe 'refs/heads/master'
+
+    describe 'when a local reference exists', ->
+      it 'checks the branch out', ->
+        expect(repo.checkoutReference("refs/heads/getHeadOriginal")).toBe true
+        expect(repo.getHead()).toBe 'refs/heads/getHeadOriginal'
+
+    describe 'when a local reference doesn\'t exist', ->
+      it 'does nothing if branch creation was not specified', ->
+        expect(repo.checkoutReference("refs/heads/whoop-whoop")).toBe false
+
+      it 'creates the new branch (if asked to)', ->
+        expect(repo.checkoutReference("refs/heads/whoop-whoop", true)).toBe true
+        expect(repo.getHead()).toBe 'refs/heads/whoop-whoop'
+
   describe '.checkoutHead(path)', ->
     repo = null
 
