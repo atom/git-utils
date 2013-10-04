@@ -576,30 +576,27 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
 Handle<Value> Repository::ConvertStringVectorToV8Array(vector<string> vector) {
   size_t i = 0, size = vector.size();
   Local<Object> array = Array::New(size);
-  for (i = 0; i < size; i++) {
-    array->Set(i, String::NewSymbol(vector[i].c_str()));
-  }
+  for (i = 0; i < size; i++)
+    array->Set(i, String::NewSymbol(vector[i].data()));
+
   return array;
 }
 
 Handle<Value> Repository::GetReferences(const Arguments& args) {
-  HandleScope scope;
-
   Local<Object> references = Object::New();
   vector<string> heads, remotes, tags;
 
   git_strarray strarray;
   git_reference_list(&strarray, GetRepository(args));
 
-  for (unsigned int i = 0; i < strarray.count; i++) {
-    if (strncmp(strarray.strings[i], "refs/heads/", 11) == 0) {
+  for (unsigned int i = 0; i < strarray.count; i++)
+    if (strncmp(strarray.strings[i], "refs/heads/", 11) == 0)
       heads.push_back(strarray.strings[i]);
-    } else if (strncmp(strarray.strings[i], "refs/remotes/", 13) == 0) {
+    else if (strncmp(strarray.strings[i], "refs/remotes/", 13) == 0)
       remotes.push_back(strarray.strings[i]);
-    } else if (strncmp(strarray.strings[i], "refs/tags/", 10) == 0) {
+    else if (strncmp(strarray.strings[i], "refs/tags/", 10) == 0)
       tags.push_back(strarray.strings[i]);
-    }
-  }
+
   git_strarray_free(&strarray);
 
   references->Set(String::NewSymbol("heads"), ConvertStringVectorToV8Array(heads));
@@ -620,9 +617,6 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   else
     shouldCreateNewRef = false;
 
-  git_reference *ref;
-  git_repository *repo = GetRepository(args);
-
   String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
   string strRefName(*utf8RefName);
   const char* refName = strRefName.data();
@@ -631,6 +625,8 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   if (strncmp(refName, "refs/heads/", 11) != 0)
     return scope.Close(Boolean::New(false));
 
+  git_reference *ref;
+  git_repository *repo = GetRepository(args);
   int refLookupStatus = git_reference_lookup(&ref, repo, refName);
   git_reference_free(ref);
 
@@ -650,13 +646,14 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
       return scope.Close(Boolean::New(false));
 
     // N.B.: git_branch_create needs a name like 'xxx', not 'refs/heads/xxx'
-    int kShortNameLength = strRefName.length() - 11;
+    const int kShortNameLength = strRefName.length() - 11;
     char shortRefName[kShortNameLength + 1];
     size_t length = strRefName.copy(shortRefName, kShortNameLength + 1, 11);
     shortRefName[length] = '\0';
 
     int branchCreateStatus = git_branch_create(&branch, repo, shortRefName, commit, 0);
     git_reference_free(branch);
+    git_commit_free(commit);
     if (branchCreateStatus == GIT_OK) {
       if (git_repository_set_head(repo, refName) == GIT_OK)
         return scope.Close(Boolean::New(true));
