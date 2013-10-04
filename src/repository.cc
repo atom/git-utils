@@ -84,6 +84,9 @@ void Repository::Init(Handle<Object> target) {
   prototype->Set(String::NewSymbol("getReferences"),
                  FunctionTemplate::New(Repository::GetReferences)->GetFunction());
 
+  prototype->Set(String::NewSymbol("checkoutReference"),
+                 FunctionTemplate::New(Repository::CheckoutReference)->GetFunction());
+
   target->Set(String::NewSymbol("Repository"),
               Persistent<Function>::New(newTemplate->GetFunction()));
 }
@@ -603,6 +606,54 @@ Handle<Value> Repository::GetReferences(const Arguments& args) {
   references->Set(String::NewSymbol("tags"), ConvertStringVectorToV8Array(tags));
 
   return references;
+}
+
+Handle<Value> Repository::CheckoutReference(const Arguments& args) {
+  HandleScope scope;
+  if (args.Length() < 1)
+    return scope.Close(Boolean::New(false));
+
+  bool shouldCreateNewRef;
+  if (args.Length() > 1 && args[1]->ToBoolean()->Value())
+    shouldCreateNewRef = true;
+  else
+    shouldCreateNewRef = false;
+
+  git_reference *ref;
+  git_repository *repo = GetRepository(args);
+
+  String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
+  string strRefName(*utf8RefName);
+  const char* refName = strRefName.data();
+
+  if (git_reference_lookup(&ref, repo, refName) == GIT_OK) {
+    if (git_repository_set_head(repo, refName) == GIT_OK)
+      return scope.Close(Boolean::New(true));
+  } else if (shouldCreateNewRef) {
+    git_reference *branch, *head;
+    if (git_repository_head(&head, repo) != GIT_OK)
+      return scope.Close(Boolean::New(false));
+
+    const git_oid* sha = git_reference_target(head);
+    git_commit *commit;
+    int commitStatus = git_commit_lookup(&commit, repo, sha);
+    git_reference_free(head);
+    if (commitStatus != GIT_OK)
+      return scope.Close(Boolean::New(false));
+
+    // N.B.: git_branch_create needs a name like 'xxx', not 'refs/heads/xxx'
+    int kShortNameLength = strRefName.length() - 11;
+    char shortRefName[kShortNameLength + 1];
+    size_t length = strRefName.copy(shortRefName, kShortNameLength + 1, 11);
+    shortRefName[length] = '\0';
+
+    if (git_branch_create(&branch, repo, shortRefName, commit, 0) == GIT_OK) {
+      if (git_repository_set_head(repo, refName) == GIT_OK)
+        return scope.Close(Boolean::New(true));
+    }
+  }
+
+  return scope.Close(Boolean::New(false));
 }
 
 Repository::Repository(Handle<String> path) {

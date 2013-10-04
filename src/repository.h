@@ -40,6 +40,7 @@ class Repository : public node::ObjectWrap {
     static Handle<Value> Release(const Arguments& args);
     static Handle<Value> GetLineDiffs(const Arguments& args);
     static Handle<Value> GetReferences(const Arguments& args);
+    static Handle<Value> CheckoutReference(const Arguments& args);
 
     static int StatusCallback(const char *path, unsigned int status,
                               void *payload);
