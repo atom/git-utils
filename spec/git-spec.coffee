@@ -190,15 +190,15 @@ describe "git", ->
 
     describe 'when a local reference exists', ->
       it 'checks the branch out', ->
-        expect(repo.checkoutReference("refs/heads/getHeadOriginal")).toBe true
+        expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
         expect(repo.getHead()).toBe 'refs/heads/getHeadOriginal'
 
     describe 'when a local reference doesn\'t exist', ->
       it 'does nothing if branch creation was not specified', ->
-        expect(repo.checkoutReference("refs/heads/whoop-whoop")).toBe false
+        expect(repo.checkoutReference('refs/heads/whoop-whoop')).toBe false
 
       it 'creates the new branch (if asked to)', ->
-        expect(repo.checkoutReference("refs/heads/whoop-whoop", true)).toBe true
+        expect(repo.checkoutReference('refs/heads/whoop-whoop', true)).toBe true
         expect(repo.getHead()).toBe 'refs/heads/whoop-whoop'
 
   describe '.checkoutHead(path)', ->
