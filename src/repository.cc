@@ -627,7 +627,10 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   string strRefName(*utf8RefName);
   const char* refName = strRefName.data();
 
-  if (git_reference_lookup(&ref, repo, refName) == GIT_OK) {
+  int refLookupStatus = git_reference_lookup(&ref, repo, refName);
+  git_reference_free(ref);
+
+  if (refLookupStatus == GIT_OK) {
     if (git_repository_set_head(repo, refName) == GIT_OK)
       return scope.Close(Boolean::New(true));
   } else if (shouldCreateNewRef) {
