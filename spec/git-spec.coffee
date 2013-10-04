@@ -179,7 +179,7 @@ describe "git", ->
         repo = git.open(path.join(__dirname, 'fixtures/upstream.git'))
         expect(repo.getUpstreamBranch()).toBe 'refs/remotes/origin/master'
 
-  describe '.checkoutReference(reference, [bool])', ->
+  describe '.checkoutReference(reference, [create])', ->
     repo = null
 
     beforeEach ->
