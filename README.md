@@ -43,6 +43,15 @@ version at HEAD. Similar to running `git reset HEAD -- <path>` and then a
 
 Returns `true` if the checkout was successful, `false` otherwise.
 
+### Repository.checkoutReference(reference, [create])
+
+Checks out a branch in your repository.
+
+`reference` - The string reference to checkout
+`create` - A Boolean value which, if `true` creates the new `reference` if it doesn't exist.
+
+Returns `true` if the checkout was successful, `false` otherwise.
+
 ### Repository.getAheadBehindCount(branch)
 
 Get the number of commits the branch is ahead/behind the remote branch it
@@ -136,6 +145,13 @@ if there isn't one.
 Get the path of the repository.
 
 Returns the string absolute path of the opened repository.
+
+### Repository.getReferences()
+
+Gets all the local and remote references.
+
+Returns an object with three keys: `heads`, `remotes`, and `tags`.
+Each key can be an array of strings containing the reference names.
 
 ### Repository.getReferenceTarget(ref)
 
