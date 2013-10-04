@@ -47,7 +47,7 @@ Returns `true` if the checkout was successful, `false` otherwise.
 
 Checks out a branch in your repository.
 
-`reference` - The string reference to checkout. Must match `refs/heads/<branch_name>`.
+`reference` - The string reference to checkout
 `create` - A Boolean value which, if `true` creates the new `reference` if it doesn't exist.
 
 Returns `true` if the checkout was successful, `false` otherwise.

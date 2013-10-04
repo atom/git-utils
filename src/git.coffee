@@ -89,6 +89,13 @@ Repository::getAheadBehindCount = (branch='HEAD')->
   counts.behind = @getCommitCount(upstreamCommit, mergeBase)
   counts
 
+
+Repository::checkoutReference = (branch, create)->
+  if branch.indexOf('refs/heads/') isnt 0
+    branch = "refs/heads/#{branch}"
+
+  @checkoutRef(branch, create)
+
 Repository::relativize = (path) ->
   return path unless path?
   return path unless path[0] is '/'

@@ -85,7 +85,7 @@ void Repository::Init(Handle<Object> target) {
   prototype->Set(String::NewSymbol("getReferences"),
                  FunctionTemplate::New(Repository::GetReferences)->GetFunction());
 
-  prototype->Set(String::NewSymbol("checkoutReference"),
+  prototype->Set(String::NewSymbol("checkoutRef"),
                  FunctionTemplate::New(Repository::CheckoutReference)->GetFunction());
 
   target->Set(String::NewSymbol("Repository"),
@@ -621,10 +621,6 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   string strRefName(*utf8RefName);
   const char* refName = strRefName.data();
 
-  // first param must start with 'refs/heads/'
-  if (strncmp(refName, "refs/heads/", 11) != 0)
-    return scope.Close(Boolean::New(false));
-
   git_reference *ref;
   git_repository *repo = GetRepository(args);
   int refLookupStatus = git_reference_lookup(&ref, repo, refName);
@@ -652,12 +648,13 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
     shortRefName[length] = '\0';
 
     int branchCreateStatus = git_branch_create(&branch, repo, shortRefName, commit, 0);
-    git_reference_free(branch);
     git_commit_free(commit);
-    if (branchCreateStatus == GIT_OK) {
-      if (git_repository_set_head(repo, refName) == GIT_OK)
-        return scope.Close(Boolean::New(true));
-    }
+    if (branchCreateStatus != GIT_OK)
+      return scope.Close(Boolean::New(false));
+
+    git_reference_free(branch);
+    if (git_repository_set_head(repo, refName) == GIT_OK)
+      return scope.Close(Boolean::New(true));
   }
 
   return scope.Close(Boolean::New(false));
