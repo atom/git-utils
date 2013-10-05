@@ -5,7 +5,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/atom/node-git/raw/master/LICENSE.md"
+      "url": "http://github.com/atom/git-utils/raw/master/LICENSE.md"
     }
   ],
   "author": {
@@ -20,12 +20,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/node-git.git"
+    "url": "https://github.com/atom/git-utils.git"
   },
   "bugs": {
-    "url": "https://github.com/atom/node-git/issues"
+    "url": "https://github.com/atom/git-utils/issues"
   },
-  "homepage": "http://atom.github.io/node-git",
+  "homepage": "http://atom.github.io/git-utils",
   "keywords": [
     "git",
     "libgit2",
