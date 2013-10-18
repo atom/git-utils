@@ -225,16 +225,31 @@
           'defines': [
             'GIT_WINHTTP',
           ],
-          'dependencies': [
-            'regex',
-          ],
           'msvs_settings': {
             'VCLinkerTool': {
               'AdditionalDependencies': [
                 'ws2_32.lib',
               ],
-            }
+            },
+            # Workaround of a strange bug:
+            # TargetMachine + static_library + x64 = nothing.
+            'conditions': [
+              ['target_arch=="x64"', {
+                'VCLibrarianTool': {
+                  'AdditionalOptions': [
+                    '/MACHINE:X64',
+                  ],
+                },
+              }],
+            ],
           },
+          'msvs_disabled_warnings': [
+            4244,  # conversion from 'ssize_t' to 'int32_t', possible loss of data
+            4267,  # conversion from 'size_t' to 'int', possible loss of data
+            4090,  # different 'volatile' qualifiers
+            4047,  # 'volatile void *' differs in levels of indirection from 'int'
+            4013,  # 'InterlockedDecrement' undefined; assuming extern returning int
+          ],
           'sources': [
             'deps/libgit2/src/win32/dir.c',
             'deps/libgit2/src/win32/dir.h',
@@ -255,6 +270,7 @@
             'deps/libgit2/src/win32/utf-conv.c',
             'deps/libgit2/src/win32/utf-conv.h',
             'deps/libgit2/src/win32/version.h',
+            'deps/libgit2/deps/regex/regex.c',
           ],
         }, {
           'libraries': [
@@ -281,6 +297,7 @@
       'include_dirs': [
         'deps/libgit2/include',
         'deps/libgit2/src',
+        'deps/libgit2/deps/regex',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -318,6 +335,7 @@
       ],
       'include_dirs': [
         'deps/libgit2/include',
+        'deps/libgit2/deps/regex',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -338,29 +356,5 @@
         ],
       },
     },
-  ],
-  'conditions': [
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'regex',
-          'type': 'static_library',
-          'sources': [
-            'deps/libgit2/deps/regex/config.h',
-            'deps/libgit2/deps/regex/regcomp.c',
-            'deps/libgit2/deps/regex/regex.c',
-            'deps/libgit2/deps/regex/regex.h',
-            'deps/libgit2/deps/regex/regex_internal.c',
-            'deps/libgit2/deps/regex/regex_internal.h',
-            'deps/libgit2/deps/regex/regexec.c',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              'deps/libgit2/deps/regex',
-            ],
-          },
-        },
-      ],
-    }],
   ],
 }
