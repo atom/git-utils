@@ -98,7 +98,11 @@ Repository::checkoutReference = (branch, create)->
 
 Repository::relativize = (path) ->
   return path unless path?
-  return path unless path[0] is '/'
+
+  if process.platform is 'win32'
+    path = path.replace(/\\/g, '/')
+  else
+    return path unless path[0] is '/'
 
   workingDirectory = @getWorkingDirectory()
   if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
