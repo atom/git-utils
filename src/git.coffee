@@ -118,14 +118,21 @@ realpath = (unrealPath) ->
   catch e
     unrealPath
 
+isRootPath = (repositoryPath) ->
+  if process.platform is 'win32'
+    /^[a-zA-Z]+:[\\\/]$/.test(repositoryPath)
+  else
+    repositoryPath is path.seq
+
 exports.open = (repositoryPath) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
 
+  repositoryPath = repositoryPath.replace(/\\/g, '/') if process.platform is 'win32'
   repository = new Repository(repositoryPath)
   if repository.exists()
     if symlink
       workingDirectory = repository.getWorkingDirectory()
-      while repositoryPath isnt path.sep
+      while not isRootPath(repositoryPath)
         if realpath(repositoryPath) is workingDirectory
           repository.openedWorkingDirectory = repositoryPath
           break
