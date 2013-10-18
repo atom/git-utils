@@ -8,14 +8,24 @@
       'sources': [
         'src/repository.cc'
       ],
-      'cflags': [
-        '-Wno-missing-field-initializers',
+      'conditions': [
+        ['OS=="win"', {
+          'msvs_disabled_warnings': [
+            4530,  # C++ exception handler used, but unwind semantics are not enabled.
+            4506,  # no definition for inline function
+            4267,  # conversion from 'size_t' to 'int', possible loss of data
+          ],
+        }, {
+          'cflags': [
+            '-Wno-missing-field-initializers',
+          ],
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              '-Wno-missing-field-initializers',
+            ],
+          },
+        }],
       ],
-      'xcode_settings': {
-        'WARNING_CFLAGS': [
-          '-Wno-missing-field-initializers',
-        ],
-      },
     },
     {
       'target_name': 'libgit2',
@@ -355,6 +365,13 @@
           'deps/libgit2/deps/http-parser',
         ],
       },
+      'conditions': [
+        ['OS=="win"', {
+          'msvs_disabled_warnings': [
+            4244,  # conversion from 'ssize_t' to 'int32_t', possible loss of data
+          ],
+        }],
+      ],
     },
   ],
 }
