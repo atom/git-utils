@@ -18,12 +18,16 @@ describe "git", ->
   describe ".getPath()", ->
     it "returns the path to the .git directory", ->
       repositoryPath = git.open(__dirname).getPath()
-      expect(repositoryPath).toBe path.join(path.dirname(__dirname), '.git/')
+      currentGitPath = path.join(path.dirname(__dirname), '.git/')
+      currentGitPath = currentGitPath.replace(/\\/g, '/') if process.platform is 'win32'
+      expect(repositoryPath).toBe currentGitPath
 
   describe ".getWorkingDirectory()", ->
     it "returns the path to the working directory", ->
       workingDirectory = git.open(__dirname).getWorkingDirectory()
-      expect(workingDirectory).toBe path.dirname(__dirname)
+      cwd = path.dirname(__dirname)
+      cwd = cwd.replace(/\\/g, '/') if process.platform is 'win32'
+      expect(workingDirectory).toBe cwd
 
   describe ".getHead()", ->
     describe "when a branch is checked out", ->
