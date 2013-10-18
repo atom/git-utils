@@ -408,6 +408,10 @@ describe "git", ->
 
     describe 'when the opened path is a symlink', ->
       it 'relativizes against both the linked path and the real path', ->
+        # Creating symbol link on Windows requires administrator permission so
+        # we just skip this test.
+        return if process.platform is 'win32'
+
         repoDirectory = fs.realpathSync(temp.mkdirSync('node-git-repo-'))
         linkDirectory = path.join(fs.realpathSync(temp.mkdirSync('node-git-repo-')), 'link')
         wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
