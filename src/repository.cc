@@ -259,20 +259,17 @@ Handle<Value> Repository::CheckoutHead(const Arguments& args) {
   if (args.Length() < 1)
     return scope.Close(Boolean::New(false));
 
-  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-  string path(*utf8Path);
-  char *copiedPath = reinterpret_cast<char*>(malloc(sizeof(char) * (path.length() + 1)));
-  snprintf(copiedPath, path.length() + 1, "%s", path.data());
+  String::Utf8Value utf8Path(args[0]);
+  char* path = *utf8Path;
 
   git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
   options.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
   git_strarray paths;
   paths.count = 1;
-  paths.strings = &copiedPath;
+  paths.strings = &path;
   options.paths = paths;
 
   int result = git_checkout_head(GetRepository(args), &options);
-  free(copiedPath);
   return scope.Close(Boolean::New(result == GIT_OK));
 }
 
@@ -321,14 +318,13 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   if (treeStatus != GIT_OK)
     return scope.Close(result);
 
-  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-  string path(*utf8Path);
-  char *copiedPath = reinterpret_cast<char*>(malloc(sizeof(char) * (path.length() + 1)));
-  snprintf(copiedPath, path.length() + 1, "%s", path.data());
+  String::Utf8Value utf8Path(args[0]);
+  char* path = *utf8Path;
+
   git_diff_options options = GIT_DIFF_OPTIONS_INIT;
   git_strarray paths;
   paths.count = 1;
-  paths.strings = &copiedPath;
+  paths.strings = &path;
   options.pathspec = paths;
   options.context_lines = 0;
   options.flags = GIT_DIFF_DISABLE_PATHSPEC_MATCH;
@@ -336,7 +332,6 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   git_diff_list *diffs;
   int diffStatus = git_diff_tree_to_workdir(&diffs, repository, tree, &options);
   git_tree_free(tree);
-  free(copiedPath);
   if (diffStatus != GIT_OK)
     return scope.Close(result);
 
