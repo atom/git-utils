@@ -638,11 +638,9 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
 
     // N.B.: git_branch_create needs a name like 'xxx', not 'refs/heads/xxx'
     const int kShortNameLength = strRefName.length() - 11;
-    char shortRefName[kShortNameLength + 1];
-    size_t length = strRefName.copy(shortRefName, kShortNameLength + 1, 11);
-    shortRefName[length] = '\0';
+    string shortRefName(strRefName.data() + 11, kShortNameLength);
 
-    int branchCreateStatus = git_branch_create(&branch, repo, shortRefName, commit, 0);
+    int branchCreateStatus = git_branch_create(&branch, repo, shortRefName.c_str(), commit, 0);
     git_commit_free(commit);
     if (branchCreateStatus != GIT_OK)
       return scope.Close(Boolean::New(false));
