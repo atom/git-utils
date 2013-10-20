@@ -98,7 +98,11 @@ Repository::checkoutReference = (branch, create)->
 
 Repository::relativize = (path) ->
   return path unless path?
-  return path unless path[0] is '/'
+
+  if process.platform is 'win32'
+    path = path.replace(/\\/g, '/')
+  else
+    return path unless path[0] is '/'
 
   workingDirectory = @getWorkingDirectory()
   if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
@@ -114,14 +118,21 @@ realpath = (unrealPath) ->
   catch e
     unrealPath
 
+isRootPath = (repositoryPath) ->
+  if process.platform is 'win32'
+    /^[a-zA-Z]+:[\\\/]$/.test(repositoryPath)
+  else
+    repositoryPath is path.seq
+
 exports.open = (repositoryPath) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
 
+  repositoryPath = repositoryPath.replace(/\\/g, '/') if process.platform is 'win32'
   repository = new Repository(repositoryPath)
   if repository.exists()
     if symlink
       workingDirectory = repository.getWorkingDirectory()
-      while repositoryPath isnt path.sep
+      while not isRootPath(repositoryPath)
         if realpath(repositoryPath) is workingDirectory
           repository.openedWorkingDirectory = repositoryPath
           break
