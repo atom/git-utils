@@ -603,6 +603,7 @@ Handle<Value> Repository::GetReferences(const Arguments& args) {
 
 Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   HandleScope scope;
+
   if (args.Length() < 1)
     return scope.Close(Boolean::New(false));
 
@@ -618,12 +619,20 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
 
   git_reference *ref;
   git_repository *repo = GetRepository(args);
-  int refLookupStatus = git_reference_lookup(&ref, repo, refName);
-  git_reference_free(ref);
 
-  if (refLookupStatus == GIT_OK) {
-    if (git_repository_set_head(repo, refName) == GIT_OK)
-      return scope.Close(Boolean::New(true));
+  git_object *git_obj = NULL;
+  git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
+  opts.checkout_strategy = GIT_CHECKOUT_SAFE;
+
+  if (git_reference_lookup(&ref, repo, refName) == GIT_OK) {
+    if (git_revparse_single(&git_obj, repo, git_reference_shorthand(ref)) == GIT_OK) {
+      git_reference_free(ref);
+      if (git_checkout_tree(repo, git_obj, &opts) == GIT_OK) {
+        if (git_repository_set_head(repo, refName) == GIT_OK)
+          return scope.Close(Boolean::New(true));
+      }
+    } else
+        git_reference_free(ref);
   } else if (shouldCreateNewRef) {
     git_reference *branch, *head;
     if (git_repository_head(&head, repo) != GIT_OK)
@@ -646,8 +655,17 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
       return scope.Close(Boolean::New(false));
 
     git_reference_free(branch);
-    if (git_repository_set_head(repo, refName) == GIT_OK)
-      return scope.Close(Boolean::New(true));
+
+    if (git_reference_lookup(&ref, repo, refName) == GIT_OK) {
+      if (git_revparse_single(&git_obj, repo, git_reference_shorthand(ref)) == GIT_OK) {
+        git_reference_free(ref);
+        if (git_checkout_tree(repo, git_obj, &opts) == GIT_OK) {
+          if (git_repository_set_head(repo, refName) == GIT_OK)
+            return scope.Close(Boolean::New(true));
+        }
+      } else
+          git_reference_free(ref);
+    }
   }
 
   return scope.Close(Boolean::New(false));
