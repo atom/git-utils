@@ -255,6 +255,12 @@
                     '/MACHINE:X64',
                   ],
                 },
+              }, {
+                'VCLibrarianTool': {
+                  'AdditionalOptions': [
+                    '/MACHINE:x86',
+                  ],
+                },
               }],
             ],
           },

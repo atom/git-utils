@@ -105,6 +105,15 @@ git_repository* Repository::GetRepository(const Arguments& args) {
   return node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
 }
 
+// C++ equivalent to GIT_DIFF_OPTIONS_INIT, we can not use it directly because
+// of C++'s strong typing.
+git_diff_options Repository::CreateDefaultGitDiffOptions() {
+  git_diff_options options = { 0 };
+  options.version = GIT_DIFF_OPTIONS_VERSION;
+  options.context_lines = 3;
+  return options;
+}
+
 Handle<Value> Repository::Exists(const Arguments& args) {
   HandleScope scope;
   return scope.Close(Boolean::New(GetRepository(args) != NULL));
@@ -321,7 +330,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   String::Utf8Value utf8Path(args[0]);
   char* path = *utf8Path;
 
-  git_diff_options options = GIT_DIFF_OPTIONS_INIT;
+  git_diff_options options = CreateDefaultGitDiffOptions();
   git_strarray paths;
   paths.count = 1;
   paths.strings = &path;
@@ -329,7 +338,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   options.context_lines = 0;
   options.flags = GIT_DIFF_DISABLE_PATHSPEC_MATCH;
 
-  git_diff_list *diffs;
+  git_diff *diffs;
   int diffStatus = git_diff_tree_to_workdir(&diffs, repository, tree, &options);
   git_tree_free(tree);
   if (diffStatus != GIT_OK)
@@ -337,23 +346,23 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
 
   int deltas = git_diff_num_deltas(diffs);
   if (deltas != 1) {
-    git_diff_list_free(diffs);
+    git_diff_free(diffs);
     return scope.Close(result);
   }
 
-  git_diff_patch *patch;
-  int patchStatus = git_diff_get_patch(&patch, NULL, diffs, 0);
-  git_diff_list_free(diffs);
+  git_patch *patch;
+  int patchStatus = git_patch_from_diff(&patch, diffs, 0);
+  git_diff_free(diffs);
   if (patchStatus != GIT_OK)
     return scope.Close(result);
 
-  int hunks = git_diff_patch_num_hunks(patch);
+  int hunks = git_patch_num_hunks(patch);
   for (int i = 0; i < hunks; i++) {
-    int lines = git_diff_patch_num_lines_in_hunk(patch, i);
+    int lines = git_patch_num_lines_in_hunk(patch, i);
     for (int j = 0; j < lines; j++) {
-      char lineType;
-      if (git_diff_patch_get_line_in_hunk(&lineType, NULL, NULL, NULL, NULL, patch, i, j) == GIT_OK) {
-        switch (lineType) {
+      const git_diff_line *line;
+      if (git_patch_get_line_in_hunk(&line, patch, i, j) == GIT_OK) {
+        switch (line->origin) {
           case GIT_DIFF_LINE_ADDITION:
             added++;
             break;
@@ -364,7 +373,7 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
       }
     }
   }
-  git_diff_patch_free(patch);
+  git_patch_free(patch);
 
   result->Set(String::NewSymbol("added"), Number::New(added));
   result->Set(String::NewSymbol("deleted"), Number::New(deleted));
@@ -494,10 +503,9 @@ Handle<Value> Repository::GetMergeBase(const Arguments& args) {
 }
 
 int Repository::DiffHunkCallback(const git_diff_delta *delta,
-                                 const git_diff_range *range,
-                                 const char *header, size_t header_len,
+                                 const git_diff_hunk *range,
                                  void *payload) {
-  vector<git_diff_range> *ranges = (vector<git_diff_range> *) payload;
+  vector<git_diff_hunk> *ranges = (vector<git_diff_hunk> *) payload;
   ranges->push_back(*range);
   return GIT_OK;
 }
@@ -545,8 +553,8 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   if (blob == NULL)
     return scope.Close(Null());
 
-  vector<git_diff_range> ranges;
-  git_diff_options options = GIT_DIFF_OPTIONS_INIT;
+  vector<git_diff_hunk> ranges;
+  git_diff_options options = CreateDefaultGitDiffOptions();
   options.context_lines = 0;
   if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
                               &options, NULL, DiffHunkCallback, NULL,
