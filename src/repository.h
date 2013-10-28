@@ -45,12 +45,13 @@ class Repository : public node::ObjectWrap {
     static int StatusCallback(const char *path, unsigned int status,
                               void *payload);
     static int DiffHunkCallback(const git_diff_delta *delta,
-                                const git_diff_range *range,
-                                const char *header, size_t header_len,
+                                const git_diff_hunk *hunk,
                                 void *payload);
     static Handle<Value> ConvertStringVectorToV8Array(vector<string> vector);
 
     static git_repository* GetRepository(const Arguments& args);
+
+    static git_diff_options CreateDefaultGitDiffOptions();
 
     explicit Repository(Handle<String> path);
     ~Repository();

@@ -234,7 +234,8 @@ describe "git", ->
         filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
         fs.writeFileSync(filePath, 'changing a.txt', 'utf8')
         expect(repo.checkoutHead('a.txt')).toBe true
-        expect(fs.readFileSync(filePath, 'utf8')).toBe 'first line\n'
+        lineEnding = if process.platform is 'win32' then '\r\n' else '\n'
+        expect(fs.readFileSync(filePath, 'utf8')).toBe "first line#{lineEnding}"
 
     describe 'when the path is undefined', ->
       it 'returns false', ->
@@ -244,7 +245,7 @@ describe "git", ->
     it 'returns a list of all the references', ->
       referencesObj =
                       heads: [ 'refs/heads/diff-lines', 'refs/heads/getHeadOriginal', 'refs/heads/master' ]
-                      remotes: [ 'refs/remotes/origin/HEAD', 'refs/remotes/origin/getHeadOriginal', 'refs/remotes/origin/master', 'refs/remotes/upstream/HEAD', 'refs/remotes/upstream/master' ]
+                      remotes: [ 'refs/remotes/origin/getHeadOriginal', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/master', 'refs/remotes/upstream/HEAD', 'refs/remotes/upstream/master' ]
                       tags: [ 'refs/tags/v1.0', 'refs/tags/v2.0' ]
 
       repo = git.open(path.join(__dirname, 'fixtures/references.git'))

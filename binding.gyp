@@ -42,6 +42,7 @@
         'deps/libgit2/src/attr.h',
         'deps/libgit2/src/attr_file.c',
         'deps/libgit2/src/attr_file.h',
+        'deps/libgit2/src/bitvec.h',
         'deps/libgit2/src/attrcache.h',
         'deps/libgit2/src/blob.c',
         'deps/libgit2/src/blob.h',
@@ -108,6 +109,7 @@
         'deps/libgit2/src/hash.h',
         'deps/libgit2/src/hashsig.c',
         'deps/libgit2/src/hashsig.h',
+        'deps/libgit2/src/ident.c',
         'deps/libgit2/src/ignore.c',
         'deps/libgit2/src/ignore.h',
         'deps/libgit2/src/index.c',
@@ -179,9 +181,12 @@
         'deps/libgit2/src/sha1_lookup.h',
         'deps/libgit2/src/signature.c',
         'deps/libgit2/src/signature.h',
+        'deps/libgit2/src/sortedcache.c',
+        'deps/libgit2/src/sortedcache.h',
         'deps/libgit2/src/stash.c',
         'deps/libgit2/src/status.c',
         'deps/libgit2/src/status.h',
+        'deps/libgit2/src/strmap.c',
         'deps/libgit2/src/strmap.h',
         'deps/libgit2/src/submodule.c',
         'deps/libgit2/src/submodule.h',
@@ -248,6 +253,12 @@
                 'VCLibrarianTool': {
                   'AdditionalOptions': [
                     '/MACHINE:X64',
+                  ],
+                },
+              }, {
+                'VCLibrarianTool': {
+                  'AdditionalOptions': [
+                    '/MACHINE:x86',
                   ],
                 },
               }],
