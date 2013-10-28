@@ -234,7 +234,8 @@ describe "git", ->
         filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
         fs.writeFileSync(filePath, 'changing a.txt', 'utf8')
         expect(repo.checkoutHead('a.txt')).toBe true
-        expect(fs.readFileSync(filePath, 'utf8')).toBe 'first line\n'
+        lineEnding = if process.platform is 'win32' then '\r\n' else '\n'
+        expect(fs.readFileSync(filePath, 'utf8')).toBe "first line#{lineEnding}"
 
     describe 'when the path is undefined', ->
       it 'returns false', ->
