@@ -307,10 +307,12 @@
           ],
           'cflags': [
             '-Wno-missing-field-initializers',
+            '-Wno-unused-variable'
           ],
           'xcode_settings': {
             'WARNING_CFLAGS': [
               '-Wno-missing-field-initializers',
+              '-Wno-unused-variable'
             ],
           },
         }],
