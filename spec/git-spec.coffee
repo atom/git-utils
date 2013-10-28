@@ -244,7 +244,7 @@ describe "git", ->
     it 'returns a list of all the references', ->
       referencesObj =
                       heads: [ 'refs/heads/diff-lines', 'refs/heads/getHeadOriginal', 'refs/heads/master' ]
-                      remotes: [ 'refs/remotes/origin/HEAD', 'refs/remotes/origin/getHeadOriginal', 'refs/remotes/origin/master', 'refs/remotes/upstream/HEAD', 'refs/remotes/upstream/master' ]
+                      remotes: [ 'refs/remotes/origin/getHeadOriginal', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/master', 'refs/remotes/upstream/HEAD', 'refs/remotes/upstream/master' ]
                       tags: [ 'refs/tags/v1.0', 'refs/tags/v2.0' ]
 
       repo = git.open(path.join(__dirname, 'fixtures/references.git'))
