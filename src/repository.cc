@@ -609,9 +609,9 @@ int branch_checkout(git_repository *repo, const char *refName) {
   int success = -1;
 
   if (!(success = git_reference_lookup(&ref, repo, refName)) &&
-      !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
-      !(success = git_checkout_tree(repo, git_obj, &opts)))
-      success = git_repository_set_head(repo, refName);
+    !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
+    !(success = git_checkout_tree(repo, git_obj, &opts)))
+    success = git_repository_set_head(repo, refName);
 
   git_object_free(git_obj);
   git_obj = NULL;
@@ -667,9 +667,8 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
 
     git_reference_free(branch);
 
-    if (branch_checkout(repo, refName) == GIT_OK) {
+    if (branch_checkout(repo, refName) == GIT_OK)
       return scope.Close(Boolean::New(true));
-    }
   }
 
   return scope.Close(Boolean::New(false));

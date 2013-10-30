@@ -1,7 +1,7 @@
 git = require '../lib/git'
 path = require 'path'
 fs = require 'fs'
-exec = require('child_process').exec
+{exec} = require 'child_process'
 wrench = require 'wrench'
 temp = require 'temp'
 _ = require 'underscore'
