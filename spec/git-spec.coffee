@@ -206,7 +206,13 @@ describe "git", ->
       # in this test, we need to fake a commit and try to switch to a new branch
       it 'does not check a branch out if the dirty tree interferes', ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'README.md'), 'great words', 'utf8')
-        exec "cd #{repoDirectory} && git add . && git commit -m 'update README'", ->
+        gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+        exec "cd #{repoDirectory} && git add . && git commit -m 'update README'", gitCommandHandler
+
+        waitsFor ->
+          gitCommandHandler.callCount is 1
+
+        runs ->
           expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
           fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'README.md'), 'more words', 'utf8')
           expect(repo.checkoutReference('refs/heads/master')).toBe false
