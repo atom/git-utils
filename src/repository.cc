@@ -609,8 +609,8 @@ int branch_checkout(git_repository *repo, const char *refName) {
   int success = -1;
 
   if (!(success = git_reference_lookup(&ref, repo, refName)) &&
-    !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
-    !(success = git_checkout_tree(repo, git_obj, &opts)))
+      !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
+      !(success = git_checkout_tree(repo, git_obj, &opts)))
     success = git_repository_set_head(repo, refName);
 
   git_object_free(git_obj);
