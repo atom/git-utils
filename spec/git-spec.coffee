@@ -213,6 +213,7 @@ describe "git", ->
           gitCommandHandler.callCount is 1
 
         runs ->
+          console.log 'git commands complete', gitCommandHandler.mostRecentCall.args
           expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
           fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'README.md'), 'more words', 'utf8')
           expect(repo.checkoutReference('refs/heads/master')).toBe false
