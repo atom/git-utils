@@ -609,8 +609,29 @@ Handle<Value> Repository::GetReferences(const Arguments& args) {
   return references;
 }
 
+int branch_checkout(git_repository *repo, const char *refName) {
+  git_reference *ref = NULL;
+  git_object *git_obj = NULL;
+  git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
+  opts.checkout_strategy = GIT_CHECKOUT_SAFE;
+  int success = -1;
+
+  if (!(success = git_reference_lookup(&ref, repo, refName)) &&
+      !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
+      !(success = git_checkout_tree(repo, git_obj, &opts)))
+    success = git_repository_set_head(repo, refName);
+
+  git_object_free(git_obj);
+  git_obj = NULL;
+  git_reference_free(ref);
+  ref = NULL;
+
+  return success;
+}
+
 Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   HandleScope scope;
+
   if (args.Length() < 1)
     return scope.Close(Boolean::New(false));
 
@@ -624,16 +645,12 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
   string strRefName(*utf8RefName);
   const char* refName = strRefName.data();
 
-  git_reference *ref;
   git_repository *repo = GetRepository(args);
-  int refLookupStatus = git_reference_lookup(&ref, repo, refName);
-  git_reference_free(ref);
 
-  if (refLookupStatus == GIT_OK) {
-    if (git_repository_set_head(repo, refName) == GIT_OK)
-      return scope.Close(Boolean::New(true));
+  if (branch_checkout(repo, refName) == GIT_OK) {
+    return scope.Close(Boolean::New(true));
   } else if (shouldCreateNewRef) {
-    git_reference *branch, *head;
+    git_reference *head;
     if (git_repository_head(&head, repo) != GIT_OK)
       return scope.Close(Boolean::New(false));
 
@@ -641,20 +658,24 @@ Handle<Value> Repository::CheckoutReference(const Arguments& args) {
     git_commit *commit;
     int commitStatus = git_commit_lookup(&commit, repo, sha);
     git_reference_free(head);
+
     if (commitStatus != GIT_OK)
       return scope.Close(Boolean::New(false));
 
+    git_reference *branch;
     // N.B.: git_branch_create needs a name like 'xxx', not 'refs/heads/xxx'
     const int kShortNameLength = strRefName.length() - 11;
     string shortRefName(strRefName.data() + 11, kShortNameLength);
 
     int branchCreateStatus = git_branch_create(&branch, repo, shortRefName.c_str(), commit, 0);
     git_commit_free(commit);
+
     if (branchCreateStatus != GIT_OK)
       return scope.Close(Boolean::New(false));
 
     git_reference_free(branch);
-    if (git_repository_set_head(repo, refName) == GIT_OK)
+
+    if (branch_checkout(repo, refName) == GIT_OK)
       return scope.Close(Boolean::New(true));
   }
 

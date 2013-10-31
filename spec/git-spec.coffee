@@ -1,6 +1,7 @@
 git = require '../lib/git'
 path = require 'path'
 fs = require 'fs'
+{exec} = require 'child_process'
 wrench = require 'wrench'
 temp = require 'temp'
 _ = require 'underscore'
@@ -185,6 +186,7 @@ describe "git", ->
 
   describe '.checkoutReference(reference, [create])', ->
     repo = null
+    repoDirectory = null
 
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
@@ -193,13 +195,32 @@ describe "git", ->
       expect(repo.getHead()).toBe 'refs/heads/master'
 
     describe 'when a local reference exists', ->
-      it 'checks the branch out if passed a short reference', ->
+      it 'checks a branch out if passed a short reference', ->
         expect(repo.checkoutReference('getHeadOriginal')).toBe true
         expect(repo.getHead()).toBe 'refs/heads/getHeadOriginal'
 
-      it 'checks the branch out if passed a long reference', ->
+      it 'checks a branch out if passed a long reference', ->
         expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
         expect(repo.getHead()).toBe 'refs/heads/getHeadOriginal'
+
+      # in this test, we need to fake a commit and try to switch to a new branch
+      it 'does not check a branch out if the dirty tree interferes', ->
+        fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'README.md'), 'great words', 'utf8')
+        gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+        exec "cd #{repoDirectory} && git add . && git commit -m 'update README'", gitCommandHandler
+
+        waitsFor ->
+          gitCommandHandler.callCount is 1
+
+        runs ->
+          expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
+          fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'README.md'), 'more words', 'utf8')
+          expect(repo.checkoutReference('refs/heads/master')).toBe false
+          expect(repo.getHead()).toBe 'refs/heads/getHeadOriginal'
+
+      it 'does check a branch out if the dirty tree does not interfere', ->
+        fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new_file.md'), 'a new file', 'utf8')
+        expect(repo.checkoutReference('refs/heads/getHeadOriginal')).toBe true
 
     describe 'when a local reference doesn\'t exist', ->
       it 'does nothing if branch creation was not specified', ->

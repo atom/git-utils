@@ -1,6 +1,10 @@
+[user]
+	name = Hugh Bot
+	email = hubot@github.com
 [core]
 	repositoryformatversion = 0
 	filemode = true
 	bare = false
 	logallrefupdates = true
 	ignorecase = true
+	precomposeunicode = false
