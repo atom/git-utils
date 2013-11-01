@@ -117,7 +117,7 @@ or a full SHA-1 if the repository is in a detached HEAD state.
 
 Returns the string reference name or SHA-1.
 
-### Repository.getLineDiffs(path, text)
+### Repository.getLineDiffs(path, text, [options])
 
 Get the line diffs comparing the HEAD version of the given path and the given
 text.
@@ -125,6 +125,9 @@ text.
 `path` - The string repository-relative path.
 
 `text` - The string text to diff the HEAD contents of the path against.
+
+`options` - An optional object with an `ignoreEolWhitespace` key that when
+            set to `true` will ignore any whitespace diffs at the end of lines.
 
 Returns an array of objects that have `oldStart`, `oldLines`, `newStart`, and
 `newLines` keys pointing to integer values, may be `null` if the diff fails.

@@ -555,6 +555,14 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
 
   vector<git_diff_hunk> ranges;
   git_diff_options options = CreateDefaultGitDiffOptions();
+
+  // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
+  if (args.Length() >= 3) {
+    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
+    if (optionsArg->Get(String::NewSymbol("ignoreEolWhitespace"))->ToBoolean()->Value())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
+  }
+
   options.context_lines = 0;
   if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
                               &options, NULL, DiffHunkCallback, NULL,

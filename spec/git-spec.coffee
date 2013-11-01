@@ -384,7 +384,7 @@ describe "git", ->
       counts = repo.getAheadBehindCount('')
       expect(counts).toEqual {ahead: 0, behind: 0}
 
-  describe '.getLineDiffs(path, text)', ->
+  describe '.getLineDiffs(path, text, options)', ->
     it 'returns all hunks that differ', ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
 
@@ -414,6 +414,16 @@ describe "git", ->
 
       diffs = repo.getLineDiffs('i-dont-exists.txt', 'content')
       expect(diffs).toBeNull()
+
+    describe "ignoreEolWhitespace option", ->
+      it "ignores eol of line whitespace changes", ->
+        repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', ignoreEolWhitespace: false)
+        expect(diffs.length).toBe 1
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', ignoreEolWhitespace: true)
+        expect(diffs.length).toBe 0
 
   describe '.relativize(path)', ->
     it 'relativizes the given path to the working directory of the repository', ->
