@@ -34,36 +34,37 @@ class Repository : public node::ObjectWrap {
   static void Init(Handle<Object> target);
 
  private:
-  static Handle<Value> New(const Arguments& args);
-  static Handle<Value> GetPath(const Arguments& args);
-  static Handle<Value> Exists(const Arguments& args);
-  static Handle<Value> GetHead(const Arguments& args);
-  static Handle<Value> RefreshIndex(const Arguments& args);
-  static Handle<Value> IsIgnored(const Arguments& args);
-  static Handle<Value> IsSubmodule(const Arguments& args);
-  static Handle<Value> GetConfigValue(const Arguments& args);
-  static Handle<Value> SetConfigValue(const Arguments& args);
-  static Handle<Value> GetStatus(const Arguments& args);
-  static Handle<Value> CheckoutHead(const Arguments& args);
-  static Handle<Value> GetReferenceTarget(const Arguments& args);
-  static Handle<Value> GetDiffStats(const Arguments& args);
-  static Handle<Value> GetHeadBlob(const Arguments& args);
-  static Handle<Value> GetCommitCount(const Arguments& args);
-  static Handle<Value> GetMergeBase(const Arguments& args);
-  static Handle<Value> Release(const Arguments& args);
-  static Handle<Value> GetLineDiffs(const Arguments& args);
-  static Handle<Value> GetReferences(const Arguments& args);
-  static Handle<Value> CheckoutReference(const Arguments& args);
+  static NAN_METHOD(New);
+  static NAN_METHOD(GetPath);
+  static NAN_METHOD(Exists);
+  static NAN_METHOD(GetHead);
+  static NAN_METHOD(RefreshIndex);
+  static NAN_METHOD(IsIgnored);
+  static NAN_METHOD(IsSubmodule);
+  static NAN_METHOD(GetConfigValue);
+  static NAN_METHOD(SetConfigValue);
+  static NAN_METHOD(GetStatus);
+  static NAN_METHOD(CheckoutHead);
+  static NAN_METHOD(GetReferenceTarget);
+  static NAN_METHOD(GetDiffStats);
+  static NAN_METHOD(GetHeadBlob);
+  static NAN_METHOD(GetCommitCount);
+  static NAN_METHOD(GetMergeBase);
+  static NAN_METHOD(Release);
+  static NAN_METHOD(GetLineDiffs);
+  static NAN_METHOD(GetReferences);
+  static NAN_METHOD(CheckoutReference);
 
   static int StatusCallback(const char *path, unsigned int status,
                             void *payload);
   static int DiffHunkCallback(const git_diff_delta *delta,
                               const git_diff_hunk *hunk,
                               void *payload);
-  static Handle<Value> ConvertStringVectorToV8Array(
-      const std::vector<std::string>& std::vector);
 
-  static git_repository* GetRepository(const Arguments& args);
+  static Handle<Value> ConvertStringVectorToV8Array(
+      const std::vector<std::string>& vector);
+
+  static git_repository* GetRepository(_NAN_METHOD_ARGS_TYPE args);
 
   static git_diff_options CreateDefaultGitDiffOptions();
 
