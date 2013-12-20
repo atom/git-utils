@@ -5,6 +5,7 @@
       'dependencies': [
         'libgit2'
       ],
+      'include_dirs': [ '<!(node -e "require(\'nan\')")' ],
       'sources': [
         'src/repository.cc'
       ],
