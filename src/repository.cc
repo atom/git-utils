@@ -66,6 +66,7 @@ NAN_METHOD(Repository::New) {
   NanScope();
   Repository* repository = new Repository(Local<String>::Cast(args[0]));
   repository->Wrap(args.This());
+  NanReturnUndefined();
 }
 
 git_repository* Repository::GetRepository(_NAN_METHOD_ARGS_TYPE args) {
