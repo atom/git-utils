@@ -1,26 +1,30 @@
+// Copyright (c) 2013 GitHub Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include "repository.h"
-#include <cstring>
-#include <string>
+
+#include <string.h>
+
 #include <map>
 #include <utility>
-#include <vector>
-
-using ::v8::Array;
-using ::v8::Boolean;
-using ::v8::Function;
-using ::v8::FunctionTemplate;
-using ::v8::HandleScope;
-using ::v8::Local;
-using ::v8::Number;
-using ::v8::Null;
-using ::v8::ObjectTemplate;
-using ::v8::Persistent;
-using ::v8::Undefined;
-
-using ::std::map;
-using ::std::pair;
-using ::std::string;
-using ::std::vector;
 
 void Repository::Init(Handle<Object> target) {
   git_threads_init();
@@ -188,8 +192,9 @@ Handle<Value> Repository::IsSubmodule(const Arguments& args) {
     Handle<Boolean> isSubmodule = Boolean::New(entry != NULL && (entry->mode & S_IFMT) == GIT_FILEMODE_COMMIT);
     git_index_free(index);
     return scope.Close(isSubmodule);
-  } else
+  } else {
     return scope.Close(Boolean::New(false));
+  }
 }
 
 Handle<Value> Repository::GetConfigValue(const Arguments& args) {
@@ -242,11 +247,11 @@ Handle<Value> Repository::GetStatus(const Arguments& args) {
   if (args.Length() < 1) {
     HandleScope scope;
     Local<Object> result = Object::New();
-    map<string, unsigned int> statuses;
+    std::map<string, unsigned int> statuses;
     git_status_options options = GIT_STATUS_OPTIONS_INIT;
     options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
     if (git_status_foreach_ext(GetRepository(args), &options, StatusCallback, &statuses) == GIT_OK) {
-      map<string, unsigned int>::iterator iter = statuses.begin();
+      std::map<string, unsigned int>::iterator iter = statuses.begin();
       for (; iter != statuses.end(); ++iter)
         result->Set(String::NewSymbol(iter->first.data()), Number::New(iter->second));
     }
@@ -294,8 +299,9 @@ Handle<Value> Repository::GetReferenceTarget(const Arguments& args) {
     char oid[GIT_OID_HEXSZ + 1];
     git_oid_tostr(oid, GIT_OID_HEXSZ + 1, &sha);
     return scope.Close(String::NewSymbol(oid));
-  } else
+  } else {
     return scope.Close(Null());
+  }
 }
 
 Handle<Value> Repository::GetDiffStats(const Arguments& args) {
@@ -428,8 +434,8 @@ Handle<Value> Repository::GetHeadBlob(const Arguments& args) {
 }
 
 int Repository::StatusCallback(const char *path, unsigned int status, void *payload) {
-  map<string, unsigned int> *statuses = (map<string, unsigned int> *) payload;
-  statuses->insert(pair<string, unsigned int>(string(path), status));
+  std::map<string, unsigned int> *statuses = (std::map<string, unsigned int> *) payload;
+  statuses->insert(std::pair<string, unsigned int>(string(path), status));
   return GIT_OK;
 }
 
@@ -584,7 +590,8 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
   }
 }
 
-Handle<Value> Repository::ConvertStringVectorToV8Array(vector<string> vector) {
+Handle<Value> Repository::ConvertStringVectorToV8Array(
+    const vector<string>& vector) {
   size_t i = 0, size = vector.size();
   Local<Object> array = Array::New(size);
   for (i = 0; i < size; i++)

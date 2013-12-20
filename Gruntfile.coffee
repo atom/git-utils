@@ -30,14 +30,6 @@ module.exports = (grunt) ->
       filters:
         build:
           include: false
-        legal:
-          copyright: false
-        readability:
-          braces: false
-        runtime:
-          sizeof: false
-        whitespace:
-          line_length: false
 
     shell:
       rebuild:
