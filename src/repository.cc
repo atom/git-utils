@@ -1,107 +1,75 @@
+// Copyright (c) 2013 GitHub Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include "repository.h"
-#include <cstring>
-#include <string>
+
+#include <string.h>
+
 #include <map>
 #include <utility>
-#include <vector>
-
-using ::v8::Array;
-using ::v8::Boolean;
-using ::v8::Function;
-using ::v8::FunctionTemplate;
-using ::v8::HandleScope;
-using ::v8::Local;
-using ::v8::Number;
-using ::v8::Null;
-using ::v8::ObjectTemplate;
-using ::v8::Persistent;
-using ::v8::Undefined;
-
-using ::std::map;
-using ::std::pair;
-using ::std::string;
-using ::std::vector;
 
 void Repository::Init(Handle<Object> target) {
+  NanScope();
+
   git_threads_init();
 
-  Local<FunctionTemplate> newTemplate = FunctionTemplate::New(Repository::New);
-  newTemplate->SetClassName(String::NewSymbol("Repository"));
+  Local<FunctionTemplate> newTemplate = FunctionTemplate::New(
+      Repository::New);
+  newTemplate->SetClassName(NanSymbol("Repository"));
   newTemplate->InstanceTemplate()->SetInternalFieldCount(1);
 
-  Local<ObjectTemplate> prototype = newTemplate->PrototypeTemplate();
+  Local<ObjectTemplate> proto = newTemplate->PrototypeTemplate();
+  NODE_SET_METHOD(proto, "getPath", Repository::GetPath);
+  NODE_SET_METHOD(proto, "exists", Repository::Exists);
+  NODE_SET_METHOD(proto, "getHead", Repository::GetHead);
+  NODE_SET_METHOD(proto, "refreshIndex", Repository::RefreshIndex);
+  NODE_SET_METHOD(proto, "isIgnored", Repository::IsIgnored);
+  NODE_SET_METHOD(proto, "isSubmodule", Repository::IsSubmodule);
+  NODE_SET_METHOD(proto, "getConfigValue", Repository::GetConfigValue);
+  NODE_SET_METHOD(proto, "setConfigValue", Repository::SetConfigValue);
+  NODE_SET_METHOD(proto, "getStatus", Repository::GetStatus);
+  NODE_SET_METHOD(proto, "checkoutHead", Repository::CheckoutHead);
+  NODE_SET_METHOD(proto, "getReferenceTarget", Repository::GetReferenceTarget);
+  NODE_SET_METHOD(proto, "getDiffStats", Repository::GetDiffStats);
+  NODE_SET_METHOD(proto, "getHeadBlob", Repository::GetHeadBlob);
+  NODE_SET_METHOD(proto, "getCommitCount", Repository::GetCommitCount);
+  NODE_SET_METHOD(proto, "getMergeBase", Repository::GetMergeBase);
+  NODE_SET_METHOD(proto, "release", Repository::Release);
+  NODE_SET_METHOD(proto, "getLineDiffs", Repository::GetLineDiffs);
+  NODE_SET_METHOD(proto, "getReferences", Repository::GetReferences);
+  NODE_SET_METHOD(proto, "checkoutRef", Repository::CheckoutReference);
 
-  prototype->Set(String::NewSymbol("getPath"),
-                 FunctionTemplate::New(Repository::GetPath)->GetFunction());
-
-  prototype->Set(String::NewSymbol("exists"),
-                 FunctionTemplate::New(Repository::Exists)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getHead"),
-                 FunctionTemplate::New(Repository::GetHead)->GetFunction());
-
-  prototype->Set(String::NewSymbol("refreshIndex"),
-                 FunctionTemplate::New(Repository::RefreshIndex)->GetFunction());
-
-  prototype->Set(String::NewSymbol("isIgnored"),
-                 FunctionTemplate::New(Repository::IsIgnored)->GetFunction());
-
-  prototype->Set(String::NewSymbol("isSubmodule"),
-                 FunctionTemplate::New(Repository::IsSubmodule)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getConfigValue"),
-                 FunctionTemplate::New(Repository::GetConfigValue)->GetFunction());
-
-  prototype->Set(String::NewSymbol("setConfigValue"),
-                 FunctionTemplate::New(Repository::SetConfigValue)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getStatus"),
-                 FunctionTemplate::New(Repository::GetStatus)->GetFunction());
-
-  prototype->Set(String::NewSymbol("checkoutHead"),
-                 FunctionTemplate::New(Repository::CheckoutHead)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getReferenceTarget"),
-                 FunctionTemplate::New(Repository::GetReferenceTarget)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getDiffStats"),
-                 FunctionTemplate::New(Repository::GetDiffStats)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getHeadBlob"),
-                 FunctionTemplate::New(Repository::GetHeadBlob)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getCommitCount"),
-                 FunctionTemplate::New(Repository::GetCommitCount)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getMergeBase"),
-                 FunctionTemplate::New(Repository::GetMergeBase)->GetFunction());
-
-  prototype->Set(String::NewSymbol("release"),
-                 FunctionTemplate::New(Repository::Release)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getLineDiffs"),
-                 FunctionTemplate::New(Repository::GetLineDiffs)->GetFunction());
-
-  prototype->Set(String::NewSymbol("getReferences"),
-                 FunctionTemplate::New(Repository::GetReferences)->GetFunction());
-
-  prototype->Set(String::NewSymbol("checkoutRef"),
-                 FunctionTemplate::New(Repository::CheckoutReference)->GetFunction());
-
-  target->Set(String::NewSymbol("Repository"),
-              Persistent<Function>::New(newTemplate->GetFunction()));
+  target->Set(NanSymbol("Repository"), newTemplate->GetFunction());
 }
 
 NODE_MODULE(git, Repository::Init)
 
-Handle<Value> Repository::New(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::New) {
+  NanScope();
   Repository* repository = new Repository(Local<String>::Cast(args[0]));
   repository->Wrap(args.This());
-  return args.This();
+  NanReturnUndefined();
 }
 
-git_repository* Repository::GetRepository(const Arguments& args) {
+git_repository* Repository::GetRepository(_NAN_METHOD_ARGS_TYPE args) {
   return node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
 }
 
@@ -114,24 +82,24 @@ git_diff_options Repository::CreateDefaultGitDiffOptions() {
   return options;
 }
 
-Handle<Value> Repository::Exists(const Arguments& args) {
-  HandleScope scope;
-  return scope.Close(Boolean::New(GetRepository(args) != NULL));
+NAN_METHOD(Repository::Exists) {
+  NanScope();
+  NanReturnValue(Boolean::New(GetRepository(args) != NULL));
 }
 
-Handle<Value> Repository::GetPath(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetPath) {
+  NanScope();
   git_repository* repository = GetRepository(args);
   const char* path = git_repository_path(repository);
-  return scope.Close(String::NewSymbol(path));
+  NanReturnValue(NanSymbol(path));
 }
 
-Handle<Value> Repository::GetHead(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetHead) {
+  NanScope();
   git_repository* repository = GetRepository(args);
-  git_reference *head;
+  git_reference* head;
   if (git_repository_head(&head, repository) != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
   if (git_repository_head_detached(repository) == 1) {
     const git_oid* sha = git_reference_target(head);
@@ -139,193 +107,199 @@ Handle<Value> Repository::GetHead(const Arguments& args) {
       char oid[GIT_OID_HEXSZ + 1];
       git_oid_tostr(oid, GIT_OID_HEXSZ + 1, sha);
       git_reference_free(head);
-      return scope.Close(String::NewSymbol(oid));
+      NanReturnValue(NanSymbol(oid));
     }
   }
 
-  Local<String> referenceName =  String::NewSymbol(git_reference_name(head));
+  Local<String> referenceName = NanSymbol(git_reference_name(head));
   git_reference_free(head);
-  return scope.Close(referenceName);
+  NanReturnValue(referenceName);
 }
 
-Handle<Value> Repository::RefreshIndex(const Arguments& args) {
+NAN_METHOD(Repository::RefreshIndex) {
+  NanScope();
   git_repository* repository = GetRepository(args);
   git_index* index;
   if (git_repository_index(&index, repository) == GIT_OK) {
     git_index_read(index, 0);
     git_index_free(index);
   }
-  HandleScope scope;
-  return scope.Close(Undefined());
+  NanReturnUndefined();
 }
 
-Handle<Value> Repository::IsIgnored(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::IsIgnored) {
+  NanScope();
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(false));
+    NanReturnValue(Boolean::New(false));
 
   git_repository* repository = GetRepository(args);
-  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-  string path(*utf8Path);
+  std::string path(*String::Utf8Value(args[0]));
   int ignored;
-  if (git_ignore_path_is_ignored(&ignored, repository, path.data()) == GIT_OK)
-    return scope.Close(Boolean::New(ignored == 1));
+  if (git_ignore_path_is_ignored(&ignored,
+                                 repository,
+                                 path.c_str()) == GIT_OK)
+    NanReturnValue(Boolean::New(ignored == 1));
   else
-    return scope.Close(Boolean::New(false));
+    NanReturnValue(Boolean::New(false));
 }
 
-Handle<Value> Repository::IsSubmodule(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::IsSubmodule) {
+  NanScope();
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(false));
+    NanReturnValue(Boolean::New(false));
 
   git_index* index;
   git_repository* repository = GetRepository(args);
   if (git_repository_index(&index, repository) == GIT_OK) {
-    String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-    string path(*utf8Path);
-    const git_index_entry *entry = git_index_get_bypath(index, path.data(), 0);
-    Handle<Boolean> isSubmodule = Boolean::New(entry != NULL && (entry->mode & S_IFMT) == GIT_FILEMODE_COMMIT);
+    std::string path(*String::Utf8Value(args[0]));
+    const git_index_entry* entry = git_index_get_bypath(index, path.c_str(), 0);
+    Handle<Boolean> isSubmodule = Boolean::New(
+        entry != NULL && (entry->mode & S_IFMT) == GIT_FILEMODE_COMMIT);
     git_index_free(index);
-    return scope.Close(isSubmodule);
-  } else
-    return scope.Close(Boolean::New(false));
-}
-
-Handle<Value> Repository::GetConfigValue(const Arguments& args) {
-  HandleScope scope;
-  if (args.Length() < 1)
-    return scope.Close(Null());
-
-  git_config* config;
-  git_repository* repository = GetRepository(args);
-  if (git_repository_config(&config, repository) != GIT_OK)
-    return scope.Close(Null());
-
-  String::Utf8Value utf8ConfigKey(Local<String>::Cast(args[0]));
-  string configKey(*utf8ConfigKey);
-  const char* configValue;
-  if (git_config_get_string(&configValue, config, configKey.data()) == GIT_OK) {
-    Handle<String> configValueHandle = String::NewSymbol(configValue);
-    git_config_free(config);
-    return scope.Close(configValueHandle);
+    NanReturnValue(isSubmodule);
   } else {
-    git_config_free(config);
-    return scope.Close(Null());
+    NanReturnValue(Boolean::New(false));
   }
 }
 
-Handle<Value> Repository::SetConfigValue(const Arguments& args) {
-  HandleScope scope;
-  if (args.Length() != 2)
-    return scope.Close(Boolean::New(false));
+NAN_METHOD(Repository::GetConfigValue) {
+  NanScope();
+  if (args.Length() < 1)
+    NanReturnNull();
 
   git_config* config;
   git_repository* repository = GetRepository(args);
   if (git_repository_config(&config, repository) != GIT_OK)
-    return scope.Close(Boolean::New(false));
+    NanReturnNull();
 
-  String::Utf8Value utf8ConfigKey(Local<String>::Cast(args[0]));
-  string configKey(*utf8ConfigKey);
+  std::string configKey(*String::Utf8Value(args[0]));
+  const char* configValue;
+  if (git_config_get_string(
+        &configValue, config, configKey.c_str()) == GIT_OK) {
+    Handle<String> configValueHandle = NanSymbol(configValue);
+    git_config_free(config);
+    NanReturnValue(configValueHandle);
+  } else {
+    git_config_free(config);
+    NanReturnNull();
+  }
+}
 
-  String::Utf8Value utf8ConfigValue(Local<String>::Cast(args[1]));
-  string configValue(*utf8ConfigValue);
+NAN_METHOD(Repository::SetConfigValue) {
+  NanScope();
+  if (args.Length() != 2)
+    NanReturnValue(Boolean::New(false));
 
-  int errorCode = git_config_set_string(config, configKey.data(), configValue.data());
+  git_config* config;
+  git_repository* repository = GetRepository(args);
+  if (git_repository_config(&config, repository) != GIT_OK)
+    NanReturnValue(Boolean::New(false));
+
+  std::string configKey(*String::Utf8Value(args[0]));
+  std::string configValue(*String::Utf8Value(args[1]));
+
+  int errorCode = git_config_set_string(
+      config, configKey.c_str(), configValue.c_str());
   git_config_free(config);
-  return scope.Close(Boolean::New(errorCode == GIT_OK));
+  NanReturnValue(Boolean::New(errorCode == GIT_OK));
 }
 
 
-Handle<Value> Repository::GetStatus(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetStatus) {
+  NanScope();
   if (args.Length() < 1) {
-    HandleScope scope;
     Local<Object> result = Object::New();
-    map<string, unsigned int> statuses;
+    std::map<std::string, unsigned int> statuses;
     git_status_options options = GIT_STATUS_OPTIONS_INIT;
-    options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
-    if (git_status_foreach_ext(GetRepository(args), &options, StatusCallback, &statuses) == GIT_OK) {
-      map<string, unsigned int>::iterator iter = statuses.begin();
+    options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
+                    GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+    if (git_status_foreach_ext(GetRepository(args),
+                               &options,
+                               StatusCallback,
+                               &statuses) == GIT_OK) {
+      std::map<std::string, unsigned int>::iterator iter = statuses.begin();
       for (; iter != statuses.end(); ++iter)
-        result->Set(String::NewSymbol(iter->first.data()), Number::New(iter->second));
+        result->Set(NanSymbol(iter->first.c_str()),
+                    Number::New(iter->second));
     }
-    return scope.Close(result);
+    NanReturnValue(result);
   } else {
     git_repository* repository = GetRepository(args);
-    String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-    string path(*utf8Path);
+    std::string path(*String::Utf8Value(args[0]));
     unsigned int status = 0;
-    if (git_status_file(&status, repository, path.data()) == GIT_OK)
-      return scope.Close(Number::New(status));
+    if (git_status_file(&status, repository, path.c_str()) == GIT_OK)
+      NanReturnValue(Number::New(status));
     else
-      return scope.Close(Number::New(0));
+      NanReturnValue(Number::New(0));
   }
 }
 
-Handle<Value> Repository::CheckoutHead(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::CheckoutHead) {
+  NanScope();
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(false));
+    NanReturnValue(Boolean::New(false));
 
   String::Utf8Value utf8Path(args[0]);
   char* path = *utf8Path;
 
   git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
-  options.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
+  options.checkout_strategy = GIT_CHECKOUT_FORCE |
+                              GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
   git_strarray paths;
   paths.count = 1;
   paths.strings = &path;
   options.paths = paths;
 
   int result = git_checkout_head(GetRepository(args), &options);
-  return scope.Close(Boolean::New(result == GIT_OK));
+  NanReturnValue(Boolean::New(result == GIT_OK));
 }
 
-Handle<Value> Repository::GetReferenceTarget(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetReferenceTarget) {
+  NanScope();
   if (args.Length() < 1)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
-  string refName(*utf8RefName);
+  std::string refName(*String::Utf8Value(args[0]));
   git_oid sha;
-  if (git_reference_name_to_id(&sha, GetRepository(args), refName.data()) == GIT_OK) {
+  if (git_reference_name_to_id(
+        &sha, GetRepository(args), refName.c_str()) == GIT_OK) {
     char oid[GIT_OID_HEXSZ + 1];
     git_oid_tostr(oid, GIT_OID_HEXSZ + 1, &sha);
-    return scope.Close(String::NewSymbol(oid));
-  } else
-    return scope.Close(Null());
+    NanReturnValue(NanSymbol(oid));
+  } else {
+    NanReturnNull();
+  }
 }
 
-Handle<Value> Repository::GetDiffStats(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetDiffStats) {
+  NanScope();
+
   int added = 0;
   int deleted = 0;
   Local<Object> result = Object::New();
-  result->Set(String::NewSymbol("added"), Number::New(added));
-  result->Set(String::NewSymbol("deleted"), Number::New(deleted));
+  result->Set(NanSymbol("added"), Number::New(added));
+  result->Set(NanSymbol("deleted"), Number::New(deleted));
 
   if (args.Length() < 1)
-    return scope.Close(result);
+    NanReturnValue(result);
 
-  git_repository *repository = GetRepository(args);
-  git_reference *head;
+  git_repository* repository = GetRepository(args);
+  git_reference* head;
   if (git_repository_head(&head, repository) != GIT_OK)
-    return scope.Close(result);
+    NanReturnValue(result);
 
   const git_oid* sha = git_reference_target(head);
-  git_commit *commit;
+  git_commit* commit;
   int commitStatus = git_commit_lookup(&commit, repository, sha);
   git_reference_free(head);
   if (commitStatus != GIT_OK)
-    return scope.Close(result);
+    NanReturnValue(result);
 
-  git_tree *tree;
+  git_tree* tree;
   int treeStatus = git_commit_tree(&tree, commit);
   git_commit_free(commit);
   if (treeStatus != GIT_OK)
-    return scope.Close(result);
+    NanReturnValue(result);
 
   String::Utf8Value utf8Path(args[0]);
   char* path = *utf8Path;
@@ -338,29 +312,29 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   options.context_lines = 0;
   options.flags = GIT_DIFF_DISABLE_PATHSPEC_MATCH;
 
-  git_diff *diffs;
+  git_diff* diffs;
   int diffStatus = git_diff_tree_to_workdir(&diffs, repository, tree, &options);
   git_tree_free(tree);
   if (diffStatus != GIT_OK)
-    return scope.Close(result);
+    NanReturnValue(result);
 
   int deltas = git_diff_num_deltas(diffs);
   if (deltas != 1) {
     git_diff_free(diffs);
-    return scope.Close(result);
+    NanReturnValue(result);
   }
 
-  git_patch *patch;
+  git_patch* patch;
   int patchStatus = git_patch_from_diff(&patch, diffs, 0);
   git_diff_free(diffs);
   if (patchStatus != GIT_OK)
-    return scope.Close(result);
+    NanReturnValue(result);
 
   int hunks = git_patch_num_hunks(patch);
   for (int i = 0; i < hunks; i++) {
     int lines = git_patch_num_lines_in_hunk(patch, i);
     for (int j = 0; j < lines; j++) {
-      const git_diff_line *line;
+      const git_diff_line* line;
       if (git_patch_get_line_in_hunk(&line, patch, i, j) == GIT_OK) {
         switch (line->origin) {
           case GIT_DIFF_LINE_ADDITION:
@@ -375,95 +349,93 @@ Handle<Value> Repository::GetDiffStats(const Arguments& args) {
   }
   git_patch_free(patch);
 
-  result->Set(String::NewSymbol("added"), Number::New(added));
-  result->Set(String::NewSymbol("deleted"), Number::New(deleted));
-  return scope.Close(result);
+  result->Set(NanSymbol("added"), Number::New(added));
+  result->Set(NanSymbol("deleted"), Number::New(deleted));
+  NanReturnValue(result);
 }
 
-Handle<Value> Repository::GetHeadBlob(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetHeadBlob) {
+  NanScope();
   if (args.Length() < 1)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-  string path(*utf8Path);
+  std::string path(*String::Utf8Value(args[0]));
 
-  git_repository *repo = GetRepository(args);
-  git_reference *head;
+  git_repository* repo = GetRepository(args);
+  git_reference* head;
   if (git_repository_head(&head, repo) != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  const git_oid *sha = git_reference_target(head);
-  git_commit *commit;
+  const git_oid* sha = git_reference_target(head);
+  git_commit* commit;
   int commitStatus = git_commit_lookup(&commit, repo, sha);
   git_reference_free(head);
   if (commitStatus != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  git_tree *tree;
+  git_tree* tree;
   int treeStatus = git_commit_tree(&tree, commit);
   git_commit_free(commit);
   if (treeStatus != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  git_tree_entry *treeEntry;
-  if (git_tree_entry_bypath(&treeEntry, tree, path.data()) != GIT_OK) {
+  git_tree_entry* treeEntry;
+  if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
     git_tree_free(tree);
-    return scope.Close(Null());
+    NanReturnNull();
   }
 
-  git_blob *blob = NULL;
-  const git_oid *blobSha = git_tree_entry_id(treeEntry);
+  git_blob* blob = NULL;
+  const git_oid* blobSha = git_tree_entry_id(treeEntry);
   if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
     blob = NULL;
   git_tree_entry_free(treeEntry);
   git_tree_free(tree);
   if (blob == NULL)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  const char *content = (const char *) git_blob_rawcontent(blob);
-  Handle<Value> value = scope.Close(String::NewSymbol(content));
+  const char* content = static_cast<const char*>(git_blob_rawcontent(blob));
+  Handle<Value> value = NanSymbol(content);
   git_blob_free(blob);
-  return value;
+  NanReturnValue(value);
 }
 
-int Repository::StatusCallback(const char *path, unsigned int status, void *payload) {
-  map<string, unsigned int> *statuses = (map<string, unsigned int> *) payload;
-  statuses->insert(pair<string, unsigned int>(string(path), status));
+int Repository::StatusCallback(
+    const char* path, unsigned int status, void* payload) {
+  std::map<std::string, unsigned int>* statuses =
+      static_cast<std::map<std::string, unsigned int>*>(payload);
+  statuses->insert(std::make_pair(std::string(path), status));
   return GIT_OK;
 }
 
-Handle<Value> Repository::Release(const Arguments& args) {
-  Repository *repo = node::ObjectWrap::Unwrap<Repository>(args.This());
+NAN_METHOD(Repository::Release) {
+  NanScope();
+  Repository* repo = node::ObjectWrap::Unwrap<Repository>(args.This());
   if (repo->repository != NULL) {
     git_repository_free(repo->repository);
     repo->repository = NULL;
   }
-
-  HandleScope scope;
-  return scope.Close(Undefined());
+  NanReturnUndefined();
 }
 
-Handle<Value> Repository::GetCommitCount(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetCommitCount) {
+  NanScope();
   if (args.Length() < 2)
-    return scope.Close(Number::New(0));
+    NanReturnValue(Number::New(0));
 
-  String::Utf8Value utf8FromCommitId(Local<String>::Cast(args[0]));
-  string fromCommitId(*utf8FromCommitId);
+  std::string fromCommitId(*String::Utf8Value(args[0]));
   git_oid fromCommit;
-  if (git_oid_fromstr(&fromCommit, fromCommitId.data()) != GIT_OK)
-    return scope.Close(Number::New(0));
+  if (git_oid_fromstr(&fromCommit, fromCommitId.c_str()) != GIT_OK)
+    NanReturnValue(Number::New(0));
 
-  String::Utf8Value utf8ToCommitId(Local<String>::Cast(args[1]));
-  string toCommitId(*utf8ToCommitId);
+  std::string toCommitId(*String::Utf8Value(args[1]));
   git_oid toCommit;
-  if (git_oid_fromstr(&toCommit, toCommitId.data()) != GIT_OK)
-    return scope.Close(Number::New(0));
+  if (git_oid_fromstr(&toCommit, toCommitId.c_str()) != GIT_OK)
+    NanReturnValue(Number::New(0));
 
-  git_revwalk *revWalk;
+  git_revwalk* revWalk;
   if (git_revwalk_new(&revWalk, GetRepository(args)) != GIT_OK)
-    return scope.Close(Number::New(0));
+    NanReturnValue(Number::New(0));
 
   git_revwalk_push(revWalk, &fromCommit);
   git_revwalk_hide(revWalk, &toCommit);
@@ -472,94 +444,92 @@ Handle<Value> Repository::GetCommitCount(const Arguments& args) {
   while (git_revwalk_next(&currentCommit, revWalk) == GIT_OK)
     count++;
   git_revwalk_free(revWalk);
-  return scope.Close(Number::New(count));
+  NanReturnValue(Number::New(count));
 }
 
-Handle<Value> Repository::GetMergeBase(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetMergeBase) {
+  NanScope();
   if (args.Length() < 2)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  String::Utf8Value utf8CommitOneId(Local<String>::Cast(args[0]));
-  string commitOneId(*utf8CommitOneId);
+  std::string commitOneId(*String::Utf8Value(args[0]));
   git_oid commitOne;
-  if (git_oid_fromstr(&commitOne, commitOneId.data()) != GIT_OK)
-    return scope.Close(Null());
+  if (git_oid_fromstr(&commitOne, commitOneId.c_str()) != GIT_OK)
+    NanReturnNull();
 
-  String::Utf8Value utf8CommitTwoId(Local<String>::Cast(args[1]));
-  string commitTwoId(*utf8CommitTwoId);
+  std::string commitTwoId(*String::Utf8Value(args[1]));
   git_oid commitTwo;
-  if (git_oid_fromstr(&commitTwo, commitTwoId.data()) != GIT_OK)
-    return scope.Close(Null());
+  if (git_oid_fromstr(&commitTwo, commitTwoId.c_str()) != GIT_OK)
+    NanReturnNull();
 
   git_oid mergeBase;
-  if (git_merge_base(&mergeBase, GetRepository(args), &commitOne, &commitTwo) == GIT_OK) {
+  if (git_merge_base(
+        &mergeBase, GetRepository(args), &commitOne, &commitTwo) == GIT_OK) {
     char mergeBaseId[GIT_OID_HEXSZ + 1];
     git_oid_tostr(mergeBaseId, GIT_OID_HEXSZ + 1, &mergeBase);
-    return scope.Close(String::NewSymbol(mergeBaseId));
+    NanReturnValue(NanSymbol(mergeBaseId));
   }
 
-  return scope.Close(Null());
+  NanReturnNull();
 }
 
-int Repository::DiffHunkCallback(const git_diff_delta *delta,
-                                 const git_diff_hunk *range,
-                                 void *payload) {
-  vector<git_diff_hunk> *ranges = (vector<git_diff_hunk> *) payload;
+int Repository::DiffHunkCallback(const git_diff_delta* delta,
+                                 const git_diff_hunk* range,
+                                 void* payload) {
+  std::vector<git_diff_hunk>* ranges =
+      static_cast<std::vector<git_diff_hunk>*>(payload);
   ranges->push_back(*range);
   return GIT_OK;
 }
 
-Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::GetLineDiffs) {
+  NanScope();
   if (args.Length() < 2)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  String::Utf8Value utf8Path(Local<String>::Cast(args[0]));
-  string path(*utf8Path);
-  String::Utf8Value utf8Text(Local<String>::Cast(args[1]));
-  string text(*utf8Text);
+  std::string path(*String::Utf8Value(args[0]));
+  std::string text(*String::Utf8Value(args[1]));
 
-  git_repository *repo = GetRepository(args);
-  git_reference *head;
+  git_repository* repo = GetRepository(args);
+  git_reference* head;
   if (git_repository_head(&head, repo) != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  const git_oid *sha = git_reference_target(head);
-  git_commit *commit;
+  const git_oid* sha = git_reference_target(head);
+  git_commit* commit;
   int commitStatus = git_commit_lookup(&commit, repo, sha);
   git_reference_free(head);
   if (commitStatus != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  git_tree *tree;
+  git_tree* tree;
   int treeStatus = git_commit_tree(&tree, commit);
   git_commit_free(commit);
   if (treeStatus != GIT_OK)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  git_tree_entry *treeEntry;
-  if (git_tree_entry_bypath(&treeEntry, tree, path.data()) != GIT_OK) {
+  git_tree_entry* treeEntry;
+  if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
     git_tree_free(tree);
-    return scope.Close(Null());
+    NanReturnNull();
   }
 
-  git_blob *blob = NULL;
-  const git_oid *blobSha = git_tree_entry_id(treeEntry);
+  git_blob* blob = NULL;
+  const git_oid* blobSha = git_tree_entry_id(treeEntry);
   if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
     blob = NULL;
   git_tree_entry_free(treeEntry);
   git_tree_free(tree);
   if (blob == NULL)
-    return scope.Close(Null());
+    NanReturnNull();
 
-  vector<git_diff_hunk> ranges;
+  std::vector<git_diff_hunk> ranges;
   git_diff_options options = CreateDefaultGitDiffOptions();
 
   // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
   if (args.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(args[2]));
-    if (optionsArg->Get(String::NewSymbol("ignoreEolWhitespace"))->ToBoolean()->Value())
+    if (optionsArg->Get(NanSymbol("ignoreEolWhitespace"))->BooleanValue())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
   }
 
@@ -570,32 +540,35 @@ Handle<Value> Repository::GetLineDiffs(const Arguments& args) {
     Local<Object> v8Ranges = Array::New(ranges.size());
     for (size_t i = 0; i < ranges.size(); i++) {
       Local<Object> v8Range = Object::New();
-      v8Range->Set(String::NewSymbol("oldStart"), Number::New(ranges[i].old_start));
-      v8Range->Set(String::NewSymbol("oldLines"), Number::New(ranges[i].old_lines));
-      v8Range->Set(String::NewSymbol("newStart"), Number::New(ranges[i].new_start));
-      v8Range->Set(String::NewSymbol("newLines"), Number::New(ranges[i].new_lines));
+      v8Range->Set(NanSymbol("oldStart"), Number::New(ranges[i].old_start));
+      v8Range->Set(NanSymbol("oldLines"), Number::New(ranges[i].old_lines));
+      v8Range->Set(NanSymbol("newStart"), Number::New(ranges[i].new_start));
+      v8Range->Set(NanSymbol("newLines"), Number::New(ranges[i].new_lines));
       v8Ranges->Set(i, v8Range);
     }
     git_blob_free(blob);
-    return v8Ranges;
+    NanReturnValue(v8Ranges);
   } else {
     git_blob_free(blob);
-    return scope.Close(Null());
+    NanReturnNull();
   }
 }
 
-Handle<Value> Repository::ConvertStringVectorToV8Array(vector<string> vector) {
+Handle<Value> Repository::ConvertStringVectorToV8Array(
+    const std::vector<std::string>& vector) {
   size_t i = 0, size = vector.size();
   Local<Object> array = Array::New(size);
   for (i = 0; i < size; i++)
-    array->Set(i, String::NewSymbol(vector[i].data()));
+    array->Set(i, NanSymbol(vector[i].c_str()));
 
   return array;
 }
 
-Handle<Value> Repository::GetReferences(const Arguments& args) {
+NAN_METHOD(Repository::GetReferences) {
+  NanScope();
+
   Local<Object> references = Object::New();
-  vector<string> heads, remotes, tags;
+  std::vector<std::string> heads, remotes, tags;
 
   git_strarray strarray;
   git_reference_list(&strarray, GetRepository(args));
@@ -610,16 +583,16 @@ Handle<Value> Repository::GetReferences(const Arguments& args) {
 
   git_strarray_free(&strarray);
 
-  references->Set(String::NewSymbol("heads"), ConvertStringVectorToV8Array(heads));
-  references->Set(String::NewSymbol("remotes"), ConvertStringVectorToV8Array(remotes));
-  references->Set(String::NewSymbol("tags"), ConvertStringVectorToV8Array(tags));
+  references->Set(NanSymbol("heads"), ConvertStringVectorToV8Array(heads));
+  references->Set(NanSymbol("remotes"), ConvertStringVectorToV8Array(remotes));
+  references->Set(NanSymbol("tags"), ConvertStringVectorToV8Array(tags));
 
-  return references;
+  NanReturnValue(references);
 }
 
-int branch_checkout(git_repository *repo, const char *refName) {
-  git_reference *ref = NULL;
-  git_object *git_obj = NULL;
+int branch_checkout(git_repository* repo, const char* refName) {
+  git_reference* ref = NULL;
+  git_object* git_obj = NULL;
   git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
   opts.checkout_strategy = GIT_CHECKOUT_SAFE;
   int success = -1;
@@ -637,63 +610,65 @@ int branch_checkout(git_repository *repo, const char *refName) {
   return success;
 }
 
-Handle<Value> Repository::CheckoutReference(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Repository::CheckoutReference) {
+  NanScope();
 
   if (args.Length() < 1)
-    return scope.Close(Boolean::New(false));
+    NanReturnValue(Boolean::New(false));
 
   bool shouldCreateNewRef;
-  if (args.Length() > 1 && args[1]->ToBoolean()->Value())
+  if (args.Length() > 1 && args[1]->BooleanValue())
     shouldCreateNewRef = true;
   else
     shouldCreateNewRef = false;
 
-  String::Utf8Value utf8RefName(Local<String>::Cast(args[0]));
-  string strRefName(*utf8RefName);
-  const char* refName = strRefName.data();
+  std::string strRefName(*String::Utf8Value(args[0]));
+  const char* refName = strRefName.c_str();
 
-  git_repository *repo = GetRepository(args);
+  git_repository* repo = GetRepository(args);
 
   if (branch_checkout(repo, refName) == GIT_OK) {
-    return scope.Close(Boolean::New(true));
+    NanReturnValue(Boolean::New(true));
   } else if (shouldCreateNewRef) {
-    git_reference *head;
+    git_reference* head;
     if (git_repository_head(&head, repo) != GIT_OK)
-      return scope.Close(Boolean::New(false));
+      NanReturnValue(Boolean::New(false));
 
     const git_oid* sha = git_reference_target(head);
-    git_commit *commit;
+    git_commit* commit;
     int commitStatus = git_commit_lookup(&commit, repo, sha);
     git_reference_free(head);
 
     if (commitStatus != GIT_OK)
-      return scope.Close(Boolean::New(false));
+      NanReturnValue(Boolean::New(false));
 
-    git_reference *branch;
+    git_reference* branch;
     // N.B.: git_branch_create needs a name like 'xxx', not 'refs/heads/xxx'
     const int kShortNameLength = strRefName.length() - 11;
-    string shortRefName(strRefName.data() + 11, kShortNameLength);
+    std::string shortRefName(strRefName.c_str() + 11, kShortNameLength);
 
-    int branchCreateStatus = git_branch_create(&branch, repo, shortRefName.c_str(), commit, 0);
+    int branchCreateStatus = git_branch_create(
+        &branch, repo, shortRefName.c_str(), commit, 0);
     git_commit_free(commit);
 
     if (branchCreateStatus != GIT_OK)
-      return scope.Close(Boolean::New(false));
+      NanReturnValue(Boolean::New(false));
 
     git_reference_free(branch);
 
     if (branch_checkout(repo, refName) == GIT_OK)
-      return scope.Close(Boolean::New(true));
+      NanReturnValue(Boolean::New(true));
   }
 
-  return scope.Close(Boolean::New(false));
+  NanReturnValue(Boolean::New(false));
 }
 
 Repository::Repository(Handle<String> path) {
-  String::Utf8Value utf8Path(path);
-  string repositoryPath(*utf8Path);
-  if (git_repository_open_ext(&repository, repositoryPath.data(), 0, NULL) != GIT_OK)
+  NanScope();
+
+  std::string repositoryPath(*String::Utf8Value(path));
+  if (git_repository_open_ext(
+        &repository, repositoryPath.c_str(), 0, NULL) != GIT_OK)
     repository = NULL;
 }
 

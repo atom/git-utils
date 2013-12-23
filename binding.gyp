@@ -5,6 +5,7 @@
       'dependencies': [
         'libgit2'
       ],
+      'include_dirs': [ '<!(node -e "require(\'nan\')")' ],
       'sources': [
         'src/repository.cc'
       ],
@@ -32,6 +33,9 @@
       'type': 'static_library',
       'defines': [
         'GIT_THREADS',
+        # Node's util.h may be accidentally included so use this to guard
+        # against compilation error.
+        'SRC_UTIL_H_',
       ],
       'dependencies': [
         'zlib',
@@ -197,7 +201,6 @@
         'deps/libgit2/src/trace.c',
         'deps/libgit2/src/trace.h',
         'deps/libgit2/src/transport.c',
-        'deps/libgit2/src/transports',
         'deps/libgit2/src/tree-cache.c',
         'deps/libgit2/src/tree-cache.h',
         'deps/libgit2/src/tree.c',
