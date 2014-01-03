@@ -355,7 +355,6 @@ describe "git", ->
           gitCommandHandler.callCount is 1
 
         runs ->
-          repo.refreshIndex()
           expect(repo.getIndexBlob('a.txt')).toBe 'changing\na.txt'
 
     describe 'when the path is not staged', ->
