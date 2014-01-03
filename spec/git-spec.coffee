@@ -332,6 +332,44 @@ describe "git", ->
       it 'returns null', ->
         expect(repo.getHeadBlob('i-do-not-exist.txt')).toBeNull()
 
+  describe '.getIndexBlob(path)', ->
+    [repo, repoDirectory] = []
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    describe 'when the path is staged', ->
+      it 'returns the index blob contents', ->
+        expect(repo.getIndexBlob('a.txt')).toBe 'first line\n'
+
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'changing\na.txt', 'utf8')
+        expect(repo.getIndexBlob('a.txt')).toBe 'first line\n'
+
+        gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+        exec "cd #{repoDirectory} && git add a.txt", gitCommandHandler
+
+        waitsFor ->
+          gitCommandHandler.callCount is 1
+
+        runs ->
+          repo.refreshIndex()
+          expect(repo.getIndexBlob('a.txt')).toBe 'changing\na.txt'
+
+    describe 'when the path is not staged', ->
+      it 'returns the index blob contents', ->
+        expect(repo.getIndexBlob('a.txt')).toBe 'first line\n'
+
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'changing\na.txt', 'utf8')
+        expect(repo.getIndexBlob('a.txt')).toBe 'first line\n'
+
+    describe 'when the path does not exist', ->
+      it 'returns null', ->
+        expect(repo.getIndexBlob('i-do-not-exist.txt')).toBeNull()
+
   describe '.getStatus([path])', ->
     repo = null
 

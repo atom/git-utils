@@ -113,6 +113,15 @@ or a full SHA-1 if the repository is in a detached HEAD state.
 
 Returns the string reference name or SHA-1.
 
+### Repository.getIndexBlob(path)
+
+Get the blob contents of the given path in the index. Similar to
+`git show :<path>`.
+
+`path` - The string repository-relative path.
+
+Returns the string contents of the index version of the path.
+
 ### Repository.getLineDiffs(path, text, [options])
 
 Get the line diffs comparing the HEAD version of the given path and the given

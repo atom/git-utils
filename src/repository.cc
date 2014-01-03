@@ -49,6 +49,7 @@ void Repository::Init(Handle<Object> target) {
   NODE_SET_METHOD(proto, "checkoutHead", Repository::CheckoutHead);
   NODE_SET_METHOD(proto, "getReferenceTarget", Repository::GetReferenceTarget);
   NODE_SET_METHOD(proto, "getDiffStats", Repository::GetDiffStats);
+  NODE_SET_METHOD(proto, "getIndexBlob", Repository::GetIndexBlob);
   NODE_SET_METHOD(proto, "getHeadBlob", Repository::GetHeadBlob);
   NODE_SET_METHOD(proto, "getCommitCount", Repository::GetCommitCount);
   NODE_SET_METHOD(proto, "getMergeBase", Repository::GetMergeBase);
@@ -391,6 +392,39 @@ NAN_METHOD(Repository::GetHeadBlob) {
     blob = NULL;
   git_tree_entry_free(treeEntry);
   git_tree_free(tree);
+  if (blob == NULL)
+    NanReturnNull();
+
+  const char* content = static_cast<const char*>(git_blob_rawcontent(blob));
+  Handle<Value> value = NanSymbol(content);
+  git_blob_free(blob);
+  NanReturnValue(value);
+}
+
+NAN_METHOD(Repository::GetIndexBlob) {
+  NanScope();
+  if (args.Length() < 1)
+    NanReturnNull();
+
+  std::string path(*String::Utf8Value(args[0]));
+
+  git_repository* repo = GetRepository(args);
+  git_index* index;
+  if (git_repository_index(&index, repo) != GIT_OK)
+    NanReturnNull();
+
+  git_index_read(index, 0);
+  const git_index_entry* entry = git_index_get_bypath(index, path.data(), 0);
+  if (entry == NULL) {
+    git_index_free(index);
+    NanReturnNull();
+  }
+
+  git_blob* blob = NULL;
+  const git_oid* blobSha = &entry->oid;
+  if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+    blob = NULL;
+  git_index_free(index);
   if (blob == NULL)
     NanReturnNull();
 

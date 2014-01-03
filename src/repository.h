@@ -47,6 +47,7 @@ class Repository : public node::ObjectWrap {
   static NAN_METHOD(CheckoutHead);
   static NAN_METHOD(GetReferenceTarget);
   static NAN_METHOD(GetDiffStats);
+  static NAN_METHOD(GetIndexBlob);
   static NAN_METHOD(GetHeadBlob);
   static NAN_METHOD(GetCommitCount);
   static NAN_METHOD(GetMergeBase);
