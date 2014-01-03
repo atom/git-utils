@@ -462,6 +462,31 @@ describe "git", ->
         diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', ignoreEolWhitespace: true)
         expect(diffs.length).toBe 0
 
+    describe "useIndex options", ->
+      it "uses the index version instead of the HEAD version for diffs", ->
+        repoDirectory = temp.mkdirSync('node-git-repo-')
+        wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+        repo = git.open(repoDirectory)
+
+        diffs = repo.getLineDiffs('a.txt', 'first line is different', useIndex: true)
+        expect(diffs.length).toBe 1
+
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'first line is different', 'utf8')
+
+        gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+        exec "cd #{repoDirectory} && git add a.txt", gitCommandHandler
+
+        waitsFor ->
+          gitCommandHandler.callCount is 1
+
+        runs ->
+          diffs = repo.getLineDiffs('a.txt', 'first line is different', useIndex: true)
+          expect(diffs.length).toBe 0
+
+          diffs = repo.getLineDiffs('a.txt', 'first line is different', useIndex: false)
+          expect(diffs.length).toBe 1
+
   describe '.relativize(path)', ->
     it 'relativizes the given path to the working directory of the repository', ->
       repo = git.open(__dirname)

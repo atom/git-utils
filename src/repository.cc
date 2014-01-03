@@ -525,35 +525,61 @@ NAN_METHOD(Repository::GetLineDiffs) {
   std::string text(*String::Utf8Value(args[1]));
 
   git_repository* repo = GetRepository(args);
-  git_reference* head;
-  if (git_repository_head(&head, repo) != GIT_OK)
-    NanReturnNull();
 
-  const git_oid* sha = git_reference_target(head);
-  git_commit* commit;
-  int commitStatus = git_commit_lookup(&commit, repo, sha);
-  git_reference_free(head);
-  if (commitStatus != GIT_OK)
-    NanReturnNull();
-
-  git_tree* tree;
-  int treeStatus = git_commit_tree(&tree, commit);
-  git_commit_free(commit);
-  if (treeStatus != GIT_OK)
-    NanReturnNull();
-
-  git_tree_entry* treeEntry;
-  if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
-    git_tree_free(tree);
-    NanReturnNull();
+  int useIndex = FALSE;
+  if (args.Length() >= 3) {
+    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
+    if (optionsArg->Get(NanSymbol("useIndex"))->BooleanValue())
+      useIndex = TRUE;
   }
 
   git_blob* blob = NULL;
-  const git_oid* blobSha = git_tree_entry_id(treeEntry);
-  if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
-    blob = NULL;
-  git_tree_entry_free(treeEntry);
-  git_tree_free(tree);
+  if (useIndex) {
+    git_index* index;
+    if (git_repository_index(&index, repo) != GIT_OK)
+      NanReturnNull();
+
+    git_index_read(index, 0);
+    const git_index_entry* entry = git_index_get_bypath(index, path.data(), 0);
+    if (entry == NULL) {
+      git_index_free(index);
+      NanReturnNull();
+    }
+
+    const git_oid* blobSha = &entry->oid;
+    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+  } else {
+    git_reference* head;
+    if (git_repository_head(&head, repo) != GIT_OK)
+      NanReturnNull();
+
+    const git_oid* sha = git_reference_target(head);
+    git_commit* commit;
+    int commitStatus = git_commit_lookup(&commit, repo, sha);
+    git_reference_free(head);
+    if (commitStatus != GIT_OK)
+      NanReturnNull();
+
+    git_tree* tree;
+    int treeStatus = git_commit_tree(&tree, commit);
+    git_commit_free(commit);
+    if (treeStatus != GIT_OK)
+      NanReturnNull();
+
+    git_tree_entry* treeEntry;
+    if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
+      git_tree_free(tree);
+      NanReturnNull();
+    }
+
+    const git_oid* blobSha = git_tree_entry_id(treeEntry);
+    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+    git_tree_entry_free(treeEntry);
+    git_tree_free(tree);
+  }
+
   if (blob == NULL)
     NanReturnNull();
 

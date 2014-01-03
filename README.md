@@ -131,8 +131,12 @@ text.
 
 `text` - The string text to diff the HEAD contents of the path against.
 
-`options` - An optional object with an `ignoreEolWhitespace` key that when
-            set to `true` will ignore any whitespace diffs at the end of lines.
+`options` - An optional object with the following keys:
+
+  * `ignoreEolWhitespace` - `true` to ignore any whitespace diffs at the end of
+    lines.
+  * `useIndex` - `true` to compare against the index version instead of the HEAD
+    version.
 
 Returns an array of objects that have `oldStart`, `oldLines`, `newStart`, and
 `newLines` keys pointing to integer values, may be `null` if the diff fails.
