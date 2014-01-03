@@ -39,6 +39,7 @@
       ],
       'dependencies': [
         'zlib',
+        'http_parser',
       ],
       'sources': [
         'deps/libgit2/src/array.h',
@@ -299,9 +300,6 @@
         }, {
           'libraries': [
             '-lpthread',
-          ],
-          'dependencies': [
-            'http_parser',
           ],
           'sources': [
             'deps/libgit2/src/unix/map.c',
