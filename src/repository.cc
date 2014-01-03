@@ -526,11 +526,11 @@ NAN_METHOD(Repository::GetLineDiffs) {
 
   git_repository* repo = GetRepository(args);
 
-  int useIndex = FALSE;
+  int useIndex = false;
   if (args.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(args[2]));
     if (optionsArg->Get(NanSymbol("useIndex"))->BooleanValue())
-      useIndex = TRUE;
+      useIndex = true;
   }
 
   git_blob* blob = NULL;
