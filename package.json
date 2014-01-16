@@ -47,7 +47,7 @@
     "grunt-coffeelint": "0.0.6"
   },
   "dependencies": {
-    "nan": "0.7.0",
+    "nan": "0.8.0",
     "bindings": "~1.0.0"
   },
   "scripts": {
