@@ -122,7 +122,7 @@ isRootPath = (repositoryPath) ->
   if process.platform is 'win32'
     /^[a-zA-Z]+:[\\\/]$/.test(repositoryPath)
   else
-    repositoryPath is path.seq
+    repositoryPath is path.sep
 
 exports.open = (repositoryPath) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
