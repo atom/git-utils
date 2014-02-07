@@ -35,7 +35,7 @@
   "main": "./lib/git.js",
   "devDependencies": {
     "grunt": "~0.4.0",
-    "grunt-contrib-coffee": "~0.4.0",
+    "grunt-contrib-coffee": "~0.9.0",
     "grunt-shell": "~0.2.1",
     "grunt-cli": "~0.1.6",
     "wrench": "~1.4.4",
