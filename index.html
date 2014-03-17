@@ -18,30 +18,27 @@
         <h1>git-utils</h1>
         <p>Native Git Node Module</p>
 
-        <p class="view"><a href="https://github.com/atom/node-git">View the Project on GitHub <small>atom/node-git</small></a></p>
+        <p class="view"><a href="https://github.com/atom/git-utils">View the Project on GitHub <small>atom/git-utils</small></a></p>
 
 
         <ul>
-          <li><a href="https://github.com/atom/node-git/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/atom/node-git/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/atom/node-git">View On <strong>GitHub</strong></a></li>
+          <li><a href="https://github.com/atom/git-utils/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/atom/git-utils/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/atom/git-utils">View On <strong>GitHub</strong></a></li>
         </ul>
       </header>
       <section>
         <h1>
-<a name="git-node-module-" class="anchor" href="#git-node-module-"><span class="octicon octicon-link"></span></a>Git Node module <a href="https://travis-ci.org/atom/node-git"><img src="https://travis-ci.org/atom/node-git.png" alt="Build Status"></a>
+<a name="git-node-module-" class="anchor" href="#git-node-module-"><span class="octicon octicon-link"></span></a>Git Node module <a href="https://travis-ci.org/atom/git-utils"><img src="https://travis-ci.org/atom/git-utils.png?branch=master" alt="Build Status"></a>
 </h1>
 
 <p>Helpers for working with Git repositories built natively on top of
 <a href="http://libgit2.github.com">libgit2</a>.</p>
 
-<p>This module requires <a href="http://www.cmake.org/">CMake</a> for building libgit2 and it
-is a prerequisite for both installing this module and building it locally.</p>
-
 <h2>
 <a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
 
-<div class="highlight"><pre>npm install git-utils
+<div class="highlight highlight-sh"><pre>npm install git-utils
 </pre></div>
 
 <h2>
@@ -50,8 +47,6 @@ is a prerequisite for both installing this module and building it locally.</p>
 <ul>
 <li>Clone the repository with the <code>--recurse</code> option to get the libgit2
 submodule</li>
-<li>Install <a href="http://www.cmake.org/">CMake</a>
-</li>
 <li>Run <code>npm install</code>
 </li>
 <li>Run <code>grunt</code> to compile the native and CoffeeScript code</li>
@@ -65,7 +60,7 @@ submodule</li>
 <p>Open the repository at the given path.  This will return <code>null</code> if the
 repository at the given path does not exist or cannot be opened.</p>
 
-<div class="highlight"><pre><span class="nv">git = </span><span class="nx">require</span> <span class="s">'git-utils'</span>
+<div class="highlight highlight-coffeescript"><pre><span class="nv">git = </span><span class="nx">require</span> <span class="s">'git-utils'</span>
 
 <span class="nv">repository = </span><span class="nx">git</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s">'/Users/me/repos/node'</span><span class="p">)</span>
 </pre></div>
@@ -79,14 +74,26 @@ version at HEAD. Similar to running <code>git reset HEAD -- &lt;path&gt;</code> 
 
 <p><code>path</code> - The string repository-relative path to checkout.</p>
 
-<p>Returns <code>true</code> if the checkout was successful, <code>false</code> otherwise</p>
+<p>Returns <code>true</code> if the checkout was successful, <code>false</code> otherwise.</p>
 
 <h3>
-<a name="repositorygetaheadbehindcount" class="anchor" href="#repositorygetaheadbehindcount"><span class="octicon octicon-link"></span></a>Repository.getAheadBehindCount()</h3>
+<a name="repositorycheckoutreferencereference-create" class="anchor" href="#repositorycheckoutreferencereference-create"><span class="octicon octicon-link"></span></a>Repository.checkoutReference(reference, [create])</h3>
 
-<p>Get the number of commits the HEAD branch is ahead/behind the remote branch it
+<p>Checks out a branch in your repository.</p>
+
+<p><code>reference</code> - The string reference to checkout
+<code>create</code> - A Boolean value which, if <code>true</code> creates the new <code>reference</code> if it doesn't exist.</p>
+
+<p>Returns <code>true</code> if the checkout was successful, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositorygetaheadbehindcountbranch" class="anchor" href="#repositorygetaheadbehindcountbranch"><span class="octicon octicon-link"></span></a>Repository.getAheadBehindCount(branch)</h3>
+
+<p>Get the number of commits the branch is ahead/behind the remote branch it
 is tracking.  Similar to the commit numbers reported by <code>git status</code> when a
 remote tracking branch exists.</p>
+
+<p><code>branch</code> - The branch name to lookup ahead/behind counts for. (default: <code>HEAD</code>)</p>
 
 <p>Returns an object with <code>ahead</code> and <code>behind</code> keys pointing to integer values
 that will always be &gt;= 0.</p>
@@ -110,6 +117,17 @@ that will always be &gt;= 0.</p>
 <p><code>key</code> - The string key to retrieve the value for.</p>
 
 <p>Returns the configuration value, may be <code>null</code>.</p>
+
+<h3>
+<a name="repositorysetconfigvaluekey-value" class="anchor" href="#repositorysetconfigvaluekey-value"><span class="octicon octicon-link"></span></a>Repository.setConfigValue(key, value)</h3>
+
+<p>Get the config value of the given key.</p>
+
+<p><code>key</code> - The string key to set in the config.</p>
+
+<p><code>value</code> - The string value to set in the config for the given key.</p>
+
+<p>Returns <code>true</code> if setting the config value was successful, <code>false</code> otherwise.</p>
 
 <h3>
 <a name="repositorygetdiffstatspath" class="anchor" href="#repositorygetdiffstatspath"><span class="octicon octicon-link"></span></a>Repository.getDiffStats(path)</h3>
@@ -141,7 +159,17 @@ or a full SHA-1 if the repository is in a detached HEAD state.</p>
 <p>Returns the string reference name or SHA-1.</p>
 
 <h3>
-<a name="repositorygetlinediffspath-text" class="anchor" href="#repositorygetlinediffspath-text"><span class="octicon octicon-link"></span></a>Repository.getLineDiffs(path, text)</h3>
+<a name="repositorygetindexblobpath" class="anchor" href="#repositorygetindexblobpath"><span class="octicon octicon-link"></span></a>Repository.getIndexBlob(path)</h3>
+
+<p>Get the blob contents of the given path in the index. Similar to
+<code>git show :&lt;path&gt;</code>.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns the string contents of the index version of the path.</p>
+
+<h3>
+<a name="repositorygetlinediffspath-text-options" class="anchor" href="#repositorygetlinediffspath-text-options"><span class="octicon octicon-link"></span></a>Repository.getLineDiffs(path, text, [options])</h3>
 
 <p>Get the line diffs comparing the HEAD version of the given path and the given
 text.</p>
@@ -150,7 +178,16 @@ text.</p>
 
 <p><code>text</code> - The string text to diff the HEAD contents of the path against.</p>
 
-<p>Returns an array of objects that have <code>oldStart</code>, <code>oldLines</code>, <code>newStart</code>, and
+<p><code>options</code> - An optional object with the following keys:</p>
+
+<ul>
+<li>
+<code>ignoreEolWhitespace</code> - <code>true</code> to ignore any whitespace diffs at the end of
+lines.</li>
+<li>
+<code>useIndex</code> - <code>true</code> to compare against the index version instead of the HEAD
+version.</li>
+</ul><p>Returns an array of objects that have <code>oldStart</code>, <code>oldLines</code>, <code>newStart</code>, and
 <code>newLines</code> keys pointing to integer values, may be <code>null</code> if the diff fails.</p>
 
 <h3>
@@ -171,6 +208,14 @@ if there isn't one.</p>
 <p>Get the path of the repository.</p>
 
 <p>Returns the string absolute path of the opened repository.</p>
+
+<h3>
+<a name="repositorygetreferences" class="anchor" href="#repositorygetreferences"><span class="octicon octicon-link"></span></a>Repository.getReferences()</h3>
+
+<p>Gets all the local and remote references.</p>
+
+<p>Returns an object with three keys: <code>heads</code>, <code>remotes</code>, and <code>tags</code>.
+Each key can be an array of strings containing the reference names.</p>
 
 <h3>
 <a name="repositorygetreferencetargetref" class="anchor" href="#repositorygetreferencetargetref"><span class="octicon octicon-link"></span></a>Repository.getReferenceTarget(ref)</h3>
@@ -245,6 +290,15 @@ with path keys and integer status values if no path is specified.</p>
 <p>Returns <code>true</code> if the path is new, <code>false</code> otherwise.</p>
 
 <h3>
+<a name="repositoryispathdeletedpath" class="anchor" href="#repositoryispathdeletedpath"><span class="octicon octicon-link"></span></a>Repository.isPathDeleted(path)</h3>
+
+<p>Get the deleted status of a given path.</p>
+
+<p><code>path</code> - The string repository-relative path.</p>
+
+<p>Returns <code>true</code> if the path is deleted, <code>false</code> otherwise.</p>
+
+<h3>
 <a name="repositoryisstatusmodifiedstatus" class="anchor" href="#repositoryisstatusmodifiedstatus"><span class="octicon octicon-link"></span></a>Repository.isStatusModified(status)</h3>
 
 <p>Check if a status value represents a modified path.</p>
@@ -260,7 +314,16 @@ with path keys and integer status values if no path is specified.</p>
 
 <p><code>status</code> - The integer status value.</p>
 
-<p>Returns <code>true</code> if the status is a new one, <code>false</code> otherwise</p>
+<p>Returns <code>true</code> if the status is a new one, <code>false</code> otherwise.</p>
+
+<h3>
+<a name="repositoryisstatusdeletedstatus" class="anchor" href="#repositoryisstatusdeletedstatus"><span class="octicon octicon-link"></span></a>Repository.isStatusDeleted(status)</h3>
+
+<p>Check if a status value represents a deleted path.</p>
+
+<p><code>status</code> - The integer status value.</p>
+
+<p>Returns <code>true</code> if the status is a deleted one, <code>false</code> otherwise.</p>
 
 <h3>
 <a name="repositoryissubmodulepath" class="anchor" href="#repositoryissubmodulepath"><span class="octicon octicon-link"></span></a>Repository.isSubmodule(path)</h3>
