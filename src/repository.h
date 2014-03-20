@@ -36,6 +36,7 @@ class Repository : public node::ObjectWrap {
  private:
   static NAN_METHOD(New);
   static NAN_METHOD(GetPath);
+  static NAN_METHOD(GetWorkingDirectory);
   static NAN_METHOD(Exists);
   static NAN_METHOD(GetHead);
   static NAN_METHOD(RefreshIndex);

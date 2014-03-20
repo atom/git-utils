@@ -22,7 +22,7 @@ newStatusFlags = statusWorkingDirNew | statusIndexNew
 deletedStatusFlags = statusWorkingDirDelete | statusIndexDeleted
 
 Repository::getWorkingDirectory = ->
-  @getPath()?.replace(/\/\.git\/?$/, '')
+  @workingDirectory ?= @_getWorkingDirectory()?.replace(/\/$/, '')
 
 Repository::getShortHead = ->
   head = @getHead()

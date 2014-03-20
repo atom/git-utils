@@ -38,6 +38,8 @@ void Repository::Init(Handle<Object> target) {
 
   Local<ObjectTemplate> proto = newTemplate->PrototypeTemplate();
   NODE_SET_METHOD(proto, "getPath", Repository::GetPath);
+  NODE_SET_METHOD(proto, "_getWorkingDirectory",
+                  Repository::GetWorkingDirectory);
   NODE_SET_METHOD(proto, "exists", Repository::Exists);
   NODE_SET_METHOD(proto, "getHead", Repository::GetHead);
   NODE_SET_METHOD(proto, "refreshIndex", Repository::RefreshIndex);
@@ -92,6 +94,13 @@ NAN_METHOD(Repository::GetPath) {
   NanScope();
   git_repository* repository = GetRepository(args);
   const char* path = git_repository_path(repository);
+  NanReturnValue(NanSymbol(path));
+}
+
+NAN_METHOD(Repository::GetWorkingDirectory) {
+  NanScope();
+  git_repository* repository = GetRepository(args);
+  const char* path = git_repository_workdir(repository);
   NanReturnValue(NanSymbol(path));
 }
 
