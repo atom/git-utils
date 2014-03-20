@@ -55,7 +55,5 @@ module.exports = (grunt) ->
   grunt.registerTask('default', ['coffee', 'lint', 'shell:rebuild'])
   grunt.registerTask('test', ['default', 'shell:test'])
   grunt.registerTask 'clean', ->
-    path = require 'path'
-    rm = require('rimraf').sync
-    rm('build')
-    rm(path.join('deps', 'libgit2', 'build'))
+    grunt.file.delete('lib') if grunt.file.exists('lib')
+    grunt.file.delete('build') if grunt.file.exists('build')
