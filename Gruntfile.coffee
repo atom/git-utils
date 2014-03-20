@@ -17,6 +17,7 @@ module.exports = (grunt) ->
         max_line_length:
           level: 'ignore'
 
+      gruntfile: ['Gruntfile.coffee']
       src: ['src/**/*.coffee']
       test: ['spec/**/*.coffee']
 
