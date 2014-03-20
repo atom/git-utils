@@ -287,3 +287,11 @@ repository's working directory path.
 
 Release the repository and close all file handles it has open.  No other methods
 can be called on the `Repository` object once it has been released.
+
+### Repository.submoduleForPath(path)
+
+Get the repository for the submodule that the path is located in.
+
+`path` - The absolute or repository-relative string path.
+
+Returns a `Repository` or `null` if the path isn't in a submodule.
