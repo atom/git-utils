@@ -41,6 +41,7 @@ void Repository::Init(Handle<Object> target) {
   NODE_SET_METHOD(proto, "_getWorkingDirectory",
                   Repository::GetWorkingDirectory);
   NODE_SET_METHOD(proto, "exists", Repository::Exists);
+  NODE_SET_METHOD(proto, "getSubmodulePaths", Repository::GetSubmodulePaths);
   NODE_SET_METHOD(proto, "getHead", Repository::GetHead);
   NODE_SET_METHOD(proto, "refreshIndex", Repository::RefreshIndex);
   NODE_SET_METHOD(proto, "isIgnored", Repository::IsIgnored);
@@ -55,7 +56,7 @@ void Repository::Init(Handle<Object> target) {
   NODE_SET_METHOD(proto, "getHeadBlob", Repository::GetHeadBlob);
   NODE_SET_METHOD(proto, "getCommitCount", Repository::GetCommitCount);
   NODE_SET_METHOD(proto, "getMergeBase", Repository::GetMergeBase);
-  NODE_SET_METHOD(proto, "release", Repository::Release);
+  NODE_SET_METHOD(proto, "_release", Repository::Release);
   NODE_SET_METHOD(proto, "getLineDiffs", Repository::GetLineDiffs);
   NODE_SET_METHOD(proto, "getReferences", Repository::GetReferences);
   NODE_SET_METHOD(proto, "checkoutRef", Repository::CheckoutReference);
@@ -102,6 +103,17 @@ NAN_METHOD(Repository::GetWorkingDirectory) {
   git_repository* repository = GetRepository(args);
   const char* path = git_repository_workdir(repository);
   NanReturnValue(NanSymbol(path));
+}
+
+NAN_METHOD(Repository::GetSubmodulePaths) {
+  NanScope();
+  git_repository* repository = GetRepository(args);
+  std::vector<std::string> paths;
+  git_submodule_foreach(repository, SubmoduleCallback, &paths);
+  Local<Object> v8Paths = Array::New(paths.size());
+  for (size_t i = 0; i < paths.size(); i++)
+    v8Paths->Set(i, NanSymbol(paths[i].data()));
+  NanReturnValue(v8Paths);
 }
 
 NAN_METHOD(Repository::GetHead) {
@@ -448,6 +460,16 @@ int Repository::StatusCallback(
   std::map<std::string, unsigned int>* statuses =
       static_cast<std::map<std::string, unsigned int>*>(payload);
   statuses->insert(std::make_pair(std::string(path), status));
+  return GIT_OK;
+}
+
+int Repository::SubmoduleCallback(
+    git_submodule* submodule, const char* name, void* payload) {
+  std::vector<std::string>* submodules =
+      static_cast<std::vector<std::string>*>(payload);
+  const char* submodulePath = git_submodule_path(submodule);
+  if (submodulePath != NULL)
+    submodules->push_back(submodulePath);
   return GIT_OK;
 }
 

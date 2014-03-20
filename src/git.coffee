@@ -21,6 +21,10 @@ newStatusFlags = statusWorkingDirNew | statusIndexNew
 
 deletedStatusFlags = statusWorkingDirDelete | statusIndexDeleted
 
+Repository::release = ->
+  submoduleRepo?.release() for submodulePath, submoduleRepo of @submodules
+  @_release()
+
 Repository::getWorkingDirectory = ->
   @workingDirectory ?= @_getWorkingDirectory()?.replace(/\/$/, '')
 
@@ -89,7 +93,6 @@ Repository::getAheadBehindCount = (branch='HEAD')->
   counts.behind = @getCommitCount(upstreamCommit, mergeBase)
   counts
 
-
 Repository::checkoutReference = (branch, create)->
   if branch.indexOf('refs/heads/') isnt 0
     branch = "refs/heads/#{branch}"
@@ -97,7 +100,7 @@ Repository::checkoutReference = (branch, create)->
   @checkoutRef(branch, create)
 
 Repository::relativize = (path) ->
-  return path unless path?
+  return path unless path
 
   if process.platform is 'win32'
     path = path.replace(/\\/g, '/')
@@ -111,6 +114,20 @@ Repository::relativize = (path) ->
     path.substring(@openedWorkingDirectory.length + 1)
   else
     path
+
+Repository::submoduleForPath = (path) ->
+  path = @relativize(path)
+  return null unless path
+
+  for submodulePath, submoduleRepo of @submodules
+    if path is submodulePath
+      return submoduleRepo
+    else if path.indexOf("#{submodulePath}/") is 0
+      # Handle submodules inside of submodules
+      path = path.substring(submodulePath.length + 1)
+      return submoduleRepo.submoduleForPath(path) ? submoduleRepo
+
+  null
 
 realpath = (unrealPath) ->
   try
@@ -137,6 +154,16 @@ exports.open = (repositoryPath) ->
           repository.openedWorkingDirectory = repositoryPath
           break
         repositoryPath = path.resolve(repositoryPath, '..')
+
+    repository.submodules = {}
+    for relativePath in repository.getSubmodulePaths()
+      submodulePath = path.join(repository.getWorkingDirectory(), relativePath)
+      if submoduleRepo = exports.open(submodulePath)
+        if submoduleRepo.getPath() is repository.getPath()
+          submoduleRepo.release()
+        else
+          repository.submodules[relativePath] = submoduleRepo
+
     repository
   else
     null

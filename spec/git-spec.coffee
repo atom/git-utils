@@ -7,6 +7,11 @@ temp = require 'temp'
 _ = require 'underscore'
 
 describe "git", ->
+  repo = null
+
+  afterEach ->
+    repo?.release()
+
   describe ".open(path)", ->
     describe "when the path is a repository", ->
       it "returns a repository", ->
@@ -92,8 +97,6 @@ describe "git", ->
       expect(repo.getConfigValue("not.section")).toBe null
 
   describe ".setConfigValue(key, value)", ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -108,8 +111,6 @@ describe "git", ->
       expect(repo.getConfigValue('a.b.c')).toBe 'foo'
 
   describe '.isPathModified(path)', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -130,8 +131,6 @@ describe "git", ->
         expect(repo.isPathModified('new.txt')).toBe false
 
   describe '.isPathDeleted(path)', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -152,8 +151,6 @@ describe "git", ->
         expect(repo.isPathDeleted('new.txt')).toBe false
 
   describe '.isPathNew(path)', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -185,7 +182,6 @@ describe "git", ->
         expect(repo.getUpstreamBranch()).toBe 'refs/remotes/origin/master'
 
   describe '.checkoutReference(reference, [create])', ->
-    repo = null
     repoDirectory = null
 
     beforeEach ->
@@ -243,8 +239,6 @@ describe "git", ->
           expect(repo.getHead()).toBe 'refs/heads/bananas'
 
   describe '.checkoutHead(path)', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -280,8 +274,6 @@ describe "git", ->
       expect(repo.getReferenceTarget('refs/heads/master')).toBe 'b2c96bdffe1a8f239c2d450863e4a6caa6dcb655'
 
   describe '.getDiffStats(path)', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -311,8 +303,6 @@ describe "git", ->
         expect(repo.getDiffStats('b.txt')).toEqual {added: 0, deleted: 0}
 
   describe '.getHeadBlob(path)', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -370,8 +360,6 @@ describe "git", ->
         expect(repo.getIndexBlob('i-do-not-exist.txt')).toBeNull()
 
   describe '.getStatus([path])', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -398,8 +386,6 @@ describe "git", ->
         expect(repo.getStatus('a.txt')).toBe 1 << 9
 
   describe '.getAheadBehindCount()', ->
-    repo = null
-
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/ahead-behind.git'), path.join(repoDirectory, '.git'))
@@ -516,3 +502,33 @@ describe "git", ->
         expect(repo.relativize(path.join(linkDirectory, 'test2'))).toBe 'test2'
         expect(repo.relativize(path.join(linkDirectory, 'test2/test3'))).toBe 'test2/test3'
         expect(repo.relativize('test2/test3')).toBe 'test2/test3'
+
+  describe ".submoduleForPath(path)", ->
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      submoduleDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures', 'master.git'), path.join(repoDirectory, '.git'))
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures', 'master.git'), path.join(submoduleDirectory, '.git'))
+
+      gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+      exec "cd #{repoDirectory} && git submodule add #{submoduleDirectory} sub", gitCommandHandler
+
+      waitsFor ->
+        gitCommandHandler.callCount is 1
+
+      runs ->
+        repo = git.open(repoDirectory)
+
+    it "returns the repository for the path", ->
+      expect(repo.submoduleForPath()).toBe null
+      expect(repo.submoduleForPath(null)).toBe null
+      expect(repo.submoduleForPath('')).toBe null
+      expect(repo.submoduleForPath('sub1')).toBe null
+
+      submoduleRepoPath = path.join(repo.getPath(), 'modules', 'sub/')
+      submoduleRepoPath = submoduleRepoPath.replace(/\\/g, '/') if process.platform is 'win32'
+
+      expect(repo.submoduleForPath('sub').getPath()).toBe submoduleRepoPath
+      expect(repo.submoduleForPath('sub/').getPath()).toBe submoduleRepoPath
+      expect(repo.submoduleForPath('sub/a').getPath()).toBe submoduleRepoPath
+      expect(repo.submoduleForPath('sub/a/b/c/d').getPath()).toBe submoduleRepoPath

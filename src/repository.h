@@ -37,6 +37,7 @@ class Repository : public node::ObjectWrap {
   static NAN_METHOD(New);
   static NAN_METHOD(GetPath);
   static NAN_METHOD(GetWorkingDirectory);
+  static NAN_METHOD(GetSubmodulePaths);
   static NAN_METHOD(Exists);
   static NAN_METHOD(GetHead);
   static NAN_METHOD(RefreshIndex);
@@ -62,9 +63,12 @@ class Repository : public node::ObjectWrap {
   static int DiffHunkCallback(const git_diff_delta *delta,
                               const git_diff_hunk *hunk,
                               void *payload);
+  static int SubmoduleCallback(git_submodule *submodule, const char *name,
+                               void *payload);
 
   static Handle<Value> ConvertStringVectorToV8Array(
       const std::vector<std::string>& vector);
+
 
   static git_repository* GetRepository(_NAN_METHOD_ARGS_TYPE args);
 
