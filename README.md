@@ -29,6 +29,10 @@ git = require 'git-utils'
 repository = git.open('/Users/me/repos/node')
 ```
 
+The opened repository will have a `submodules` property that will be an object
+of paths mapped to submodule {Repository} objects. The path keys will be
+relative to the opened repository's working directory.
+
 ### Repository.checkoutHead(path)
 
 Restore the contents of a path in the working directory and index to the
