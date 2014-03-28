@@ -503,6 +503,24 @@ describe "git", ->
         expect(repo.relativize(path.join(linkDirectory, 'test2/test3'))).toBe 'test2/test3'
         expect(repo.relativize('test2/test3')).toBe 'test2/test3'
 
+    it "handles case insensitive filesystems", ->
+      repoDirectory = temp.mkdirSync('lower-case-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+      repo.caseInsensitiveFs = true
+      workingDirectory = repo.getWorkingDirectory()
+
+      expect(repo.relativize(path.join(workingDirectory.toUpperCase(), 'a.txt'))).toBe 'a.txt'
+      expect(repo.relativize(path.join(workingDirectory.toUpperCase(), 'a/b/c.txt'))).toBe 'a/b/c.txt'
+
+      linkDirectory = path.join(fs.realpathSync(temp.mkdirSync('lower-case-symlink')), 'link')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      fs.symlinkSync(repoDirectory, linkDirectory)
+
+      repo = git.open(linkDirectory)
+      expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2'))).toBe 'test2'
+      expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2/test3'))).toBe 'test2/test3'
+
   describe ".submoduleForPath(path)", ->
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')

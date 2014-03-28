@@ -107,13 +107,28 @@ Repository::relativize = (path) ->
   else
     return path unless path[0] is '/'
 
-  workingDirectory = @getWorkingDirectory()
-  if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
-    path.substring(workingDirectory.length + 1)
-  else if @openedWorkingDirectory and path.indexOf("#{@openedWorkingDirectory}/") is 0
-    path.substring(@openedWorkingDirectory.length + 1)
+  if @caseInsensitiveFs
+    lowerCasePath = path.toLowerCase()
+
+    workingDirectory = @getWorkingDirectory()
+    if workingDirectory
+      workingDirectory = workingDirectory.toLowerCase()
+      if lowerCasePath.indexOf("#{workingDirectory}/") is 0
+        return path.substring(workingDirectory.length + 1)
+
+    if @openedWorkingDirectory
+      workingDirectory = @openedWorkingDirectory.toLowerCase()
+      if lowerCasePath.indexOf("#{workingDirectory}/") is 0
+        return path.substring(workingDirectory.length + 1)
   else
-    path
+    workingDirectory = @getWorkingDirectory()
+    if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
+      return path.substring(workingDirectory.length + 1)
+
+    if @openedWorkingDirectory and path.indexOf("#{@openedWorkingDirectory}/") is 0
+      return path.substring(@openedWorkingDirectory.length + 1)
+
+  path
 
 Repository::submoduleForPath = (path) ->
   path = @relativize(path)
@@ -141,12 +156,25 @@ isRootPath = (repositoryPath) ->
   else
     repositoryPath is path.sep
 
+caseInsensitiveFs = null
+
+isFsCaseInsensitive = ->
+  unless caseInsensitiveFs?
+    try
+      lowerCaseStat = fs.statSync(__dirname.toLowerCase())
+      upperCaseStat = fs.statSync(__dirname.toUpperCase())
+      caseInsensitiveFs = lowerCaseStat.dev is upperCaseStat.dev and lowerCaseStat.ino is upperCaseStat.ino
+    catch statError
+      caseInsensitiveFs = false
+  caseInsensitiveFs
+
 exports.open = (repositoryPath) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
 
   repositoryPath = repositoryPath.replace(/\\/g, '/') if process.platform is 'win32'
   repository = new Repository(repositoryPath)
   if repository.exists()
+    repository.caseInsensitiveFs = isFsCaseInsensitive()
     if symlink
       workingDirectory = repository.getWorkingDirectory()
       while not isRootPath(repositoryPath)
