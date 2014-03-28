@@ -518,6 +518,7 @@ describe "git", ->
       fs.symlinkSync(repoDirectory, linkDirectory)
 
       repo = git.open(linkDirectory)
+      repo.caseInsensitiveFs = true
       expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2'))).toBe 'test2'
       expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2/test3'))).toBe 'test2/test3'
 
