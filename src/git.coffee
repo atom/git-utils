@@ -1,5 +1,5 @@
-fs = require 'fs'
 path = require 'path'
+fs = require 'fs-plus'
 {Repository} = require('bindings')('git.node')
 
 statusIndexNew = 1 << 0
@@ -156,25 +156,13 @@ isRootPath = (repositoryPath) ->
   else
     repositoryPath is path.sep
 
-caseInsensitiveFs = null
-
-isFsCaseInsensitive = ->
-  unless caseInsensitiveFs?
-    try
-      lowerCaseStat = fs.statSync(__dirname.toLowerCase())
-      upperCaseStat = fs.statSync(__dirname.toUpperCase())
-      caseInsensitiveFs = lowerCaseStat.dev is upperCaseStat.dev and lowerCaseStat.ino is upperCaseStat.ino
-    catch statError
-      caseInsensitiveFs = false
-  caseInsensitiveFs
-
 exports.open = (repositoryPath) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
 
   repositoryPath = repositoryPath.replace(/\\/g, '/') if process.platform is 'win32'
   repository = new Repository(repositoryPath)
   if repository.exists()
-    repository.caseInsensitiveFs = isFsCaseInsensitive()
+    repository.caseInsensitiveFs = fs.isCaseInsensitive()
     if symlink
       workingDirectory = repository.getWorkingDirectory()
       while not isRootPath(repositoryPath)
