@@ -1,4 +1,4 @@
-# Git Node module [![Build Status](https://travis-ci.org/atom/git-utils.png?branch=master)](https://travis-ci.org/atom/git-utils)
+# Git Node module [![Build Status](https://travis-ci.org/atom/git-utils.svg?branch=master)](https://travis-ci.org/atom/git-utils)
 
 Helpers for working with Git repositories built natively on top of
 [libgit2](http://libgit2.github.com).
