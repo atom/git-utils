@@ -156,7 +156,7 @@ isRootPath = (repositoryPath) ->
   else
     repositoryPath is path.sep
 
-exports.open = (repositoryPath) ->
+openRepository = (repositoryPath) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
 
   repositoryPath = repositoryPath.replace(/\\/g, '/') if process.platform is 'win32'
@@ -170,16 +170,22 @@ exports.open = (repositoryPath) ->
           repository.openedWorkingDirectory = repositoryPath
           break
         repositoryPath = path.resolve(repositoryPath, '..')
-
-    repository.submodules = {}
-    for relativePath in repository.getSubmodulePaths()
-      submodulePath = path.join(repository.getWorkingDirectory(), relativePath)
-      if submoduleRepo = exports.open(submodulePath)
-        if submoduleRepo.getPath() is repository.getPath()
-          submoduleRepo.release()
-        else
-          repository.submodules[relativePath] = submoduleRepo
-
     repository
   else
     null
+
+openSubmodules = (repository) ->
+  repository.submodules = {}
+  for relativePath in repository.getSubmodulePaths() when relativePath
+    submodulePath = path.join(repository.getWorkingDirectory(), relativePath)
+    if submoduleRepo = openRepository(submodulePath)
+      if submoduleRepo.getPath() is repository.getPath()
+        submoduleRepo.release()
+      else
+        openSubmodules(submoduleRepo)
+        repository.submodules[relativePath] = submoduleRepo
+
+exports.open = (repositoryPath) ->
+  repository = openRepository(repositoryPath)
+  openSubmodules(repository) if repository?
+  repository
