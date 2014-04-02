@@ -240,6 +240,11 @@
         'deps/libgit2/src/hash/hash_generic.c',
       ],
       'conditions': [
+        ['OS=="linux"', {
+          'cflags': [
+            '-w',
+          ],
+        }],
         ['OS=="win"', {
           'defines': [
             'GIT_WINHTTP',
