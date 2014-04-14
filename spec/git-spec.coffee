@@ -565,3 +565,6 @@ describe "git", ->
       expect(repo.getStatus 'toadd.txt').toBe 1 << 7
       repo.add('toadd.txt')
       expect(repo.getStatus 'toadd.txt').toBe 1 << 0
+
+    it "throws an error if the file doesn't exist", ->
+      expect(-> repo.add('missing.txt')).toThrow()

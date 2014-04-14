@@ -762,11 +762,15 @@ NAN_METHOD(Repository::Add) {
   std::string path(*String::Utf8Value(args[0]));
 
   git_index *index;
-  if (git_repository_index(&index, repository) != GIT_OK)
-    NanReturnValue(Boolean::New(false));
+  if (git_repository_index(&index, repository) != GIT_OK) {
+    const git_error *e = giterr_last();
+    return NanThrowError(e->message);
+  }
 
-  if (git_index_add_bypath(index, path.c_str()) != GIT_OK)
-    NanReturnValue(Boolean::New(false));
+  if (git_index_add_bypath(index, path.c_str()) != GIT_OK) {
+    const git_error *e = giterr_last();
+    return NanThrowError(e->message);
+  }
 
   NanReturnValue(Boolean::New(true));
 }
