@@ -302,8 +302,8 @@ Returns a `Repository` or `null` if the path isn't in a submodule.
 
 ### Repository.add(path)
 
-Stage the changes in `path` into the repository's index. Clear any conflict state associated with
-`path`.
+Stage the changes in `path` into the repository's index. Clear any conflict state
+associated with `path`.
 
 `path` - A repository-relative string path.
 
