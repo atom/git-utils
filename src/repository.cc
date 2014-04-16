@@ -768,10 +768,12 @@ NAN_METHOD(Repository::Add) {
   }
 
   if (git_index_add_bypath(index, path.c_str()) != GIT_OK) {
+    git_index_free(index);
     const git_error *e = giterr_last();
     return NanThrowError(e->message);
   }
 
+  git_index_free(index);
   NanReturnValue(Boolean::New(true));
 }
 
