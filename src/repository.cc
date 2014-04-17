@@ -761,9 +761,9 @@ NAN_METHOD(Repository::Add) {
   git_repository* repository = GetRepository(args);
   std::string path(*String::Utf8Value(args[0]));
 
-  git_index *index;
+  git_index* index;
   if (git_repository_index(&index, repository) != GIT_OK) {
-    const git_error *e = giterr_last();
+    const git_error* e = giterr_last();
     if (e != NULL)
       return NanThrowError(e->message);
     else
@@ -772,7 +772,7 @@ NAN_METHOD(Repository::Add) {
 
   if (git_index_add_bypath(index, path.c_str()) != GIT_OK) {
     git_index_free(index);
-    const git_error *e = giterr_last();
+    const git_error* e = giterr_last();
     if (e != NULL)
       return NanThrowError(e->message);
     else
