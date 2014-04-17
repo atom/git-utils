@@ -60,6 +60,7 @@ void Repository::Init(Handle<Object> target) {
   NODE_SET_METHOD(proto, "getLineDiffs", Repository::GetLineDiffs);
   NODE_SET_METHOD(proto, "getReferences", Repository::GetReferences);
   NODE_SET_METHOD(proto, "checkoutRef", Repository::CheckoutReference);
+  NODE_SET_METHOD(proto, "add", Repository::Add);
 
   target->Set(NanSymbol("Repository"), newTemplate->GetFunction());
 }
@@ -752,6 +753,34 @@ NAN_METHOD(Repository::CheckoutReference) {
   }
 
   NanReturnValue(Boolean::New(false));
+}
+
+NAN_METHOD(Repository::Add) {
+  NanScope();
+
+  git_repository* repository = GetRepository(args);
+  std::string path(*String::Utf8Value(args[0]));
+
+  git_index* index;
+  if (git_repository_index(&index, repository) != GIT_OK) {
+    const git_error* e = giterr_last();
+    if (e != NULL)
+      return NanThrowError(e->message);
+    else
+      return NanThrowError("Unknown error opening index");
+  }
+
+  if (git_index_add_bypath(index, path.c_str()) != GIT_OK) {
+    git_index_free(index);
+    const git_error* e = giterr_last();
+    if (e != NULL)
+      return NanThrowError(e->message);
+    else
+      return NanThrowError("Unknown error adding path to index");
+  }
+
+  git_index_free(index);
+  NanReturnValue(Boolean::New(true));
 }
 
 Repository::Repository(Handle<String> path) {

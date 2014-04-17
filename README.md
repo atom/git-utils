@@ -299,3 +299,12 @@ Get the repository for the submodule that the path is located in.
 `path` - The absolute or repository-relative string path.
 
 Returns a `Repository` or `null` if the path isn't in a submodule.
+
+### Repository.add(path)
+
+Stage the changes in `path` into the repository's index. Clear any conflict state
+associated with `path`.
+
+`path` - A repository-relative string path.
+
+Raises an `Error` if the path isn't readable or if another exception occurs.

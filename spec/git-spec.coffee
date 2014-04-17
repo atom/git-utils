@@ -551,3 +551,20 @@ describe "git", ->
       expect(repo.submoduleForPath('sub/').getPath()).toBe submoduleRepoPath
       expect(repo.submoduleForPath('sub/a').getPath()).toBe submoduleRepoPath
       expect(repo.submoduleForPath('sub/a/b/c/d').getPath()).toBe submoduleRepoPath
+
+  describe ".add(path)", ->
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+      filePath = path.join(repoDirectory, 'toadd.txt')
+      fs.writeFileSync(filePath, 'changes to stage', 'utf8')
+
+    it "introduces the current state of the file to the index", ->
+      expect(repo.getStatus 'toadd.txt').toBe 1 << 7
+      repo.add('toadd.txt')
+      expect(repo.getStatus 'toadd.txt').toBe 1 << 0
+
+    it "throws an error if the file doesn't exist", ->
+      expect(-> repo.add('missing.txt')).toThrow()

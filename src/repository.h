@@ -57,6 +57,7 @@ class Repository : public node::ObjectWrap {
   static NAN_METHOD(GetLineDiffs);
   static NAN_METHOD(GetReferences);
   static NAN_METHOD(CheckoutReference);
+  static NAN_METHOD(Add);
 
   static int StatusCallback(const char *path, unsigned int status,
                             void *payload);
