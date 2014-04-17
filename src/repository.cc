@@ -764,21 +764,19 @@ NAN_METHOD(Repository::Add) {
   git_index *index;
   if (git_repository_index(&index, repository) != GIT_OK) {
     const git_error *e = giterr_last();
-    if (e != NULL) {
+    if (e != NULL)
       return NanThrowError(e->message);
-    } else {
+    else
       return NanThrowError("Unknown error opening index");
-    }
   }
 
   if (git_index_add_bypath(index, path.c_str()) != GIT_OK) {
     git_index_free(index);
     const git_error *e = giterr_last();
-    if (e != NULL) {
+    if (e != NULL)
       return NanThrowError(e->message);
-    } else {
+    else
       return NanThrowError("Unknown error adding path to index");
-    }
   }
 
   git_index_free(index);
