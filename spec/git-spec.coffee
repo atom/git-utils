@@ -381,7 +381,6 @@ describe "git", ->
       newFilePath = path.join(repo.getWorkingDirectory(), 'b.txt')
       fs.writeFileSync(newFilePath, '', 'utf8')
 
-      fs.mkdirSync(path.join(repo.getWorkingDirectory(), '.git/info'))
       ignoreFile = path.join(repo.getWorkingDirectory(), '.git/info/exclude')
       fs.writeFileSync(ignoreFile, 'c.txt', 'utf8')
       ignoredFilePath = path.join(repo.getWorkingDirectory(), 'c.txt')
