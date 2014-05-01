@@ -11,7 +11,7 @@ statusWorkingDirNew = 1 << 7
 statusWorkingDirModified = 1 << 8
 statusWorkingDirDelete = 1 << 9
 statusWorkingDirTypeChange = 1 << 10
-statusIgnore = 1 << 14
+statusIgnored = 1 << 14
 
 modifiedStatusFlags = statusWorkingDirModified | statusIndexModified |
                       statusWorkingDirDelete | statusIndexDeleted |
@@ -54,6 +54,9 @@ Repository::isStatusDeleted = (status=0) ->
 
 Repository::isPathDeleted = (path) ->
   @isStatusDeleted(@getStatus(path))
+
+Repository::isStatusIgnored = (status=0) ->
+  (status & statusIgnored) > 0
 
 Repository::getUpstreamBranch = (branch) ->
   branch ?= @getHead()

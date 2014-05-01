@@ -241,6 +241,14 @@ Get the deleted status of a given path.
 
 Returns `true` if the path is deleted, `false` otherwise.
 
+### Repository.isStatusIgnored(status)
+
+Check if a status value represents an ignored path.
+
+`status` - The integer status value.
+
+Returns `true` if the status is a ignored one, `false` otherwise.
+
 ### Repository.isStatusModified(status)
 
 Check if a status value represents a modified path.

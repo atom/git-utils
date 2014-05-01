@@ -1,6 +1,6 @@
 git = require '../lib/git'
 path = require 'path'
-fs = require 'fs'
+fs = require 'fs-plus'
 {exec} = require 'child_process'
 wrench = require 'wrench'
 temp = require 'temp'
@@ -169,6 +169,19 @@ describe "git", ->
       it 'returns true', ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathNew('new.txt')).toBe true
+
+  describe '.isStatusIgnored(status)', ->
+    it 'returns true when the status is ignored, false otherwise', ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/ignored.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+      ignoreFile = path.join(repo.getWorkingDirectory(), '.git/info/exclude')
+      fs.writeFileSync(ignoreFile, 'c.txt')
+      fs.writeFileSync(path.join(repoDirectory, 'c.txt'), '')
+
+      expect(repo.isStatusIgnored(repo.getStatus('c.txt'))).toBe true
+      expect(repo.isStatusIgnored(repo.getStatus('b.txt'))).toBe false
+      expect(repo.isStatusIgnored()).toBe false
 
   describe '.getUpstreamBranch()', ->
     describe 'when no upstream branch exists', ->
