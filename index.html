@@ -29,7 +29,7 @@
       </header>
       <section>
         <h1>
-<a name="git-node-module-" class="anchor" href="#git-node-module-"><span class="octicon octicon-link"></span></a>Git Node module <a href="https://travis-ci.org/atom/git-utils"><img src="https://travis-ci.org/atom/git-utils.png?branch=master" alt="Build Status"></a>
+<a name="git-node-module-" class="anchor" href="#git-node-module-"><span class="octicon octicon-link"></span></a>Git Node module <a href="https://travis-ci.org/atom/git-utils"><img src="https://travis-ci.org/atom/git-utils.svg?branch=master" alt="Build Status"></a>
 </h1>
 
 <p>Helpers for working with Git repositories built natively on top of
@@ -64,6 +64,10 @@ repository at the given path does not exist or cannot be opened.</p>
 
 <span class="nv">repository = </span><span class="nx">git</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s">'/Users/me/repos/node'</span><span class="p">)</span>
 </pre></div>
+
+<p>The opened repository will have a <code>submodules</code> property that will be an object
+of paths mapped to submodule {Repository} objects. The path keys will be
+relative to the opened repository's working directory.</p>
 
 <h3>
 <a name="repositorycheckoutheadpath" class="anchor" href="#repositorycheckoutheadpath"><span class="octicon octicon-link"></span></a>Repository.checkoutHead(path)</h3>
@@ -299,6 +303,15 @@ with path keys and integer status values if no path is specified.</p>
 <p>Returns <code>true</code> if the path is deleted, <code>false</code> otherwise.</p>
 
 <h3>
+<a name="repositoryisstatusignoredstatus" class="anchor" href="#repositoryisstatusignoredstatus"><span class="octicon octicon-link"></span></a>Repository.isStatusIgnored(status)</h3>
+
+<p>Check if a status value represents an ignored path.</p>
+
+<p><code>status</code> - The integer status value.</p>
+
+<p>Returns <code>true</code> if the status is a ignored one, <code>false</code> otherwise.</p>
+
+<h3>
 <a name="repositoryisstatusmodifiedstatus" class="anchor" href="#repositoryisstatusmodifiedstatus"><span class="octicon octicon-link"></span></a>Repository.isStatusModified(status)</h3>
 
 <p>Check if a status value represents a modified path.</p>
@@ -355,6 +368,25 @@ repository's working directory path.</p>
 
 <p>Release the repository and close all file handles it has open.  No other methods
 can be called on the <code>Repository</code> object once it has been released.</p>
+
+<h3>
+<a name="repositorysubmoduleforpathpath" class="anchor" href="#repositorysubmoduleforpathpath"><span class="octicon octicon-link"></span></a>Repository.submoduleForPath(path)</h3>
+
+<p>Get the repository for the submodule that the path is located in.</p>
+
+<p><code>path</code> - The absolute or repository-relative string path.</p>
+
+<p>Returns a <code>Repository</code> or <code>null</code> if the path isn't in a submodule.</p>
+
+<h3>
+<a name="repositoryaddpath" class="anchor" href="#repositoryaddpath"><span class="octicon octicon-link"></span></a>Repository.add(path)</h3>
+
+<p>Stage the changes in <code>path</code> into the repository's index. Clear any conflict state
+associated with <code>path</code>.</p>
+
+<p><code>path</code> - A repository-relative string path.</p>
+
+<p>Raises an <code>Error</code> if the path isn't readable or if another exception occurs.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/atom">atom</a></p>
