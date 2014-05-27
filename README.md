@@ -295,6 +295,20 @@ Relativize the given path to the repository's working directory.
 Returns a repository-relative path if the given path is prefixed with the
 repository's working directory path.
 
+### Repository.isWorkingDirectory(path)
+
+Is the given path the repository's working directory?
+
+It is better to call this method than comparing a path directly against
+the value of `getWorkingDirectory()` since this method handles slash
+normalization on Windows, case insensitive filesystems, and symlinked
+repositories.
+
+`path` - The string path to check.
+
+Returns `true` if the given path is the repository's working directory,
+false otherwise.
+
 ### Repository.release()
 
 Release the repository and close all file handles it has open.  No other methods
