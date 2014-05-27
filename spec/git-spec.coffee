@@ -534,6 +534,25 @@ describe "git", ->
       expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2'))).toBe 'test2'
       expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2/test3'))).toBe 'test2/test3'
 
+  describe ".isWorkingDirectory(path)", ->
+    it "returns whether the given path is the repository's working directory", ->
+      repo = git.open(__dirname)
+      workingDirectory = repo.getWorkingDirectory()
+
+      expect(repo.isWorkingDirectory(workingDirectory)).toBe true
+      expect(repo.isWorkingDirectory()).toBe false
+      expect(repo.isWorkingDirectory(null)).toBe false
+      expect(repo.isWorkingDirectory('')).toBe false
+      expect(repo.isWorkingDirectory('test')).toBe false
+
+      repoDirectory = temp.mkdirSync('lower-case-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+      repo.caseInsensitiveFs = true
+      workingDirectory = repo.getWorkingDirectory()
+
+      expect(repo.isWorkingDirectory(workingDirectory.toUpperCase())).toBe true
+
   describe ".submoduleForPath(path)", ->
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')

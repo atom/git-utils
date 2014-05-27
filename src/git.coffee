@@ -147,6 +147,24 @@ Repository::submoduleForPath = (path) ->
 
   null
 
+Repository::isWorkingDirectory = (path) ->
+  return false unless path
+
+  if process.platform is 'win32'
+    path = path.replace(/\\/g, '/')
+  else
+    return false unless path[0] is '/'
+
+  if @caseInsensitiveFs
+    lowerCasePath = path.toLowerCase()
+    return true if lowerCasePath is @getWorkingDirectory()?.toLowerCase()
+    return true if lowerCasePath is @openedWorkingDirectory?.toLowerCase()
+  else
+    return true if path is @getWorkingDirectory()
+    return true if path is @openedWorkingDirectory
+
+  false
+
 realpath = (unrealPath) ->
   try
     fs.realpathSync(unrealPath)
