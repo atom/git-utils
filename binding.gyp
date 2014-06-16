@@ -372,6 +372,13 @@
           'deps/libgit2/deps/zlib',
         ],
       },
+      'conditions': [
+        ['OS=="win"', {
+          'msvs_disabled_warnings': [
+            4005,  # macro redefinition
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'http_parser',
