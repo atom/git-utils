@@ -274,6 +274,7 @@
             ],
           },
           'msvs_disabled_warnings': [
+            4005,  # macro redefinition
             4244,  # conversion from 'ssize_t' to 'int32_t', possible loss of data
             4267,  # conversion from 'size_t' to 'int', possible loss of data
             4090,  # different 'volatile' qualifiers
