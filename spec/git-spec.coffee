@@ -6,6 +6,13 @@ wrench = require 'wrench'
 temp = require 'temp'
 _ = require 'underscore'
 
+execCommands = (commands, callback) ->
+  if process.platform is 'win32'
+    command = commands.join(' & ')
+  else
+    command = commands.join(' && ')
+  exec(command, callback)
+
 describe "git", ->
   repo = null
 
@@ -352,7 +359,7 @@ describe "git", ->
         expect(repo.getIndexBlob('a.txt')).toBe 'first line\n'
 
         gitCommandHandler = jasmine.createSpy('gitCommandHandler')
-        exec "cd #{repoDirectory} && git add a.txt", gitCommandHandler
+        execCommands ["cd #{repoDirectory}", "git add a.txt"], gitCommandHandler
 
         waitsFor ->
           gitCommandHandler.callCount is 1
@@ -473,7 +480,7 @@ describe "git", ->
         fs.writeFileSync(filePath, 'first line is different', 'utf8')
 
         gitCommandHandler = jasmine.createSpy('gitCommandHandler')
-        exec "cd #{repoDirectory} && git add a.txt", gitCommandHandler
+        execCommands ["cd #{repoDirectory}", "git add a.txt"], gitCommandHandler
 
         waitsFor ->
           gitCommandHandler.callCount is 1
@@ -561,7 +568,7 @@ describe "git", ->
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures', 'master.git'), path.join(submoduleDirectory, '.git'))
 
       gitCommandHandler = jasmine.createSpy('gitCommandHandler')
-      exec "cd #{repoDirectory} && git submodule add #{submoduleDirectory} sub", gitCommandHandler
+      execCommands ["cd #{repoDirectory}", "git submodule add #{submoduleDirectory} sub"], gitCommandHandler
 
       waitsFor ->
         gitCommandHandler.callCount is 1
