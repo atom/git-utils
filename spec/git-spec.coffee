@@ -223,7 +223,7 @@ describe "git", ->
       it 'does not check a branch out if the dirty tree interferes', ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'README.md'), 'great words', 'utf8')
         gitCommandHandler = jasmine.createSpy('gitCommandHandler')
-        execCommands ["cd #{repoDirectory}", "git add .", "git commit -m 'update README'"], gitCommandHandler
+        execCommands ["cd #{repoDirectory}", "git add .", "git commit -m 'comitting'"], gitCommandHandler
 
         waitsFor ->
           gitCommandHandler.callCount is 1
