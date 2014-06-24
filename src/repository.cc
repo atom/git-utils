@@ -443,7 +443,7 @@ NAN_METHOD(Repository::GetIndexBlob) {
   }
 
   git_blob* blob = NULL;
-  const git_oid* blobSha = &entry->oid;
+  const git_oid* blobSha = &entry->id;
   if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
     blob = NULL;
   git_index_free(index);
@@ -578,7 +578,7 @@ NAN_METHOD(Repository::GetLineDiffs) {
       NanReturnNull();
     }
 
-    const git_oid* blobSha = &entry->oid;
+    const git_oid* blobSha = &entry->id;
     if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
       blob = NULL;
   } else {
