@@ -70,8 +70,6 @@
         'deps/libgit2/src/commit_list.c',
         'deps/libgit2/src/commit_list.h',
         'deps/libgit2/src/common.h',
-        'deps/libgit2/src/compress.c',
-        'deps/libgit2/src/compress.h',
         'deps/libgit2/src/config.c',
         'deps/libgit2/src/config.h',
         'deps/libgit2/src/config_cache.c',
