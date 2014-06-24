@@ -740,7 +740,7 @@ NAN_METHOD(Repository::CheckoutReference) {
     std::string shortRefName(strRefName.c_str() + 11, kShortNameLength);
 
     int branchCreateStatus = git_branch_create(
-        &branch, repo, shortRefName.c_str(), commit, 0);
+        &branch, repo, shortRefName.c_str(), commit, 0, NULL, NULL);
     git_commit_free(commit);
 
     if (branchCreateStatus != GIT_OK)
