@@ -364,6 +364,21 @@ index was read.</p>
 repository's working directory path.</p>
 
 <h3>
+<a name="repositoryisworkingdirectorypath" class="anchor" href="#repositoryisworkingdirectorypath"><span class="octicon octicon-link"></span></a>Repository.isWorkingDirectory(path)</h3>
+
+<p>Is the given path the repository's working directory?</p>
+
+<p>It is better to call this method than comparing a path directly against
+the value of <code>getWorkingDirectory()</code> since this method handles slash
+normalization on Windows, case insensitive filesystems, and symlinked
+repositories.</p>
+
+<p><code>path</code> - The string path to check.</p>
+
+<p>Returns <code>true</code> if the given path is the repository's working directory,
+false otherwise.</p>
+
+<h3>
 <a name="repositoryrelease" class="anchor" href="#repositoryrelease"><span class="octicon octicon-link"></span></a>Repository.release()</h3>
 
 <p>Release the repository and close all file handles it has open.  No other methods
