@@ -265,7 +265,7 @@ NAN_METHOD(Repository::CheckoutHead) {
   String::Utf8Value utf8Path(args[0]);
   char* path = *utf8Path;
 
-  git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
+  git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT;
   options.checkout_strategy = GIT_CHECKOUT_FORCE |
                               GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
   git_strarray paths;
@@ -443,7 +443,7 @@ NAN_METHOD(Repository::GetIndexBlob) {
   }
 
   git_blob* blob = NULL;
-  const git_oid* blobSha = &entry->oid;
+  const git_oid* blobSha = &entry->id;
   if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
     blob = NULL;
   git_index_free(index);
@@ -578,7 +578,7 @@ NAN_METHOD(Repository::GetLineDiffs) {
       NanReturnNull();
     }
 
-    const git_oid* blobSha = &entry->oid;
+    const git_oid* blobSha = &entry->id;
     if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
       blob = NULL;
   } else {
@@ -685,14 +685,14 @@ NAN_METHOD(Repository::GetReferences) {
 int branch_checkout(git_repository* repo, const char* refName) {
   git_reference* ref = NULL;
   git_object* git_obj = NULL;
-  git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
+  git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
   opts.checkout_strategy = GIT_CHECKOUT_SAFE;
   int success = -1;
 
   if (!(success = git_reference_lookup(&ref, repo, refName)) &&
       !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
       !(success = git_checkout_tree(repo, git_obj, &opts)))
-    success = git_repository_set_head(repo, refName);
+    success = git_repository_set_head(repo, refName, NULL, NULL);
 
   git_object_free(git_obj);
   git_obj = NULL;
@@ -740,7 +740,7 @@ NAN_METHOD(Repository::CheckoutReference) {
     std::string shortRefName(strRefName.c_str() + 11, kShortNameLength);
 
     int branchCreateStatus = git_branch_create(
-        &branch, repo, shortRefName.c_str(), commit, 0);
+        &branch, repo, shortRefName.c_str(), commit, 0, NULL, NULL);
     git_commit_free(commit);
 
     if (branchCreateStatus != GIT_OK)
