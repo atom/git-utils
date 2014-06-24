@@ -316,9 +316,12 @@
             'deps/libgit2/src/win32/precompiled.h',
             'deps/libgit2/src/win32/pthread.c',
             'deps/libgit2/src/win32/pthread.h',
+            'deps/libgit2/src/win32/reparse.h',
             'deps/libgit2/src/win32/utf-conv.c',
             'deps/libgit2/src/win32/utf-conv.h',
             'deps/libgit2/src/win32/version.h',
+            'deps/libgit2/src/win32/w32_util.c',
+            'deps/libgit2/src/win32/w32_util.h',
             'deps/libgit2/deps/regex/regex.c',
           ],
         }, {
