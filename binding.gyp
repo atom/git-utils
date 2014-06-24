@@ -332,12 +332,14 @@
           ],
           'cflags': [
             '-Wno-missing-field-initializers',
-            '-Wno-unused-variable'
+            '-Wno-unused-variable',
+            '-Wno-unused-function',
           ],
           'xcode_settings': {
             'WARNING_CFLAGS': [
               '-Wno-missing-field-initializers',
-              '-Wno-unused-variable'
+              '-Wno-unused-variable',
+              '-Wno-unused-function',
             ],
           },
         }],
