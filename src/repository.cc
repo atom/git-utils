@@ -265,7 +265,7 @@ NAN_METHOD(Repository::CheckoutHead) {
   String::Utf8Value utf8Path(args[0]);
   char* path = *utf8Path;
 
-  git_checkout_opts options = GIT_CHECKOUT_OPTS_INIT;
+  git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT;
   options.checkout_strategy = GIT_CHECKOUT_FORCE |
                               GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH;
   git_strarray paths;
@@ -685,7 +685,7 @@ NAN_METHOD(Repository::GetReferences) {
 int branch_checkout(git_repository* repo, const char* refName) {
   git_reference* ref = NULL;
   git_object* git_obj = NULL;
-  git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
+  git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
   opts.checkout_strategy = GIT_CHECKOUT_SAFE;
   int success = -1;
 
