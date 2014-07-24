@@ -1,7 +1,7 @@
 {
   "name": "git-utils",
   "description": "A package for using Git repositories",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "licenses": [
     {
       "type": "MIT",
