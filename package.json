@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "nan": "1.2.0",
-    "bindings": "~1.2.1",
     "fs-plus": "^2.1.0"
   },
   "scripts": {

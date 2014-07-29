@@ -1,6 +1,6 @@
 path = require 'path'
 fs = require 'fs-plus'
-{Repository} = require('bindings')('git.node')
+{Repository} = require('../build/Release/git.node')
 
 statusIndexNew = 1 << 0
 statusIndexModified = 1 << 1
