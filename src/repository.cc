@@ -130,7 +130,7 @@ NAN_METHOD(Repository::GetHead) {
       char oid[GIT_OID_HEXSZ + 1];
       git_oid_tostr(oid, GIT_OID_HEXSZ + 1, sha);
       git_reference_free(head);
-      NanReturnValue(NanNew<String>(oid));
+      NanReturnValue(NanNew<String>(oid, -1));
     }
   }
 
@@ -288,7 +288,7 @@ NAN_METHOD(Repository::GetReferenceTarget) {
         &sha, GetRepository(args), refName.c_str()) == GIT_OK) {
     char oid[GIT_OID_HEXSZ + 1];
     git_oid_tostr(oid, GIT_OID_HEXSZ + 1, &sha);
-    NanReturnValue(NanNew<String>(oid));
+    NanReturnValue(NanNew<String>(oid, -1));
   } else {
     NanReturnNull();
   }
@@ -533,7 +533,7 @@ NAN_METHOD(Repository::GetMergeBase) {
         &mergeBase, GetRepository(args), &commitOne, &commitTwo) == GIT_OK) {
     char mergeBaseId[GIT_OID_HEXSZ + 1];
     git_oid_tostr(mergeBaseId, GIT_OID_HEXSZ + 1, &mergeBase);
-    NanReturnValue(NanNew<String>(mergeBaseId));
+    NanReturnValue(NanNew<String>(mergeBaseId, -1));
   }
 
   NanReturnNull();
