@@ -55,6 +55,7 @@ class Repository : public node::ObjectWrap {
   static NAN_METHOD(GetMergeBase);
   static NAN_METHOD(Release);
   static NAN_METHOD(GetLineDiffs);
+  static NAN_METHOD(GetLineDiffDetails);
   static NAN_METHOD(GetReferences);
   static NAN_METHOD(CheckoutReference);
   static NAN_METHOD(Add);
@@ -63,6 +64,10 @@ class Repository : public node::ObjectWrap {
                             void *payload);
   static int DiffHunkCallback(const git_diff_delta *delta,
                               const git_diff_hunk *hunk,
+                              void *payload);
+  static int DiffLineCallback(const git_diff_delta *delta,
+                              const git_diff_hunk *hunk,
+                              const git_diff_line *line,
                               void *payload);
   static int SubmoduleCallback(git_submodule *submodule, const char *name,
                                void *payload);

@@ -58,6 +58,7 @@ void Repository::Init(Handle<Object> target) {
   NODE_SET_METHOD(proto, "getMergeBase", Repository::GetMergeBase);
   NODE_SET_METHOD(proto, "_release", Repository::Release);
   NODE_SET_METHOD(proto, "getLineDiffs", Repository::GetLineDiffs);
+  NODE_SET_METHOD(proto, "getLineDiffDetails", Repository::GetLineDiffDetails);
   NODE_SET_METHOD(proto, "getReferences", Repository::GetReferences);
   NODE_SET_METHOD(proto, "checkoutRef", Repository::CheckoutReference);
   NODE_SET_METHOD(proto, "add", Repository::Add);
@@ -652,6 +653,84 @@ NAN_METHOD(Repository::GetLineDiffs) {
                    NanNew<Number>(ranges[i].new_start));
       v8Range->Set(NanNew<String>("newLines"),
                    NanNew<Number>(ranges[i].new_lines));
+      v8Ranges->Set(i, v8Range);
+    }
+    git_blob_free(blob);
+    NanReturnValue(v8Ranges);
+  } else {
+    git_blob_free(blob);
+    NanReturnNull();
+  }
+}
+
+struct LineDiff {
+  git_diff_hunk hunk;
+  git_diff_line line;
+};
+
+int Repository::DiffLineCallback(const git_diff_delta* delta,
+                                 const git_diff_hunk* range,
+                                 const git_diff_line* line,
+                                 void* payload) {
+  LineDiff lineDiff;
+  lineDiff.hunk = *range;
+  lineDiff.line = *line;
+  std::vector<LineDiff> * lineDiffs =
+      static_cast<std::vector<LineDiff>*>(payload);
+  lineDiffs->push_back(lineDiff);
+  return GIT_OK;
+}
+
+NAN_METHOD(Repository::GetLineDiffDetails) {
+  NanScope();
+  if (args.Length() < 2)
+    NanReturnNull();
+
+  std::string text(*String::Utf8Value(args[1]));
+
+  git_repository* repo = GetRepository(args);
+
+  git_blob* blob = NULL;
+
+  int getBlobResult = GetBlob(args, repo, blob);
+
+  if (getBlobResult != 0)
+    NanReturnNull();
+
+  std::vector<LineDiff> lineDiffs;
+  git_diff_options options = CreateDefaultGitDiffOptions();
+
+  // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
+  if (args.Length() >= 3) {
+    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
+    if (optionsArg->Get(NanNew<String>("ignoreEolWhitespace"))->BooleanValue())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
+  }
+
+  options.context_lines = 0;
+  if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
+                              &options, NULL, NULL, DiffLineCallback,
+                              &lineDiffs) == GIT_OK) {
+    Local<Object> v8Ranges = NanNew<Array>(lineDiffs.size());
+    for (size_t i = 0; i < lineDiffs.size(); i++) {
+      Local<Object> v8Range = NanNew<Object>();
+
+      v8Range->Set(NanNew<String>("oldLineNo"),
+                   NanNew<Number>(lineDiffs[i].line.old_lineno));
+      v8Range->Set(NanNew<String>("newLineNo"),
+                   NanNew<Number>(lineDiffs[i].line.new_lineno));
+      v8Range->Set(NanNew<String>("oldStart"),
+                   NanNew<Number>(lineDiffs[i].hunk.old_start));
+      v8Range->Set(NanNew<String>("newStart"),
+                   NanNew<Number>(lineDiffs[i].hunk.new_start));
+      v8Range->Set(NanNew<String>("oldLines"),
+                   NanNew<Number>(lineDiffs[i].hunk.old_lines));
+      v8Range->Set(NanNew<String>("newLines"),
+                   NanNew<Number>(lineDiffs[i].hunk.new_lines));
+      v8Range->Set(NanNew<String>("line"),
+                   NanNew<String>(lineDiffs[i].line.content,
+                                  lineDiffs[i].line.content_len));
+
       v8Ranges->Set(i, v8Range);
     }
     git_blob_free(blob);
