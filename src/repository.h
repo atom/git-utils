@@ -75,12 +75,10 @@ class Repository : public node::ObjectWrap {
   static Handle<Value> ConvertStringVectorToV8Array(
       const std::vector<std::string>& vector);
 
-
   static git_repository* GetRepository(_NAN_METHOD_ARGS_TYPE args);
 
   static int GetBlob(_NAN_METHOD_ARGS_TYPE args,
                       git_repository* repo, git_blob*& blob);
-
 
   static git_diff_options CreateDefaultGitDiffOptions();
 
