@@ -78,6 +78,69 @@ git_repository* Repository::GetRepository(_NAN_METHOD_ARGS_TYPE args) {
   return node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
 }
 
+int Repository::GetBlob(_NAN_METHOD_ARGS_TYPE args,
+            git_repository* repo, git_blob*& blob) {
+  std::string path(*String::Utf8Value(args[0]));
+
+  int useIndex = false;
+  if (args.Length() >= 3) {
+    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
+    if (optionsArg->Get(NanNew<String>("useIndex"))->BooleanValue())
+      useIndex = true;
+  }
+
+  if (useIndex) {
+    git_index* index;
+    if (git_repository_index(&index, repo) != GIT_OK)
+      return -1;
+
+    git_index_read(index, 0);
+    const git_index_entry* entry = git_index_get_bypath(index, path.data(), 0);
+    if (entry == NULL) {
+      git_index_free(index);
+      return -1;
+    }
+
+    const git_oid* blobSha = &entry->id;
+    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+  } else {
+    git_reference* head;
+    if (git_repository_head(&head, repo) != GIT_OK)
+      return -1;
+
+    const git_oid* sha = git_reference_target(head);
+    git_commit* commit;
+    int commitStatus = git_commit_lookup(&commit, repo, sha);
+    git_reference_free(head);
+    if (commitStatus != GIT_OK)
+      return -1;
+
+    git_tree* tree;
+    int treeStatus = git_commit_tree(&tree, commit);
+    git_commit_free(commit);
+    if (treeStatus != GIT_OK)
+      return -1;
+
+    git_tree_entry* treeEntry;
+    if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
+      git_tree_free(tree);
+      return -1;
+    }
+
+    const git_oid* blobSha = git_tree_entry_id(treeEntry);
+    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+    git_tree_entry_free(treeEntry);
+    git_tree_free(tree);
+  }
+
+  if (blob == NULL)
+    return -1;
+
+  return 0;
+}
+
 // C++ equivalent to GIT_DIFF_OPTIONS_INIT, we can not use it directly because
 // of C++'s strong typing.
 git_diff_options Repository::CreateDefaultGitDiffOptions() {
@@ -553,66 +616,15 @@ NAN_METHOD(Repository::GetLineDiffs) {
   if (args.Length() < 2)
     NanReturnNull();
 
-  std::string path(*String::Utf8Value(args[0]));
   std::string text(*String::Utf8Value(args[1]));
 
   git_repository* repo = GetRepository(args);
 
-  int useIndex = false;
-  if (args.Length() >= 3) {
-    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
-    if (optionsArg->Get(NanNew<String>("useIndex"))->BooleanValue())
-      useIndex = true;
-  }
-
   git_blob* blob = NULL;
-  if (useIndex) {
-    git_index* index;
-    if (git_repository_index(&index, repo) != GIT_OK)
-      NanReturnNull();
 
-    git_index_read(index, 0);
-    const git_index_entry* entry = git_index_get_bypath(index, path.data(), 0);
-    if (entry == NULL) {
-      git_index_free(index);
-      NanReturnNull();
-    }
+  int getBlobResult = GetBlob(args, repo, blob);
 
-    const git_oid* blobSha = &entry->id;
-    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
-      blob = NULL;
-  } else {
-    git_reference* head;
-    if (git_repository_head(&head, repo) != GIT_OK)
-      NanReturnNull();
-
-    const git_oid* sha = git_reference_target(head);
-    git_commit* commit;
-    int commitStatus = git_commit_lookup(&commit, repo, sha);
-    git_reference_free(head);
-    if (commitStatus != GIT_OK)
-      NanReturnNull();
-
-    git_tree* tree;
-    int treeStatus = git_commit_tree(&tree, commit);
-    git_commit_free(commit);
-    if (treeStatus != GIT_OK)
-      NanReturnNull();
-
-    git_tree_entry* treeEntry;
-    if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
-      git_tree_free(tree);
-      NanReturnNull();
-    }
-
-    const git_oid* blobSha = git_tree_entry_id(treeEntry);
-    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
-      blob = NULL;
-    git_tree_entry_free(treeEntry);
-    git_tree_free(tree);
-  }
-
-  if (blob == NULL)
+  if (getBlobResult != 0)
     NanReturnNull();
 
   std::vector<git_diff_hunk> ranges;

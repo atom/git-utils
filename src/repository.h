@@ -73,6 +73,10 @@ class Repository : public node::ObjectWrap {
 
   static git_repository* GetRepository(_NAN_METHOD_ARGS_TYPE args);
 
+  static int GetBlob(_NAN_METHOD_ARGS_TYPE args,
+                      git_repository* repo, git_blob*& blob);
+
+
   static git_diff_options CreateDefaultGitDiffOptions();
 
   explicit Repository(Handle<String> path);
