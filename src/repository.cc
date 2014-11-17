@@ -80,7 +80,7 @@ git_repository* Repository::GetRepository(_NAN_METHOD_ARGS_TYPE args) {
 }
 
 int Repository::GetBlob(_NAN_METHOD_ARGS_TYPE args,
-            git_repository* repo, git_blob*& blob) {
+                        git_repository* repo, git_blob*& blob) {
   std::string path(*String::Utf8Value(args[0]));
 
   int useIndex = false;

@@ -492,7 +492,7 @@ describe "git", ->
           diffs = repo.getLineDiffs('a.txt', 'first line is different', useIndex: false)
           expect(diffs.length).toBe 1
 
-  describe '.getLineDiffDetailss(path, text, options)', ->
+  describe '.getLineDiffDetails(path, text, options)', ->
     it 'returns all relevant lines in a diff', ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
 
