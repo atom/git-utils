@@ -21,6 +21,10 @@ newStatusFlags = statusWorkingDirNew | statusIndexNew
 
 deletedStatusFlags = statusWorkingDirDelete | statusIndexDeleted
 
+indexStatusFlags = statusIndexNew | statusIndexModified |
+                   statusIndexDeleted | statusIndexRenamed |
+                   statusIndexTypeChange
+
 Repository::release = ->
   submoduleRepo?.release() for submodulePath, submoduleRepo of @submodules
   @_release()
@@ -57,6 +61,9 @@ Repository::isPathDeleted = (path) ->
 
 Repository::isStatusIgnored = (status=0) ->
   (status & statusIgnored) > 0
+
+Repository::isStatusStaged = (status=0) ->
+  (status & indexStatusFlags) > 0
 
 Repository::getUpstreamBranch = (branch) ->
   branch ?= @getHead()
