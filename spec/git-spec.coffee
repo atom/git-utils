@@ -497,10 +497,10 @@ describe "git", ->
       repo = git.open(path.join(__dirname, 'fixtures/master.git'))
 
       isOldLine = (diff) ->
-        diff.oldLineNo >= 0 and diff.newLineNo is -1
+        diff.oldLineNumber >= 0 and diff.newLineNumber is -1
 
       isNewLine = (diff) ->
-        diff.oldLineNo is -1 and diff.newLineNo >= 0
+        diff.oldLineNumber is -1 and diff.newLineNumber >= 0
 
       diffs = repo.getLineDiffDetails('a.txt', 'first line is different')
       expect(diffs.length).toBe 3

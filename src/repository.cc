@@ -715,9 +715,9 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
     for (size_t i = 0; i < lineDiffs.size(); i++) {
       Local<Object> v8Range = NanNew<Object>();
 
-      v8Range->Set(NanNew<String>("oldLineNo"),
+      v8Range->Set(NanNew<String>("oldLineNumber"),
                    NanNew<Number>(lineDiffs[i].line.old_lineno));
-      v8Range->Set(NanNew<String>("newLineNo"),
+      v8Range->Set(NanNew<String>("newLineNumber"),
                    NanNew<Number>(lineDiffs[i].line.new_lineno));
       v8Range->Set(NanNew<String>("oldStart"),
                    NanNew<Number>(lineDiffs[i].hunk.old_start));
