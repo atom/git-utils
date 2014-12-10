@@ -152,7 +152,10 @@ text.
 
 Takes the same arguments as `getLineDiffs`.
 
-Returns an array of objects which represent an old or new line in a diff. Every object has `oldStart`, `oldLines`, `newStart`, `newLines`, `oldLineNo` and `newLineNo` keys pointing to integer values, and a `line` key pointing to the respective line content. May be `null` if the diff fails.
+Returns an array of objects which represent an old or new line in a diff. Every
+object has `oldStart`, `oldLines`, `newStart`, `newLines`, `oldLineNo` and `newLineNo`
+keys pointing to integer values, and a `line` key pointing to the respective line
+content. May be `null` if the diff fails.
 
 ### Repository.getMergeBase(commit1, commit2)
 
