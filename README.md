@@ -285,6 +285,14 @@ Check if a status value represents a deleted path.
 
 Returns `true` if the status is a deleted one, `false` otherwise.
 
+### Repository.isStatusStaged(status)
+
+Check if a status value represents a changed that is staged in the index.
+
+`status` - The integer status value.
+
+Returns `true` if the status is a staged one, `false` otherwise.
+
 ### Repository.isSubmodule(path)
 
 Check if the path is a submodule in the index.
