@@ -492,6 +492,74 @@ describe "git", ->
           diffs = repo.getLineDiffs('a.txt', 'first line is different', useIndex: false)
           expect(diffs.length).toBe 1
 
+  describe '.getLineDiffDetails(path, text, options)', ->
+    it 'returns all relevant lines in a diff', ->
+      repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+
+      isOldLine = (diff) ->
+        diff.oldLineNumber >= 0 and diff.newLineNumber is -1
+
+      isNewLine = (diff) ->
+        diff.oldLineNumber is -1 and diff.newLineNumber >= 0
+
+      diffs = repo.getLineDiffDetails('a.txt', 'first line is different')
+      expect(diffs.length).toBe 3
+      expect(isOldLine(diffs[0])).toBe true
+      expect(diffs[0].line).toEqual 'first line\n'
+      expect(isNewLine(diffs[1])).toBe true
+      expect(diffs[1].line).toEqual 'first line is different'
+
+      diffs = repo.getLineDiffDetails('a.txt', 'first line\nsecond line')
+      expect(diffs.length).toBe 2
+      expect(isNewLine(diffs[0])).toBe true
+      expect(diffs[0].line).toEqual 'second line'
+
+      diffs = repo.getLineDiffDetails('a.txt', '')
+      expect(diffs.length).toBe 1
+      expect(isOldLine(diffs[0])).toBe true
+      expect(diffs[0].line).toEqual 'first line\n'
+
+    it "returns null for paths that don't exist", ->
+      repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+
+      diffs = repo.getLineDiffDetails('i-dont-exists.txt', 'content')
+      expect(diffs).toBeNull()
+
+    describe "ignoreEolWhitespace option", ->
+      it "ignores eol of line whitespace changes", ->
+        repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\nsecond\r\nthird\r\n', ignoreEolWhitespace: false)
+        expect(diffs.length).toBe 6
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', ignoreEolWhitespace: true)
+        expect(diffs.length).toBe 0
+
+    describe "useIndex options", ->
+      it "uses the index version instead of the HEAD version for diffs", ->
+        repoDirectory = temp.mkdirSync('node-git-repo-')
+        wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+        repo = git.open(repoDirectory)
+
+        diffs = repo.getLineDiffDetails('a.txt', 'first line is different', useIndex: true)
+        expect(diffs.length).toBe 3
+
+        filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
+        fs.writeFileSync(filePath, 'first line is different', 'utf8')
+
+        gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+        execCommands ["cd #{repoDirectory}", "git add a.txt"], gitCommandHandler
+
+        waitsFor ->
+          gitCommandHandler.callCount is 1
+
+        runs ->
+          diffs = repo.getLineDiffDetails('a.txt', 'first line is different', useIndex: true)
+          expect(diffs.length).toBe 0
+
+          diffs = repo.getLineDiffDetails('a.txt', 'first line is different', useIndex: false)
+          expect(diffs.length).toBe 3
+
   describe '.relativize(path)', ->
     it 'relativizes the given path to the working directory of the repository', ->
       repo = git.open(__dirname)

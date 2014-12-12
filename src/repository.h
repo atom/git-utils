@@ -55,6 +55,7 @@ class Repository : public node::ObjectWrap {
   static NAN_METHOD(GetMergeBase);
   static NAN_METHOD(Release);
   static NAN_METHOD(GetLineDiffs);
+  static NAN_METHOD(GetLineDiffDetails);
   static NAN_METHOD(GetReferences);
   static NAN_METHOD(CheckoutReference);
   static NAN_METHOD(Add);
@@ -64,14 +65,20 @@ class Repository : public node::ObjectWrap {
   static int DiffHunkCallback(const git_diff_delta *delta,
                               const git_diff_hunk *hunk,
                               void *payload);
+  static int DiffLineCallback(const git_diff_delta *delta,
+                              const git_diff_hunk *hunk,
+                              const git_diff_line *line,
+                              void *payload);
   static int SubmoduleCallback(git_submodule *submodule, const char *name,
                                void *payload);
 
   static Handle<Value> ConvertStringVectorToV8Array(
       const std::vector<std::string>& vector);
 
-
   static git_repository* GetRepository(_NAN_METHOD_ARGS_TYPE args);
+
+  static int GetBlob(_NAN_METHOD_ARGS_TYPE args,
+                      git_repository* repo, git_blob*& blob);
 
   static git_diff_options CreateDefaultGitDiffOptions();
 

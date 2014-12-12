@@ -145,6 +145,18 @@ text.
 Returns an array of objects that have `oldStart`, `oldLines`, `newStart`, and
 `newLines` keys pointing to integer values, may be `null` if the diff fails.
 
+### Repository.getLineDiffDetails(path, text, [options])
+
+Get the line diff details comparing the HEAD version of the given path and the given
+text.
+
+Takes the same arguments as `getLineDiffs`.
+
+Returns an array of objects which represent an old or new line in a diff. Every
+object has `oldStart`, `oldLines`, `newStart`, `newLines`, `oldLineNumber` and
+`newLineNumber` keys pointing to integer values, and a `line` key pointing to the
+respective line content. May be `null` if the diff fails.
+
 ### Repository.getMergeBase(commit1, commit2)
 
 Get the merge base of two commits.

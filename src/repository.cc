@@ -58,6 +58,7 @@ void Repository::Init(Handle<Object> target) {
   NODE_SET_METHOD(proto, "getMergeBase", Repository::GetMergeBase);
   NODE_SET_METHOD(proto, "_release", Repository::Release);
   NODE_SET_METHOD(proto, "getLineDiffs", Repository::GetLineDiffs);
+  NODE_SET_METHOD(proto, "getLineDiffDetails", Repository::GetLineDiffDetails);
   NODE_SET_METHOD(proto, "getReferences", Repository::GetReferences);
   NODE_SET_METHOD(proto, "checkoutRef", Repository::CheckoutReference);
   NODE_SET_METHOD(proto, "add", Repository::Add);
@@ -76,6 +77,69 @@ NAN_METHOD(Repository::New) {
 
 git_repository* Repository::GetRepository(_NAN_METHOD_ARGS_TYPE args) {
   return node::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+}
+
+int Repository::GetBlob(_NAN_METHOD_ARGS_TYPE args,
+                        git_repository* repo, git_blob*& blob) {
+  std::string path(*String::Utf8Value(args[0]));
+
+  int useIndex = false;
+  if (args.Length() >= 3) {
+    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
+    if (optionsArg->Get(NanNew<String>("useIndex"))->BooleanValue())
+      useIndex = true;
+  }
+
+  if (useIndex) {
+    git_index* index;
+    if (git_repository_index(&index, repo) != GIT_OK)
+      return -1;
+
+    git_index_read(index, 0);
+    const git_index_entry* entry = git_index_get_bypath(index, path.data(), 0);
+    if (entry == NULL) {
+      git_index_free(index);
+      return -1;
+    }
+
+    const git_oid* blobSha = &entry->id;
+    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+  } else {
+    git_reference* head;
+    if (git_repository_head(&head, repo) != GIT_OK)
+      return -1;
+
+    const git_oid* sha = git_reference_target(head);
+    git_commit* commit;
+    int commitStatus = git_commit_lookup(&commit, repo, sha);
+    git_reference_free(head);
+    if (commitStatus != GIT_OK)
+      return -1;
+
+    git_tree* tree;
+    int treeStatus = git_commit_tree(&tree, commit);
+    git_commit_free(commit);
+    if (treeStatus != GIT_OK)
+      return -1;
+
+    git_tree_entry* treeEntry;
+    if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
+      git_tree_free(tree);
+      return -1;
+    }
+
+    const git_oid* blobSha = git_tree_entry_id(treeEntry);
+    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
+      blob = NULL;
+    git_tree_entry_free(treeEntry);
+    git_tree_free(tree);
+  }
+
+  if (blob == NULL)
+    return -1;
+
+  return 0;
 }
 
 // C++ equivalent to GIT_DIFF_OPTIONS_INIT, we can not use it directly because
@@ -553,66 +617,15 @@ NAN_METHOD(Repository::GetLineDiffs) {
   if (args.Length() < 2)
     NanReturnNull();
 
-  std::string path(*String::Utf8Value(args[0]));
   std::string text(*String::Utf8Value(args[1]));
 
   git_repository* repo = GetRepository(args);
 
-  int useIndex = false;
-  if (args.Length() >= 3) {
-    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
-    if (optionsArg->Get(NanNew<String>("useIndex"))->BooleanValue())
-      useIndex = true;
-  }
-
   git_blob* blob = NULL;
-  if (useIndex) {
-    git_index* index;
-    if (git_repository_index(&index, repo) != GIT_OK)
-      NanReturnNull();
 
-    git_index_read(index, 0);
-    const git_index_entry* entry = git_index_get_bypath(index, path.data(), 0);
-    if (entry == NULL) {
-      git_index_free(index);
-      NanReturnNull();
-    }
+  int getBlobResult = GetBlob(args, repo, blob);
 
-    const git_oid* blobSha = &entry->id;
-    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
-      blob = NULL;
-  } else {
-    git_reference* head;
-    if (git_repository_head(&head, repo) != GIT_OK)
-      NanReturnNull();
-
-    const git_oid* sha = git_reference_target(head);
-    git_commit* commit;
-    int commitStatus = git_commit_lookup(&commit, repo, sha);
-    git_reference_free(head);
-    if (commitStatus != GIT_OK)
-      NanReturnNull();
-
-    git_tree* tree;
-    int treeStatus = git_commit_tree(&tree, commit);
-    git_commit_free(commit);
-    if (treeStatus != GIT_OK)
-      NanReturnNull();
-
-    git_tree_entry* treeEntry;
-    if (git_tree_entry_bypath(&treeEntry, tree, path.c_str()) != GIT_OK) {
-      git_tree_free(tree);
-      NanReturnNull();
-    }
-
-    const git_oid* blobSha = git_tree_entry_id(treeEntry);
-    if (blobSha != NULL && git_blob_lookup(&blob, repo, blobSha) != GIT_OK)
-      blob = NULL;
-    git_tree_entry_free(treeEntry);
-    git_tree_free(tree);
-  }
-
-  if (blob == NULL)
+  if (getBlobResult != 0)
     NanReturnNull();
 
   std::vector<git_diff_hunk> ranges;
@@ -640,6 +653,84 @@ NAN_METHOD(Repository::GetLineDiffs) {
                    NanNew<Number>(ranges[i].new_start));
       v8Range->Set(NanNew<String>("newLines"),
                    NanNew<Number>(ranges[i].new_lines));
+      v8Ranges->Set(i, v8Range);
+    }
+    git_blob_free(blob);
+    NanReturnValue(v8Ranges);
+  } else {
+    git_blob_free(blob);
+    NanReturnNull();
+  }
+}
+
+struct LineDiff {
+  git_diff_hunk hunk;
+  git_diff_line line;
+};
+
+int Repository::DiffLineCallback(const git_diff_delta* delta,
+                                 const git_diff_hunk* range,
+                                 const git_diff_line* line,
+                                 void* payload) {
+  LineDiff lineDiff;
+  lineDiff.hunk = *range;
+  lineDiff.line = *line;
+  std::vector<LineDiff> * lineDiffs =
+      static_cast<std::vector<LineDiff>*>(payload);
+  lineDiffs->push_back(lineDiff);
+  return GIT_OK;
+}
+
+NAN_METHOD(Repository::GetLineDiffDetails) {
+  NanScope();
+  if (args.Length() < 2)
+    NanReturnNull();
+
+  std::string text(*String::Utf8Value(args[1]));
+
+  git_repository* repo = GetRepository(args);
+
+  git_blob* blob = NULL;
+
+  int getBlobResult = GetBlob(args, repo, blob);
+
+  if (getBlobResult != 0)
+    NanReturnNull();
+
+  std::vector<LineDiff> lineDiffs;
+  git_diff_options options = CreateDefaultGitDiffOptions();
+
+  // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
+  if (args.Length() >= 3) {
+    Local<Object> optionsArg(Local<Object>::Cast(args[2]));
+    if (optionsArg->Get(NanNew<String>("ignoreEolWhitespace"))->BooleanValue())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
+  }
+
+  options.context_lines = 0;
+  if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
+                              &options, NULL, NULL, DiffLineCallback,
+                              &lineDiffs) == GIT_OK) {
+    Local<Object> v8Ranges = NanNew<Array>(lineDiffs.size());
+    for (size_t i = 0; i < lineDiffs.size(); i++) {
+      Local<Object> v8Range = NanNew<Object>();
+
+      v8Range->Set(NanNew<String>("oldLineNumber"),
+                   NanNew<Number>(lineDiffs[i].line.old_lineno));
+      v8Range->Set(NanNew<String>("newLineNumber"),
+                   NanNew<Number>(lineDiffs[i].line.new_lineno));
+      v8Range->Set(NanNew<String>("oldStart"),
+                   NanNew<Number>(lineDiffs[i].hunk.old_start));
+      v8Range->Set(NanNew<String>("newStart"),
+                   NanNew<Number>(lineDiffs[i].hunk.new_start));
+      v8Range->Set(NanNew<String>("oldLines"),
+                   NanNew<Number>(lineDiffs[i].hunk.old_lines));
+      v8Range->Set(NanNew<String>("newLines"),
+                   NanNew<Number>(lineDiffs[i].hunk.new_lines));
+      v8Range->Set(NanNew<String>("line"),
+                   NanNew<String>(lineDiffs[i].line.content,
+                                  lineDiffs[i].line.content_len));
+
       v8Ranges->Set(i, v8Range);
     }
     git_blob_free(blob);
