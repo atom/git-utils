@@ -865,7 +865,7 @@ NAN_METHOD(Repository::Add) {
     else
       return NanThrowError("Unknown error opening index");
   }
-
+  // Modify the in-memory index.
   if (git_index_add_bypath(index, path.c_str()) != GIT_OK) {
     git_index_free(index);
     const git_error* e = giterr_last();
@@ -874,7 +874,15 @@ NAN_METHOD(Repository::Add) {
     else
       return NanThrowError("Unknown error adding path to index");
   }
-
+  // Write this change in the index back to disk, so it is persistent
+  if (git_index_write(index) != GIT_OK) {
+    git_index_free(index);
+    const git_error* e = giterr_last();
+    if (e != NULL)
+      return NanThrowError(e->message);
+    else
+      return NanThrowError("Unknown error adding path to index");
+  }
   git_index_free(index);
   NanReturnValue(NanNew<Boolean>(true));
 }
