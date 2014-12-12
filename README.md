@@ -253,6 +253,14 @@ Get the deleted status of a given path.
 
 Returns `true` if the path is deleted, `false` otherwise.
 
+### Repository.isPathStaged(path)
+
+Get the staged status of a given path.
+
+`path` - The string repository-relative path.
+
+Returns `true` if the path is staged in the index, `false` otherwise.
+
 ### Repository.isStatusIgnored(status)
 
 Check if a status value represents an ignored path.

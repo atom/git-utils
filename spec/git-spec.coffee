@@ -177,6 +177,40 @@ describe "git", ->
         fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
         expect(repo.isPathNew('new.txt')).toBe true
 
+  describe 'isPathStaged(path)', ->
+    [repoDirectory] = []
+
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    describe 'when a path is new and staged', ->
+      it 'returns true ', ->
+        fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'new.txt'), 'new', 'utf8')
+        expect(repo.isPathStaged('new.txt')).toBe false
+        repo.add('new.txt')
+        expect(repo.isPathStaged('new.txt')).toBe true
+
+    describe 'when a path is modified and staged', ->
+      it 'returns true ', ->
+        fs.writeFileSync(path.join(repo.getWorkingDirectory(), 'a.txt'), 'changing a.txt', 'utf8')
+        expect(repo.isPathStaged('a.txt')).toBe false
+        repo.add('a.txt')
+        expect(repo.isPathStaged('a.txt')).toBe true
+
+    describe 'when a path is deleted and staged', ->
+      it 'returns true ', ->
+        expect(repo.isPathStaged('a.txt')).toBe false
+        gitCommandHandler = jasmine.createSpy('gitCommandHandler')
+        execCommands ["cd #{repoDirectory}", "git rm -f a.txt"], gitCommandHandler
+
+        waitsFor ->
+          gitCommandHandler.callCount is 1
+
+        runs ->
+          expect(repo.isPathStaged('a.txt')).toBe true
+
   describe '.isStatusIgnored(status)', ->
     it 'returns true when the status is ignored, false otherwise', ->
       repoDirectory = temp.mkdirSync('node-git-repo-')

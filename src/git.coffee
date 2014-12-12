@@ -59,6 +59,9 @@ Repository::isStatusDeleted = (status=0) ->
 Repository::isPathDeleted = (path) ->
   @isStatusDeleted(@getStatus(path))
 
+Repository::isPathStaged = (path) ->
+  @isStatusStaged(@getStatus(path))
+
 Repository::isStatusIgnored = (status=0) ->
   (status & statusIgnored) > 0
 
