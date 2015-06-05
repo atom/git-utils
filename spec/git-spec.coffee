@@ -606,6 +606,7 @@ describe "git", ->
       expect(repo.relativize(null)).toBe null
       expect(repo.relativize()).toBeUndefined()
       expect(repo.relativize('')).toBe ''
+      expect(repo.relativize(workingDirectory)).toBe ''
 
     describe 'when the opened path is a symlink', ->
       it 'relativizes against both the linked path and the real path', ->
