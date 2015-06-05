@@ -128,18 +128,28 @@ Repository::relativize = (path) ->
       workingDirectory = workingDirectory.toLowerCase()
       if lowerCasePath.indexOf("#{workingDirectory}/") is 0
         return path.substring(workingDirectory.length + 1)
+      else if lowerCasePath is workingDirectory
+        return ''
 
     if @openedWorkingDirectory
       workingDirectory = @openedWorkingDirectory.toLowerCase()
       if lowerCasePath.indexOf("#{workingDirectory}/") is 0
         return path.substring(workingDirectory.length + 1)
+      else if lowerCasePath is workingDirectory
+        return ''
   else
     workingDirectory = @getWorkingDirectory()
-    if workingDirectory and path.indexOf("#{workingDirectory}/") is 0
-      return path.substring(workingDirectory.length + 1)
+    if workingDirectory
+      if path.indexOf("#{workingDirectory}/") is 0
+        return path.substring(workingDirectory.length + 1)
+      else if path is workingDirectory
+        return ''
 
-    if @openedWorkingDirectory and path.indexOf("#{@openedWorkingDirectory}/") is 0
-      return path.substring(@openedWorkingDirectory.length + 1)
+    if @openedWorkingDirectory
+      if path.indexOf("#{@openedWorkingDirectory}/") is 0
+        return path.substring(@openedWorkingDirectory.length + 1)
+      else if path is @openedWorkingDirectory
+        return ''
 
   path
 
