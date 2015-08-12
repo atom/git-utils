@@ -232,5 +232,7 @@ openSubmodules = (repository) ->
 exports.open = (repositoryPath) ->
   repository = openRepository(repositoryPath)
   if repository?
+    # openSubmodules may be long (e.g., on network FS),
+    # so loading them lazily
     repository.submodules = -> openSubmodules(repository)
   repository
