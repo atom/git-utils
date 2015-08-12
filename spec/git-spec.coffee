@@ -23,6 +23,8 @@ describe "git", ->
     describe "when the path is a repository", ->
       it "returns a repository", ->
         expect(git.open(__dirname)).not.toBeNull()
+      it "has @submodules unevaluated", ->
+        expect(typeof(git.open(__dirname).submodules)).toBe('function')
 
     describe "when the path isn't a repository", ->
       it "returns null", ->
