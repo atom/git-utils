@@ -29,7 +29,7 @@
 void Repository::Init(Handle<Object> target) {
   NanScope();
 
-  git_threads_init();
+  git_libgit2_init();
 
   Local<FunctionTemplate> newTemplate = NanNew<FunctionTemplate>(
       Repository::New);
@@ -256,7 +256,7 @@ NAN_METHOD(Repository::GetConfigValue) {
 
   git_config* config;
   git_repository* repository = GetRepository(args);
-  if (git_repository_config(&config, repository) != GIT_OK)
+  if (git_repository_config_snapshot(&config, repository) != GIT_OK)
     NanReturnNull();
 
   std::string configKey(*String::Utf8Value(args[0]));
@@ -640,7 +640,7 @@ NAN_METHOD(Repository::GetLineDiffs) {
 
   options.context_lines = 0;
   if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
-                              &options, NULL, DiffHunkCallback, NULL,
+                              &options, NULL, NULL, DiffHunkCallback, NULL,
                               &ranges) == GIT_OK) {
     Local<Object> v8Ranges = NanNew<Array>(ranges.size());
     for (size_t i = 0; i < ranges.size(); i++) {
@@ -709,7 +709,7 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
 
   options.context_lines = 0;
   if (git_diff_blob_to_buffer(blob, NULL, text.data(), text.length(), NULL,
-                              &options, NULL, NULL, DiffLineCallback,
+                              &options, NULL, NULL, NULL, DiffLineCallback,
                               &lineDiffs) == GIT_OK) {
     Local<Object> v8Ranges = NanNew<Array>(lineDiffs.size());
     for (size_t i = 0; i < lineDiffs.size(); i++) {
@@ -788,7 +788,7 @@ int branch_checkout(git_repository* repo, const char* refName) {
   if (!(success = git_reference_lookup(&ref, repo, refName)) &&
       !(success = git_reference_peel(&git_obj, ref, GIT_OBJ_TREE)) &&
       !(success = git_checkout_tree(repo, git_obj, &opts)))
-    success = git_repository_set_head(repo, refName, NULL, NULL);
+    success = git_repository_set_head(repo, refName);
 
   git_object_free(git_obj);
   git_obj = NULL;
@@ -836,7 +836,7 @@ NAN_METHOD(Repository::CheckoutReference) {
     std::string shortRefName(strRefName.c_str() + 11, kShortNameLength);
 
     int branchCreateStatus = git_branch_create(
-        &branch, repo, shortRefName.c_str(), commit, 0, NULL, NULL);
+        &branch, repo, shortRefName.c_str(), commit, 0);
     git_commit_free(commit);
 
     if (branchCreateStatus != GIT_OK)

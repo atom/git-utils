@@ -228,6 +228,8 @@
         'deps/libgit2/src/vector.h',
         'deps/libgit2/src/zstream.c',
         'deps/libgit2/src/zstream.h',
+        'deps/libgit2/src/transports/auth.c',
+        'deps/libgit2/src/transports/auth_negotiate.c',
         'deps/libgit2/src/transports/cred.c',
         'deps/libgit2/src/transports/cred_helpers.c',
         'deps/libgit2/src/transports/git.c',
