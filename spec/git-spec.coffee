@@ -65,20 +65,35 @@ describe "git", ->
         expect(repo.getShortHead()).toBe '50719ab'
 
   describe ".isIgnored(path)", ->
+    [ignoreRepoRoot, ignoreRepoDir] = []
+
+    beforeEach ->
+      # this setup should be done in beforeAll, but jasmine 1.x doesn't have it.
+      ignoreRepoRoot = temp.mkdirSync("ignore-dir")
+      ignoreRepoDir = path.join(ignoreRepoRoot, "ignored")
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/ignored-workspace/'), ignoreRepoDir)
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/ignored.git'), path.join(ignoreRepoDir, '.git'))
+
+    afterEach ->
+      wrench.rmdirSyncRecursive(ignoreRepoRoot)
+
     describe "when the path is undefined", ->
       it "return false", ->
-        repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
+        repo = git.open(ignoreRepoDir)
         expect(repo.isIgnored()).toBe false
 
     describe "when the path is ignored", ->
       it "returns true", ->
-        repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
+        repo = git.open(ignoreRepoDir)
         expect(repo.isIgnored('a.txt')).toBe true
+        expect(repo.isIgnored('subdir/subdir')).toBe true
 
     describe "when the path is not ignored", ->
       it "return false", ->
-        repo = git.open(path.join(__dirname, 'fixtures/ignored.git'))
+        repo = git.open(ignoreRepoDir)
         expect(repo.isIgnored('b.txt')).toBe false
+        expect(repo.isIgnored('subdir')).toBe false
+        expect(repo.isIgnored('subdir/yak.txt')).toBe false
 
   describe ".isSubmodule(path)", ->
     describe "when the path is undefined", ->
