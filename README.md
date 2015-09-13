@@ -358,3 +358,13 @@ associated with `path`.
 `path` - A repository-relative string path.
 
 Raises an `Error` if the path isn't readable or if another exception occurs.
+
+### Repository.getBlame(path)
+
+Gets the blame information of a given path.
+
+`path` - A repository-relative string path.
+
+Raises an `Error` if the path isn't readable or if another exception occurs.
+
+Returns an array of objects with `commitId`, `signature`, `startLineNumber` and `linesInHunk` keys.
