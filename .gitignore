@@ -5,3 +5,4 @@
 *.log
 *~
 .node-version
+.DS_Store
