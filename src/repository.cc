@@ -61,6 +61,7 @@ void Repository::Init(Local<Object> target) {
   Nan::SetMethod(proto, "getReferences", Repository::GetReferences);
   Nan::SetMethod(proto, "checkoutRef", Repository::CheckoutReference);
   Nan::SetMethod(proto, "add", Repository::Add);
+  Nan::SetMethod(proto, "getBlame", Repository::GetBlame);
 
   target->Set(Nan::New<String>("Repository").ToLocalChecked(),
                                 newTemplate->GetFunction());
@@ -908,6 +909,65 @@ NAN_METHOD(Repository::Add) {
   }
   git_index_free(index);
   info.GetReturnValue().Set(Nan::New<Boolean>(true));
+}
+
+NAN_METHOD(Repository::GetBlame) {
+  Nan::HandleScope scope;
+
+  git_repository* repository = GetRepository(info);
+  std::string path(*String::Utf8Value(info[0]));
+
+  git_blame_options blameOpts = GIT_BLAME_OPTIONS_INIT;
+  git_blame *blame = NULL;
+
+  if (git_blame_file(&blame, repository, path.c_str(), &blameOpts) != GIT_OK) {
+    const git_error* e = giterr_last();
+    if (e != NULL)
+      return Nan::ThrowError(e->message);
+    else
+      return Nan::ThrowError("Unknown error getting blame.");
+  }
+
+  size_t hunkCount = git_blame_get_hunk_count(blame);
+  Local<Object> v8Ranges = Nan::New<Array>(hunkCount);
+
+  for (size_t i = 0; i < hunkCount; i++) {
+    const git_blame_hunk *hunk = git_blame_get_hunk_byindex(blame, i);
+    const git_signature *finalSig = hunk->final_signature;
+    char commitId[10] = {0};
+    git_oid_tostr(commitId, sizeof(commitId), &hunk->final_commit_id);
+
+    Local<Object> v8Range = Nan::New<Object>();
+    Local<Object> signature = Nan::New<Object>();
+    Local<Object> when = Nan::New<Object>();
+
+    when->Set(Nan::New<String>("time").ToLocalChecked(),
+                  Nan::New<Number>(finalSig->when.time));
+    when->Set(Nan::New<String>("offset").ToLocalChecked(),
+                  Nan::New<Number>(finalSig->when.offset));
+
+    signature->Set(Nan::New<String>("name").ToLocalChecked(),
+                  Nan::New<String>(finalSig->name).ToLocalChecked());
+    signature->Set(Nan::New<String>("email").ToLocalChecked(),
+                  Nan::New<String>(finalSig->email).ToLocalChecked());
+    signature->Set(Nan::New<String>("when").ToLocalChecked(),
+                  when);
+
+    v8Range->Set(Nan::New<String>("commitId").ToLocalChecked(),
+                  Nan::New<String>(commitId).ToLocalChecked());
+    v8Range->Set(Nan::New<String>("startLineNumber").ToLocalChecked(),
+                  Nan::New<Number>(hunk->final_start_line_number));
+    v8Range->Set(Nan::New<String>("linesInHunk").ToLocalChecked(),
+                  Nan::New<Number>(hunk->lines_in_hunk));
+    v8Range->Set(Nan::New<String>("signature").ToLocalChecked(),
+                  signature);
+
+    v8Ranges->Set(i, v8Range);
+  }
+
+  git_blame_free(blame);
+
+  info.GetReturnValue().Set(v8Ranges);
 }
 
 Repository::Repository(Local<String> path) {

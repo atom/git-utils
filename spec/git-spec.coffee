@@ -724,3 +724,24 @@ describe "git", ->
 
     it "throws an error if the file doesn't exist", ->
       expect(-> repo.add('missing.txt')).toThrow()
+
+  describe ".getBlame(path)", ->
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/blame.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+    it "returns the blame for the path", ->
+      blame = repo.getBlame('a.txt')
+
+      expect(blame.length).toBe 1
+      expect(blame[0].commitId).toBe 'fcfc9307b'
+      expect(blame[0].startLineNumber).toBe 1
+      expect(blame[0].linesInHunk).toBe 3
+      expect(blame[0].signature.name).toBe 'Gabriel Isenberg'
+      expect(blame[0].signature.email).toBe 'gisenberg@gmail.com'
+      expect(blame[0].signature.when.time).toBe 1442122439
+      expect(blame[0].signature.when.offset).toBe -420
+
+    it "throws an error if the file doesn't exist", ->
+      expect(-> repo.getBlame('missing.txt')).toThrow()

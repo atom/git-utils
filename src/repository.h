@@ -59,6 +59,7 @@ class Repository : public Nan::ObjectWrap {
   static NAN_METHOD(GetReferences);
   static NAN_METHOD(CheckoutReference);
   static NAN_METHOD(Add);
+  static NAN_METHOD(GetBlame);
 
   static int StatusCallback(const char *path, unsigned int status,
                             void *payload);
