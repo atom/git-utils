@@ -290,13 +290,15 @@
           'defines': [
             'GIT_WINHTTP',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lcrypt32.lib',
+              '-lrpcrt4.lib',
+              '-lwinhttp.lib',
+              '-lws2_32.lib',
+            ],
+          },
           'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalDependencies': [
-                'winhttp.lib',
-                'ws2_32.lib',
-              ],
-            },
             # Workaround of a strange bug:
             # TargetMachine + static_library + x64 = nothing.
             'conditions': [
