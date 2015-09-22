@@ -2,6 +2,7 @@
   'targets': [
     {
       'target_name': 'git',
+      'win_delay_load_hook': 'false',
       'dependencies': [
         'libgit2'
       ],
