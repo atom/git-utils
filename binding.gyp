@@ -293,6 +293,7 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'AdditionalDependencies': [
+                'winhttp.lib',
                 'ws2_32.lib',
               ],
             },
