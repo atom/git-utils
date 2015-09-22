@@ -33,6 +33,7 @@
     },
     {
       'target_name': 'libgit2',
+      'win_delay_load_hook': 'false',
       'type': 'static_library',
       'defines': [
         'GIT_THREADS',
@@ -364,6 +365,7 @@
     },
     {
       'target_name': 'zlib',
+      'win_delay_load_hook': 'false',
       'type': 'static_library',
       'sources': [
         'deps/libgit2/deps/zlib/adler32.c',
@@ -409,6 +411,7 @@
     },
     {
       'target_name': 'http_parser',
+      'win_delay_load_hook': 'false',
       'type': 'static_library',
       'sources': [
         'deps/libgit2/deps/http-parser/http_parser.c',
