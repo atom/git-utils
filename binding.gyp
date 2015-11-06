@@ -141,7 +141,6 @@
         'deps/libgit2/src/merge.c',
         'deps/libgit2/src/merge.h',
         'deps/libgit2/src/merge_file.c',
-        'deps/libgit2/src/merge_file.h',
         'deps/libgit2/src/message.c',
         'deps/libgit2/src/message.h',
         'deps/libgit2/src/mwindow.c',
