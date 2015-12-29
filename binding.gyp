@@ -289,6 +289,9 @@
           'defines': [
             'GIT_WINHTTP',
           ],
+          'include_dirs': [
+            'deps/libgit2/deps/regex',
+          ],
           'link_settings': {
             'libraries': [
               '-lcrypt32.lib',
@@ -383,7 +386,6 @@
       'include_dirs': [
         'deps/libgit2/include',
         'deps/libgit2/src',
-        'deps/libgit2/deps/regex',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -422,7 +424,6 @@
       ],
       'include_dirs': [
         'deps/libgit2/include',
-        'deps/libgit2/deps/regex',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -433,6 +434,9 @@
         ['OS=="win"', {
           'msvs_disabled_warnings': [
             4005,  # macro redefinition
+          ],
+          'include_dirs': [
+            'deps/libgit2/deps/regex',
           ],
         }],
       ],
