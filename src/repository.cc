@@ -914,8 +914,7 @@ Repository::Repository(Local<String> path) {
   Nan::HandleScope scope;
 
   std::string repositoryPath(*String::Utf8Value(path));
-  if (git_repository_open_ext(
-        &repository, repositoryPath.c_str(), 0, NULL) != GIT_OK)
+  if (git_repository_open(&repository, repositoryPath.c_str()) != GIT_OK)
     repository = NULL;
 }
 
