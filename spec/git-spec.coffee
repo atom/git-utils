@@ -471,6 +471,21 @@ describe "git", ->
         expect(_.keys(statuses).length).toBe 1
         expect(statuses['secret-stuff/b.txt']).toBe 1 << 7
 
+    describe 'when no path is specified', ->
+      it 'returns an empty object', ->
+        statuses = repo.getStatusForPaths()
+        expect(_.keys(statuses).length).toBe 0
+
+    describe 'when an empty array is specified', ->
+      it 'returns an empty object', ->
+        statuses = repo.getStatusForPaths([])
+        expect(_.keys(statuses).length).toBe 0
+
+    describe 'when an empty string is specified', ->
+      it 'returns an empty object', ->
+        statuses = repo.getStatusForPaths([''])
+        expect(_.keys(statuses).length).toBe 0
+
   describe '.getAheadBehindCount()', ->
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
