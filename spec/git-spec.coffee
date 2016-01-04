@@ -453,6 +453,39 @@ describe "git", ->
       it 'returns the status of the given path', ->
         expect(repo.getStatus('a.txt')).toBe 1 << 9
 
+  describe '.getStatusForPaths([paths])', ->
+    beforeEach ->
+      repoDirectory = temp.mkdirSync('node-git-repo-')
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      repo = git.open(repoDirectory)
+
+      newDir = path.join(repo.getWorkingDirectory(), 'secret-stuff')
+      fs.mkdirSync(newDir)
+
+      newFilePath = path.join(newDir, 'b.txt')
+      fs.writeFileSync(newFilePath, '', 'utf8')
+
+    describe 'when a path is specified', ->
+      it 'returns the status of only that path', ->
+        statuses = repo.getStatusForPaths(['secret-stuff'])
+        expect(_.keys(statuses).length).toBe 1
+        expect(statuses['secret-stuff/b.txt']).toBe 1 << 7
+
+    describe 'when no path is specified', ->
+      it 'returns an empty object', ->
+        statuses = repo.getStatusForPaths()
+        expect(_.keys(statuses).length).toBe 0
+
+    describe 'when an empty array is specified', ->
+      it 'returns an empty object', ->
+        statuses = repo.getStatusForPaths([])
+        expect(_.keys(statuses).length).toBe 0
+
+    describe 'when an empty string is specified', ->
+      it 'returns an empty object', ->
+        statuses = repo.getStatusForPaths([''])
+        expect(_.keys(statuses).length).toBe 0
+
   describe '.getAheadBehindCount()', ->
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')

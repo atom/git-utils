@@ -48,6 +48,8 @@ void Repository::Init(Local<Object> target) {
   Nan::SetMethod(proto, "getConfigValue", Repository::GetConfigValue);
   Nan::SetMethod(proto, "setConfigValue", Repository::SetConfigValue);
   Nan::SetMethod(proto, "getStatus", Repository::GetStatus);
+  Nan::SetMethod(proto, "getStatusForPaths",
+                        Repository::GetStatusForPaths);
   Nan::SetMethod(proto, "checkoutHead", Repository::CheckoutHead);
   Nan::SetMethod(proto, "getReferenceTarget", Repository::GetReferenceTarget);
   Nan::SetMethod(proto, "getDiffStats", Repository::GetDiffStats);
@@ -324,6 +326,54 @@ NAN_METHOD(Repository::GetStatus) {
     else
       return info.GetReturnValue().Set(Nan::New<Number>(0));
   }
+}
+
+NAN_METHOD(Repository::GetStatusForPaths) {
+  Nan::HandleScope scope;
+
+  Local<Object> result = Nan::New<Object>();
+  if (info.Length() < 1)
+    return info.GetReturnValue().Set(result);
+
+  std::map<std::string, unsigned int> statuses;
+  git_status_options options = GIT_STATUS_OPTIONS_INIT;
+  options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
+                  GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
+                  GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
+
+  Array *pathsArg = Array::Cast(*info[0]);
+  unsigned int pathsLength = pathsArg->Length();
+  if (pathsLength < 1)
+    return info.GetReturnValue().Set(result);
+
+  char *path = NULL;
+  char **paths = reinterpret_cast<char **>(malloc(pathsLength * sizeof(path)));
+  for (unsigned int i = 0; i < pathsLength; i++) {
+    String::Utf8Value utf8Path(pathsArg->Get(i));
+    path = strdup(*utf8Path);
+    paths[i] = path;
+  }
+
+  git_strarray pathsArray;
+  pathsArray.count = pathsLength;
+  pathsArray.strings = paths;
+  options.pathspec = pathsArray;
+
+  if (git_status_foreach_ext(GetRepository(info),
+                             &options,
+                             StatusCallback,
+                             &statuses) == GIT_OK) {
+    std::map<std::string, unsigned int>::iterator iter = statuses.begin();
+    for (; iter != statuses.end(); ++iter)
+      result->Set(Nan::New<String>(iter->first.c_str()).ToLocalChecked(),
+                  Nan::New<Number>(iter->second));
+  }
+
+  if (paths != NULL) {
+    git_strarray_free(&pathsArray);
+  }
+
+  return info.GetReturnValue().Set(result);
 }
 
 NAN_METHOD(Repository::CheckoutHead) {

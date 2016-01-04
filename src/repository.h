@@ -46,6 +46,7 @@ class Repository : public Nan::ObjectWrap {
   static NAN_METHOD(GetConfigValue);
   static NAN_METHOD(SetConfigValue);
   static NAN_METHOD(GetStatus);
+  static NAN_METHOD(GetStatusForPaths);
   static NAN_METHOD(CheckoutHead);
   static NAN_METHOD(GetReferenceTarget);
   static NAN_METHOD(GetDiffStats);
