@@ -330,7 +330,11 @@ NAN_METHOD(Repository::GetStatus) {
 
 NAN_METHOD(Repository::GetStatusForPaths) {
   Nan::HandleScope scope;
+
   Local<Object> result = Nan::New<Object>();
+  if (info.Length() < 1)
+    return info.GetReturnValue().Set(result);
+
   std::map<std::string, unsigned int> statuses;
   git_status_options options = GIT_STATUS_OPTIONS_INIT;
   options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
@@ -339,6 +343,9 @@ NAN_METHOD(Repository::GetStatusForPaths) {
 
   Array *pathsArg = Array::Cast(*info[0]);
   unsigned int pathsLength = pathsArg->Length();
+  if (pathsLength < 1)
+    return info.GetReturnValue().Set(result);
+
   char *path = NULL;
   char **paths = reinterpret_cast<char **>(malloc(pathsLength * sizeof(path)));
   for (unsigned int i = 0; i < pathsLength; i++) {
