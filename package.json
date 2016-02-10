@@ -1,7 +1,7 @@
 {
   "name": "git-utils",
   "description": "A package for using Git repositories",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "license": "MIT",
   "author": {
     "name": "Kevin Sawicki",
