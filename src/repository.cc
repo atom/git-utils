@@ -338,8 +338,7 @@ NAN_METHOD(Repository::GetStatusForPaths) {
   std::map<std::string, unsigned int> statuses;
   git_status_options options = GIT_STATUS_OPTIONS_INIT;
   options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
-                  GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
-                  GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
+                  GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
 
   Array *pathsArg = Array::Cast(*info[0]);
   unsigned int pathsLength = pathsArg->Length();
