@@ -453,7 +453,7 @@ describe "git", ->
       it 'returns the status of the given path', ->
         expect(repo.getStatus('a.txt')).toBe 1 << 9
 
-  fdescribe '.getStatusForPaths([paths])', ->
+  describe '.getStatusForPaths([paths])', ->
     repoDirectory = null
     filePath = null
     beforeEach ->
