@@ -453,23 +453,34 @@ describe "git", ->
       it 'returns the status of the given path', ->
         expect(repo.getStatus('a.txt')).toBe 1 << 9
 
-  describe '.getStatusForPaths([paths])', ->
+  fdescribe '.getStatusForPaths([paths])', ->
+    repoDirectory = null
+    filePath = null
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
-      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
+      console.log(repoDirectory)
+      wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/subdir.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
 
-      newDir = path.join(repo.getWorkingDirectory(), 'secret-stuff')
-      fs.mkdirSync(newDir)
-
-      newFilePath = path.join(newDir, 'b.txt')
-      fs.writeFileSync(newFilePath, '', 'utf8')
+      dir = path.join(repo.getWorkingDirectory(), 'dir')
+      filePath = path.join(dir, 'a.txt')
+      fs.writeFileSync(filePath, 'hey there', 'utf8')
 
     describe 'when a path is specified', ->
       it 'returns the status of only that path', ->
-        statuses = repo.getStatusForPaths(['secret-stuff'])
+        statuses = repo.getStatusForPaths(['dir'])
         expect(_.keys(statuses).length).toBe 1
-        expect(statuses['secret-stuff/b.txt']).toBe 1 << 7
+
+        status = statuses['dir/a.txt']
+        console.log(status)
+        expect(repo.isStatusModified(status)).toBe true
+        expect(repo.isStatusNew(status)).toBe false
+
+      it 'returns the status of only that path2', ->
+        fs.writeFileSync(filePath, '', 'utf8')
+
+        statuses = repo.getStatusForPaths(['dir'])
+        expect(_.keys(statuses).length).toBe 0
 
     describe 'when no path is specified', ->
       it 'returns an empty object', ->
