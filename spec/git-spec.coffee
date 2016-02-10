@@ -468,7 +468,7 @@ describe "git", ->
 
     describe 'when a path is specified', ->
       it 'returns the status of only that path', ->
-        statuses = repo.getStatusForPaths(['dir'])
+        statuses = repo.getStatusForPaths(['dir/**'])
         expect(_.keys(statuses).length).toBe 1
 
         status = statuses['dir/a.txt']
@@ -479,7 +479,7 @@ describe "git", ->
       it 'returns the status of only that path2', ->
         fs.writeFileSync(filePath, '', 'utf8')
 
-        statuses = repo.getStatusForPaths(['dir'])
+        statuses = repo.getStatusForPaths(['dir/**'])
         expect(_.keys(statuses).length).toBe 0
 
     describe 'when no path is specified', ->
@@ -495,7 +495,7 @@ describe "git", ->
     describe 'when an empty string is specified', ->
       it 'returns an empty object', ->
         statuses = repo.getStatusForPaths([''])
-        expect(_.keys(statuses).length).toBe 0
+        expect(_.keys(statuses).length).toBe 1
 
   describe '.getAheadBehindCount()', ->
     beforeEach ->
