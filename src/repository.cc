@@ -25,7 +25,6 @@
 
 #include <map>
 #include <utility>
-#include <iostream>
 
 void Repository::Init(Local<Object> target) {
   Nan::HandleScope scope;
@@ -584,7 +583,6 @@ NAN_METHOD(Repository::GetIndexBlob) {
 
 int Repository::StatusCallback(
     const char* path, unsigned int status, void* payload) {
-      std::cout << "HEY THERE: " << status << "\n";
   std::map<std::string, unsigned int>* statuses =
       static_cast<std::map<std::string, unsigned int>*>(payload);
   statuses->insert(std::make_pair(std::string(path), status));
