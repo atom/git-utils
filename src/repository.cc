@@ -337,9 +337,11 @@ NAN_METHOD(Repository::GetStatusForPaths) {
 
   std::map<std::string, unsigned int> statuses;
   git_status_options options = GIT_STATUS_OPTIONS_INIT;
+  // Ideally we'd use GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH here since we want
+  // to limit to a path, not a pathspec, but libgit2 seems to have a bug here:
+  // https://github.com/libgit2/libgit2/pull/3609
   options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
-                  GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS |
-                  GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
+                  GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
 
   Array *pathsArg = Array::Cast(*info[0]);
   unsigned int pathsLength = pathsArg->Length();
