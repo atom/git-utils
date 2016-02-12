@@ -12,10 +12,12 @@ statusWorkingDirModified = 1 << 8
 statusWorkingDirDelete = 1 << 9
 statusWorkingDirTypeChange = 1 << 10
 statusIgnored = 1 << 14
+statusConflicted = 1 << 15
 
 modifiedStatusFlags = statusWorkingDirModified | statusIndexModified |
                       statusWorkingDirDelete | statusIndexDeleted |
-                      statusWorkingDirTypeChange | statusIndexTypeChange
+                      statusWorkingDirTypeChange | statusIndexTypeChange |
+                      statusConflicted
 
 newStatusFlags = statusWorkingDirNew | statusIndexNew
 
@@ -58,6 +60,12 @@ Repository::isStatusDeleted = (status=0) ->
 
 Repository::isPathDeleted = (path) ->
   @isStatusDeleted(@getStatus(path))
+
+Repository::isStatusConflicted = (status=0) ->
+  (status & statusConflicted) > 0
+
+Repository::isPathConflicted = (path) ->
+  @isStatusConflicted(@getStatus(path))
 
 Repository::isPathStaged = (path) ->
   @isStatusStaged(@getStatus(path))
