@@ -253,6 +253,14 @@ Get the deleted status of a given path.
 
 Returns `true` if the path is deleted, `false` otherwise.
 
+### Repository.isPathConflicted(path)
+
+Get the conflicted status of a given path.
+
+`path` - The string repository-relative path.
+
+Returns `true` if the path is conflicted, `false` otherwise.
+
 ### Repository.isPathStaged(path)
 
 Get the staged status of a given path.
@@ -292,6 +300,14 @@ Check if a status value represents a deleted path.
 `status` - The integer status value.
 
 Returns `true` if the status is a deleted one, `false` otherwise.
+
+### Repository.isStatusConflicted(status)
+
+Check if a status value represents a conflicted path.
+
+`status` - The integer status value.
+
+Returns `true` if the status is a conflicted one, `false` otherwise.
 
 ### Repository.isStatusStaged(status)
 
