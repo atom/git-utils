@@ -5,9 +5,7 @@ notifications:
     on_success: never
     on_failure: change
 
-node_js:
-  - "0.10"
-  - "4.0"
+node_js: 6
 
 git:
   depth: 10
