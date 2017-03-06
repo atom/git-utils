@@ -157,6 +157,9 @@ Repository::submoduleForPath = (path) ->
   path = @relativize(path)
   return null unless path
 
+  if @submodules instanceof Function
+    @submodules()
+
   for submodulePath, submoduleRepo of @submodules
     if path is submodulePath
       return submoduleRepo
@@ -228,5 +231,8 @@ openSubmodules = (repository) ->
 
 exports.open = (repositoryPath) ->
   repository = openRepository(repositoryPath)
-  openSubmodules(repository) if repository?
+  if repository?
+    # openSubmodules may be long (e.g., on network FS),
+    # so loading them lazily
+    repository.submodules = -> openSubmodules(repository)
   repository
