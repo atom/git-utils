@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "nan": "^2.0.0",
-    "fs-plus": "^2.1.0"
+    "fs-plus": "^3.0.0"
   },
   "scripts": {
     "prepublish": "grunt clean coffee lint",
