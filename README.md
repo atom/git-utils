@@ -18,10 +18,13 @@ npm install git-utils
 
 ## Docs
 
-### git.open(path)
+### git.open(path, [search = true])
 
 Open the repository at the given path.  This will return `null` if the
 repository at the given path does not exist or cannot be opened.
+
+`path` - The path from which to try to open a repository
+`search` - Set to false if we shouldn't search up in the directory tree
 
 ```coffeescript
 git = require 'git-utils'
@@ -32,6 +35,11 @@ repository = git.open('/Users/me/repos/node')
 The opened repository will have a `submodules` property that will be an object
 of paths mapped to submodule {Repository} objects. The path keys will be
 relative to the opened repository's working directory.
+
+If search is set to true (the default), all paths up to the filesystem root will
+be recursively checked to try and find the root directory of a repository. If a
+search is false, traversing not be performed, and a repository will only be
+returned if the given path is the root of a repository.
 
 ### Repository.checkoutHead(path)
 

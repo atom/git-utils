@@ -83,7 +83,7 @@ class Repository : public Nan::ObjectWrap {
 
   static git_diff_options CreateDefaultGitDiffOptions();
 
-  explicit Repository(Local<String> path);
+  explicit Repository(Local<String> path, Local<Boolean> search);
   ~Repository();
 
   git_repository* repository;
