@@ -1,4 +1,4 @@
-git = require '../lib/git'
+git = require '../src/git'
 path = require 'path'
 fs = require 'fs-plus'
 {exec} = require 'child_process'
@@ -461,9 +461,9 @@ describe "git", ->
   describe '.getStatusForPaths([paths])', ->
     repoDirectory = null
     filePath = null
+
     beforeEach ->
       repoDirectory = temp.mkdirSync('node-git-repo-')
-      console.log(repoDirectory)
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/subdir.git'), path.join(repoDirectory, '.git'))
       repo = git.open(repoDirectory)
 
@@ -477,7 +477,6 @@ describe "git", ->
         expect(_.keys(statuses).length).toBe 1
 
         status = statuses['dir/a.txt']
-        console.log(status)
         expect(repo.isStatusModified(status)).toBe true
         expect(repo.isStatusNew(status)).toBe false
 
