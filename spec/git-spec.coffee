@@ -28,6 +28,11 @@ describe "git", ->
       it "returns null", ->
         expect(git.open('/tmp/path/does/not/exist')).toBeNull()
 
+    describe "when limiting upwards traversal", ->
+      it "returns null", ->
+        repositorySubdirectoryPath = path.join(path.dirname(__dirname), 'spec', 'fixtures')
+        expect(git.open(repositorySubdirectoryPath, false)).toBeNull()
+
   describe ".getPath()", ->
     it "returns the path to the .git directory", ->
       repositoryPath = git.open(__dirname).getPath()

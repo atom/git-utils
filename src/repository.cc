@@ -72,7 +72,8 @@ NODE_MODULE(git, Repository::Init)
 
 NAN_METHOD(Repository::New) {
   Nan::HandleScope scope;
-  Repository* repository = new Repository(Local<String>::Cast(info[0]));
+  Repository* repository = new Repository(
+    Local<String>::Cast(info[0]), Local<Boolean>::Cast(info[1]));
   repository->Wrap(info.This());
   info.GetReturnValue().SetUndefined();
 }
@@ -962,12 +963,16 @@ NAN_METHOD(Repository::Add) {
   info.GetReturnValue().Set(Nan::New<Boolean>(true));
 }
 
-Repository::Repository(Local<String> path) {
+Repository::Repository(Local<String> path, Local<Boolean> search) {
   Nan::HandleScope scope;
+
+  int flags = 0;
+  if (!search->BooleanValue())
+    flags |= GIT_REPOSITORY_OPEN_NO_SEARCH;
 
   std::string repositoryPath(*String::Utf8Value(path));
   if (git_repository_open_ext(
-        &repository, repositoryPath.c_str(), 0, NULL) != GIT_OK)
+        &repository, repositoryPath.c_str(), flags, NULL) != GIT_OK)
     repository = NULL;
 }
 

@@ -197,11 +197,10 @@ isRootPath = (repositoryPath) ->
   else
     repositoryPath is path.sep
 
-openRepository = (repositoryPath) ->
+openRepository = (repositoryPath, search = true) ->
   symlink = realpath(repositoryPath) isnt repositoryPath
-
   repositoryPath = repositoryPath.replace(/\\/g, '/') if process.platform is 'win32'
-  repository = new Repository(repositoryPath)
+  repository = new Repository(repositoryPath, search)
   if repository.exists()
     repository.caseInsensitiveFs = fs.isCaseInsensitive()
     if symlink
@@ -226,7 +225,7 @@ openSubmodules = (repository) ->
         openSubmodules(submoduleRepo)
         repository.submodules[relativePath] = submoduleRepo
 
-exports.open = (repositoryPath) ->
-  repository = openRepository(repositoryPath)
+exports.open = (repositoryPath, search = true) ->
+  repository = openRepository(repositoryPath, search)
   openSubmodules(repository) if repository?
   repository
