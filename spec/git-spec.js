@@ -72,9 +72,9 @@ describe('git', () => {
         expect(repo.getHead()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
       })
 
-      it('return the SHA-1 that is checked out', async () => {
+      it('resolves with the SHA-1 that is checked out', async () => {
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
-        expect(await repo.getHead()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
+        expect(await repo.getHeadAsync()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
       })
     })
   })
@@ -610,7 +610,7 @@ describe('git', () => {
         expect(repo.isStatusNew(status)).toBe(false)
       })
 
-      it('returns the status of only that path', async () => {
+      it('resolves with the status of only that path', async () => {
         const statuses = await repo.getStatusForPathsAsync(['dir/**'])
         expect(_.keys(statuses).length).toBe(1)
 
@@ -673,7 +673,7 @@ describe('git', () => {
       expect(counts).toEqual({ahead: 0, behind: 0})
     })
 
-    it('returns the number of commits ahead of and behind the upstream branch', async () => {
+    it('resolves with the number of commits ahead of and behind the upstream branch', async () => {
       let counts = await repo.getAheadBehindCountAsync()
       expect(counts).toEqual({ahead: 3, behind: 2})
 
