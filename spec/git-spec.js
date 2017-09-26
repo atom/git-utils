@@ -5,6 +5,7 @@ const {exec} = require('child_process')
 const wrench = require('wrench')
 const temp = require('temp')
 const _ = require('underscore')
+const {it, fit, beforeEach} = require('./async-spec-helper-functions')
 
 describe('git', () => {
   let repo
