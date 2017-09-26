@@ -40,6 +40,7 @@ class Repository : public Nan::ObjectWrap {
   static NAN_METHOD(GetSubmodulePaths);
   static NAN_METHOD(Exists);
   static NAN_METHOD(GetHead);
+  static NAN_METHOD(GetHeadAsync);
   static NAN_METHOD(RefreshIndex);
   static NAN_METHOD(IsIgnored);
   static NAN_METHOD(IsSubmodule);

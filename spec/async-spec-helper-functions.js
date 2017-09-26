@@ -2,7 +2,7 @@ exports.beforeEach = function beforeEach (fn) {
   global.beforeEach(function () {
     const result = fn()
     if (result instanceof Promise) {
-      waitsForPromise(result)
+      waitsForPromise(result, this)
     }
   })
 }
@@ -11,7 +11,7 @@ exports.afterEach = function afterEach (fn) {
   global.afterEach(function () {
     const result = fn()
     if (result instanceof Promise) {
-      waitsForPromise(result)
+      waitsForPromise(result, this)
     }
   })
 }
@@ -23,21 +23,20 @@ exports.afterEach = function afterEach (fn) {
       return
     }
 
-    global[name](description, () => {
+    global[name](description, function () {
       const result = fn()
       if (result instanceof Promise) {
-        waitsForPromise(result)
+        waitsForPromise(result, this)
       }
     })
   }
 })
 
-function waitsForPromise (promise) {
+function waitsForPromise (promise, spec) {
   let done = false
   let error = null
 
   global.waitsFor('test promise to resolve', () => {
-    expect(error).toBeNull()
     return done
   })
 
@@ -46,7 +45,7 @@ function waitsForPromise (promise) {
       done = true
     },
     (e) => {
-      error = e
+      spec.fail(e)
       done = true
     },
   )

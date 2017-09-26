@@ -40,6 +40,7 @@ void Repository::Init(Local<Object> target) {
   Nan::SetMethod(proto, "exists", Repository::Exists);
   Nan::SetMethod(proto, "getSubmodulePaths", Repository::GetSubmodulePaths);
   Nan::SetMethod(proto, "getHead", Repository::GetHead);
+  Nan::SetMethod(proto, "getHeadAsync", Repository::GetHeadAsync);
   Nan::SetMethod(proto, "refreshIndex", Repository::RefreshIndex);
   Nan::SetMethod(proto, "isIgnored", Repository::IsIgnored);
   Nan::SetMethod(proto, "isSubmodule", Repository::IsSubmodule);
@@ -189,28 +190,55 @@ NAN_METHOD(Repository::GetSubmodulePaths) {
   info.GetReturnValue().Set(v8Paths);
 }
 
-NAN_METHOD(Repository::GetHead) {
-  Nan::HandleScope scope;
-  git_repository* repository = GetRepository(info);
-  git_reference* head;
-  if (git_repository_head(&head, repository) != GIT_OK)
-    return info.GetReturnValue().Set(Nan::Null());
+class HeadWorker : public Nan::AsyncWorker {
+  git_repository *repository;
+  std::string result;
 
-  if (git_repository_head_detached(repository) == 1) {
-    const git_oid* sha = git_reference_target(head);
-    if (sha != NULL) {
-      char oid[GIT_OID_HEXSZ + 1];
-      git_oid_tostr(oid, GIT_OID_HEXSZ + 1, sha);
-      git_reference_free(head);
-      return info.GetReturnValue().Set(Nan::New<String>(oid, -1)
-                                        .ToLocalChecked());
+ public:
+  void Execute() {
+    git_reference *head;
+    if (git_repository_head(&head, repository) != GIT_OK) return;
+
+    if (git_repository_head_detached(repository) == 1) {
+      const git_oid *oid = git_reference_target(head);
+      if (oid) {
+        result.resize(GIT_OID_HEXSZ);
+        git_oid_tostr(&result[0], GIT_OID_HEXSZ + 1, oid);
+      }
+    } else {
+      result = git_reference_name(head);
+    }
+
+    git_reference_free(head);
+  }
+
+  std::pair<Local<Value>, Local<Value>> Finish() {
+    if (result.empty()) {
+      return {Nan::Error("Git head failed"), Nan::Null()};
+    } else {
+      return {Nan::Null(), Nan::New(result).ToLocalChecked()};
     }
   }
 
-  Local<String> referenceName = Nan::New<String>(git_reference_name(head))
-                                    .ToLocalChecked();
-  git_reference_free(head);
-  return info.GetReturnValue().Set(referenceName);
+  void HandleOKCallback() {
+    auto result = Finish();
+    Local<Value> argv[] = {result.first, result.second};
+    callback->Call(2, argv);
+  }
+
+  HeadWorker(Nan::Callback *callback, git_repository *repository)
+    : Nan::AsyncWorker(callback), repository(repository) {}
+};
+
+NAN_METHOD(Repository::GetHead) {
+  HeadWorker worker(NULL, GetRepository(info));
+  worker.Execute();
+  info.GetReturnValue().Set(worker.Finish().second);
+}
+
+NAN_METHOD(Repository::GetHeadAsync) {
+  auto callback = new Nan::Callback(Local<Function>::Cast(info[0]));
+  Nan::AsyncQueueWorker(new HeadWorker(callback, GetAsyncRepository(info)));
 }
 
 NAN_METHOD(Repository::RefreshIndex) {

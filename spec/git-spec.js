@@ -59,12 +59,22 @@ describe('git', () => {
         repo = git.open(path.join(__dirname, 'fixtures/master.git'))
         expect(repo.getHead()).toBe('refs/heads/master')
       })
+
+      it("resolves with the branch's full path", async () => {
+        repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+        expect(await repo.getHeadAsync()).toBe('refs/heads/master')
+      })
     })
 
     describe('when the HEAD is detached', () => {
       it('return the SHA-1 that is checked out', () => {
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getHead()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
+      })
+
+      it('return the SHA-1 that is checked out', async () => {
+        repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
+        expect(await repo.getHead()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
       })
     })
   })
