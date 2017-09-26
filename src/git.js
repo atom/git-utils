@@ -114,21 +114,39 @@ Repository.prototype.getAheadBehindCount = function (branch = 'HEAD') {
     branch = `refs/heads/${branch}`
   }
 
-  const counts = {ahead: 0, behind: 0}
   const headCommit = this.getReferenceTarget(branch)
-  if (!headCommit || headCommit.length === 0) return counts
+  if (!headCommit || headCommit.length === 0) return {ahead: 0, behind: 0}
 
   const upstream = this.getUpstreamBranch()
-  if (!upstream || upstream.length === 0) return counts
+  if (!upstream || upstream.length === 0) return {ahead: 0, behind: 0}
+
   const upstreamCommit = this.getReferenceTarget(upstream)
-  if (!upstreamCommit || upstreamCommit.length === 0) return counts
+  if (!upstreamCommit || upstreamCommit.length === 0) return {ahead: 0, behind: 0}
 
-  const mergeBase = this.getMergeBase(headCommit, upstreamCommit)
-  if (!mergeBase || mergeBase.length === 0) return counts
+  return this.compareCommits(headCommit, upstreamCommit)
+}
 
-  counts.ahead = this.getCommitCount(headCommit, mergeBase)
-  counts.behind = this.getCommitCount(upstreamCommit, mergeBase)
-  return counts
+Repository.prototype.getAheadBehindCountAsync = function (branch = 'HEAD') {
+  if (branch !== 'HEAD' && !branch.startsWith('refs/heads/')) {
+    branch = `refs/heads/${branch}`
+  }
+
+  const headCommit = this.getReferenceTarget(branch)
+  if (!headCommit || headCommit.length === 0) return {ahead: 0, behind: 0}
+
+  const upstream = this.getUpstreamBranch()
+  if (!upstream || upstream.length === 0) return {ahead: 0, behind: 0}
+
+  const upstreamCommit = this.getReferenceTarget(upstream)
+  if (!upstreamCommit || upstreamCommit.length === 0) return {ahead: 0, behind: 0}
+
+  return new Promise((resolve, reject) => {
+    this.compareCommitsAsync(
+      (error, result) => error ? reject(error) : resolve(result),
+      headCommit,
+      upstreamCommit
+    )
+  })
 }
 
 Repository.prototype.checkoutReference = function (branch, create) {

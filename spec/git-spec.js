@@ -672,6 +672,23 @@ describe('git', () => {
       counts = repo.getAheadBehindCount('')
       expect(counts).toEqual({ahead: 0, behind: 0})
     })
+
+    it('returns the number of commits ahead of and behind the upstream branch', async () => {
+      let counts = await repo.getAheadBehindCountAsync()
+      expect(counts).toEqual({ahead: 3, behind: 2})
+
+      counts = await repo.getAheadBehindCountAsync('refs/heads/master')
+      expect(counts).toEqual({ahead: 3, behind: 2})
+
+      counts = await repo.getAheadBehindCountAsync('master')
+      expect(counts).toEqual({ahead: 3, behind: 2})
+
+      counts = await repo.getAheadBehindCountAsync('refs/heads/masterblaster')
+      expect(counts).toEqual({ahead: 0, behind: 0})
+
+      counts = await repo.getAheadBehindCountAsync('')
+      expect(counts).toEqual({ahead: 0, behind: 0})
+    })
   })
 
   describe('.getLineDiffs(path, text, options)', () => {

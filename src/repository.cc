@@ -54,8 +54,8 @@ void Repository::Init(Local<Object> target) {
   Nan::SetMethod(proto, "getDiffStats", Repository::GetDiffStats);
   Nan::SetMethod(proto, "getIndexBlob", Repository::GetIndexBlob);
   Nan::SetMethod(proto, "getHeadBlob", Repository::GetHeadBlob);
-  Nan::SetMethod(proto, "getCommitCount", Repository::GetCommitCount);
-  Nan::SetMethod(proto, "getMergeBase", Repository::GetMergeBase);
+  Nan::SetMethod(proto, "compareCommits", Repository::CompareCommits);
+  Nan::SetMethod(proto, "compareCommitsAsync", Repository::CompareCommitsAsync);
   Nan::SetMethod(proto, "_release", Repository::Release);
   Nan::SetMethod(proto, "getLineDiffs", Repository::GetLineDiffs);
   Nan::SetMethod(proto, "getLineDiffDetails", Repository::GetLineDiffDetails);
@@ -653,60 +653,83 @@ NAN_METHOD(Repository::Release) {
   info.GetReturnValue().SetUndefined();
 }
 
-NAN_METHOD(Repository::GetCommitCount) {
-  Nan::HandleScope scope;
-  if (info.Length() < 2)
-    return info.GetReturnValue().Set(Nan::New<Number>(0));
+unsigned GetCommitCount(git_repository *repository, git_oid *left_oid, git_oid *right_oid) {
+  git_revwalk *revwalk;
+  if (git_revwalk_new(&revwalk, repository) != GIT_OK) return 0;
 
-  std::string fromCommitId(*String::Utf8Value(info[0]));
-  git_oid fromCommit;
-  if (git_oid_fromstr(&fromCommit, fromCommitId.c_str()) != GIT_OK)
-    return info.GetReturnValue().Set(Nan::New<Number>(0));
+  git_revwalk_push(revwalk, left_oid);
+  git_revwalk_hide(revwalk, right_oid);
 
-  std::string toCommitId(*String::Utf8Value(info[1]));
-  git_oid toCommit;
-  if (git_oid_fromstr(&toCommit, toCommitId.c_str()) != GIT_OK)
-    return info.GetReturnValue().Set(Nan::New<Number>(0));
+  unsigned result = 0;
+  git_oid current_commit;
+  while (git_revwalk_next(&current_commit, revwalk) == GIT_OK) result++;
+  git_revwalk_free(revwalk);
 
-  git_revwalk* revWalk;
-  if (git_revwalk_new(&revWalk, GetRepository(info)) != GIT_OK)
-    return info.GetReturnValue().Set(Nan::New<Number>(0));
-
-  git_revwalk_push(revWalk, &fromCommit);
-  git_revwalk_hide(revWalk, &toCommit);
-  git_oid currentCommit;
-  int count = 0;
-  while (git_revwalk_next(&currentCommit, revWalk) == GIT_OK)
-    count++;
-  git_revwalk_free(revWalk);
-  return info.GetReturnValue().Set(Nan::New<Number>(count));
+  return result;
 }
 
-NAN_METHOD(Repository::GetMergeBase) {
-  Nan::HandleScope scope;
-  if (info.Length() < 2)
-    return info.GetReturnValue().Set(Nan::Null());
+class CompareCommitsWorker : public Nan::AsyncWorker {
+  git_repository *repository;
+  std::string left_id;
+  std::string right_id;
+  unsigned ahead_count;
+  unsigned behind_count;
 
-  std::string commitOneId(*String::Utf8Value(info[0]));
-  git_oid commitOne;
-  if (git_oid_fromstr(&commitOne, commitOneId.c_str()) != GIT_OK)
-    return info.GetReturnValue().Set(Nan::Null());
+ public:
+  void Execute() {
+    git_oid left_oid;
+    if (git_oid_fromstr(&left_oid, left_id.c_str()) != GIT_OK) return;
 
-  std::string commitTwoId(*String::Utf8Value(info[1]));
-  git_oid commitTwo;
-  if (git_oid_fromstr(&commitTwo, commitTwoId.c_str()) != GIT_OK)
-    return info.GetReturnValue().Set(Nan::Null());
+    git_oid right_oid;
+    if (git_oid_fromstr(&right_oid, right_id.c_str()) != GIT_OK) return;
 
-  git_oid mergeBase;
-  if (git_merge_base(
-        &mergeBase, GetRepository(info), &commitOne, &commitTwo) == GIT_OK) {
-    char mergeBaseId[GIT_OID_HEXSZ + 1];
-    git_oid_tostr(mergeBaseId, GIT_OID_HEXSZ + 1, &mergeBase);
-    return info.GetReturnValue().Set(Nan::New<String>(mergeBaseId, -1)
-        .ToLocalChecked());
+    git_oid merge_base;
+    if (git_merge_base(&merge_base, repository, &left_oid, &right_oid) != GIT_OK) return;
+
+    ahead_count = GetCommitCount(repository, &left_oid, &merge_base);
+    behind_count = GetCommitCount(repository, &right_oid, &merge_base);
   }
 
-  return info.GetReturnValue().Set(Nan::Null());
+  std::pair<Local<Value>, Local<Value>> Finish() {
+    Local<Object> result = Nan::New<Object>();
+    result->Set(Nan::New("ahead").ToLocalChecked(), Nan::New<Integer>(ahead_count));
+    result->Set(Nan::New("behind").ToLocalChecked(), Nan::New<Integer>(behind_count));
+    return {Nan::Null(), result};
+  }
+
+  void HandleOKCallback() {
+    auto result = Finish();
+    Local<Value> argv[] = {result.first, result.second};
+    callback->Call(2, argv);
+  }
+
+  CompareCommitsWorker(Nan::Callback *callback, git_repository *repository,
+                       Local<Value> js_left_id, Local<Value> js_right_id)
+    : Nan::AsyncWorker(callback), repository(repository) {
+    left_id = *String::Utf8Value(js_left_id);
+    right_id = *String::Utf8Value(js_right_id);
+  }
+};
+
+NAN_METHOD(Repository::CompareCommits) {
+  if (info.Length() < 2) {
+    info.GetReturnValue().Set(Nan::Null());
+    return;
+  }
+
+  CompareCommitsWorker worker(NULL, GetRepository(info), info[0], info[1]);
+  worker.Execute();
+  info.GetReturnValue().Set(worker.Finish().second);
+}
+
+NAN_METHOD(Repository::CompareCommitsAsync) {
+  if (info.Length() < 2) {
+    info.GetReturnValue().Set(Nan::Null());
+    return;
+  }
+
+  auto callback = new Nan::Callback(Local<Function>::Cast(info[0]));
+  Nan::AsyncQueueWorker(new CompareCommitsWorker(callback, GetAsyncRepository(info), info[1], info[2]));
 }
 
 int Repository::DiffHunkCallback(const git_diff_delta* delta,

@@ -54,8 +54,8 @@ class Repository : public Nan::ObjectWrap {
   static NAN_METHOD(GetDiffStats);
   static NAN_METHOD(GetIndexBlob);
   static NAN_METHOD(GetHeadBlob);
-  static NAN_METHOD(GetCommitCount);
-  static NAN_METHOD(GetMergeBase);
+  static NAN_METHOD(CompareCommits);
+  static NAN_METHOD(CompareCommitsAsync);
   static NAN_METHOD(Release);
   static NAN_METHOD(GetLineDiffs);
   static NAN_METHOD(GetLineDiffDetails);
