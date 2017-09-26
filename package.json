@@ -41,6 +41,6 @@
   },
   "scripts": {
     "prepublish": "standard src spec",
-    "test": "jasmine-focused --captureExceptions --coffee spec"
+    "test": "jasmine-focused --captureExceptions spec"
   }
 }
