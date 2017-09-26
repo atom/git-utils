@@ -27,25 +27,20 @@
     "dvcs",
     "vcs"
   ],
-  "main": "./lib/git.js",
+  "main": "./src/git.js",
   "devDependencies": {
-    "grunt": "~0.4.0",
-    "grunt-contrib-coffee": "~0.9.0",
-    "grunt-shell": "~0.2.1",
-    "grunt-cli": "~0.1.6",
-    "wrench": "~1.4.4",
+    "jasmine-focused": "^1.0.4",
+    "standard": "^10.0.3",
     "temp": "~0.5.0",
     "underscore": "~1.5.2",
-    "jasmine-focused": "^1.0.4",
-    "node-cpplint": "~0.1.5",
-    "grunt-coffeelint": "0.0.6"
+    "wrench": "~1.4.4"
   },
   "dependencies": {
     "nan": "^2.0.0",
     "fs-plus": "^3.0.0"
   },
   "scripts": {
-    "prepublish": "grunt clean coffee lint",
-    "test": "grunt test"
+    "prepublish": "standard src spec",
+    "test": "jasmine-focused --captureExceptions spec"
   }
 }
