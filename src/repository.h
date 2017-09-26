@@ -46,7 +46,8 @@ class Repository : public Nan::ObjectWrap {
   static NAN_METHOD(GetConfigValue);
   static NAN_METHOD(SetConfigValue);
   static NAN_METHOD(GetStatus);
-  static NAN_METHOD(GetStatusForPaths);
+  static NAN_METHOD(GetStatusAsync);
+  static NAN_METHOD(GetStatusForPath);
   static NAN_METHOD(CheckoutHead);
   static NAN_METHOD(GetReferenceTarget);
   static NAN_METHOD(GetDiffStats);
@@ -61,8 +62,6 @@ class Repository : public Nan::ObjectWrap {
   static NAN_METHOD(CheckoutReference);
   static NAN_METHOD(Add);
 
-  static int StatusCallback(const char *path, unsigned int status,
-                            void *payload);
   static int DiffHunkCallback(const git_diff_delta *delta,
                               const git_diff_hunk *hunk,
                               void *payload);
@@ -77,6 +76,7 @@ class Repository : public Nan::ObjectWrap {
       const std::vector<std::string>& vector);
 
   static git_repository* GetRepository(Nan::NAN_METHOD_ARGS_TYPE args);
+  static git_repository* GetAsyncRepository(Nan::NAN_METHOD_ARGS_TYPE args);
 
   static int GetBlob(Nan::NAN_METHOD_ARGS_TYPE args,
                       git_repository* repo, git_blob*& blob);
@@ -87,6 +87,7 @@ class Repository : public Nan::ObjectWrap {
   ~Repository();
 
   git_repository* repository;
+  git_repository* async_repository;
 };
 
 #endif  // SRC_REPOSITORY_H_

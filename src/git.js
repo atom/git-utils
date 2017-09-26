@@ -227,6 +227,37 @@ Repository.prototype.isWorkingDirectory = function (path) {
   return false
 }
 
+const {getStatus, getStatusAsync, getStatusForPath} = Repository.prototype
+delete Repository.prototype.getStatusForPath
+
+Repository.prototype.getStatusForPaths = function (paths) {
+  if (paths && paths.length > 0) {
+    return getStatus.call(this, paths)
+  } else {
+    return {}
+  }
+}
+
+Repository.prototype.getStatus = function (path) {
+  if (typeof path === 'string') {
+    return getStatusForPath.call(this, path)
+  } else {
+    return getStatus.call(this)
+  }
+}
+
+Repository.prototype.getStatusAsync = function () {
+  return new Promise((resolve, reject) =>
+    getStatusAsync.call(this, (error, result) => error ? reject(error) : resolve(result))
+  )
+}
+
+Repository.prototype.getStatusForPathsAsync = function (paths) {
+  return new Promise((resolve, reject) =>
+    getStatusAsync.call(this, (error, result) => error ? reject(error) : resolve(result), paths)
+  )
+}
+
 function realpath (unrealPath) {
   try {
     return fs.realpathSync(unrealPath)

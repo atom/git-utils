@@ -20,9 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "repository.h"
-
 #include <string.h>
-
 #include <map>
 #include <utility>
 
@@ -48,8 +46,8 @@ void Repository::Init(Local<Object> target) {
   Nan::SetMethod(proto, "getConfigValue", Repository::GetConfigValue);
   Nan::SetMethod(proto, "setConfigValue", Repository::SetConfigValue);
   Nan::SetMethod(proto, "getStatus", Repository::GetStatus);
-  Nan::SetMethod(proto, "getStatusForPaths",
-                        Repository::GetStatusForPaths);
+  Nan::SetMethod(proto, "getStatusForPath", Repository::GetStatusForPath);
+  Nan::SetMethod(proto, "getStatusAsync", Repository::GetStatusAsync);
   Nan::SetMethod(proto, "checkoutHead", Repository::CheckoutHead);
   Nan::SetMethod(proto, "getReferenceTarget", Repository::GetReferenceTarget);
   Nan::SetMethod(proto, "getDiffStats", Repository::GetDiffStats);
@@ -80,6 +78,10 @@ NAN_METHOD(Repository::New) {
 
 git_repository* Repository::GetRepository(Nan::NAN_METHOD_ARGS_TYPE args) {
   return Nan::ObjectWrap::Unwrap<Repository>(args.This())->repository;
+}
+
+git_repository* Repository::GetAsyncRepository(Nan::NAN_METHOD_ARGS_TYPE args) {
+  return Nan::ObjectWrap::Unwrap<Repository>(args.This())->async_repository;
 }
 
 int Repository::GetBlob(Nan::NAN_METHOD_ARGS_TYPE args,
@@ -299,84 +301,103 @@ NAN_METHOD(Repository::SetConfigValue) {
   return info.GetReturnValue().Set(Nan::New<Boolean>(errorCode == GIT_OK));
 }
 
+static int StatusCallback(const char* path, unsigned int status, void* payload) {
+  auto statuses = static_cast<std::map<std::string, unsigned int> *>(payload);
+  statuses->insert(std::make_pair(std::string(path), status));
+  return GIT_OK;
+}
+
+class StatusWorker : public Nan::AsyncWorker {
+  git_repository *repository;
+  std::map<std::string, unsigned int> statuses;
+  char **paths;
+  unsigned path_count;
+  int code;
+
+ public:
+  void Execute() {
+    git_status_options options = GIT_STATUS_OPTIONS_INIT;
+    options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+
+    if (paths) {
+      options.pathspec.count = path_count;
+      options.pathspec.strings = paths;
+    }
+
+    code = git_status_foreach_ext(repository, &options, StatusCallback, &statuses);
+
+    if (paths) {
+      git_strarray_free(&options.pathspec);
+    }
+  }
+
+  std::pair<Local<Value>, Local<Value>> Finish() {
+    if (code == GIT_OK) {
+      Local<Object> result = Nan::New<Object>();
+      for (auto iter = statuses.begin(), end = statuses.end(); iter != end; ++iter) {
+        result->Set(
+          Nan::New<String>(iter->first.c_str()).ToLocalChecked(),
+          Nan::New<Number>(iter->second)
+        );
+      }
+      return {Nan::Null(), result};
+    } else {
+      return {Nan::Error("Git status failed"), Nan::Null()};
+    }
+  }
+
+  void HandleOKCallback() {
+    auto result = Finish();
+    Local<Value> argv[] = {result.first, result.second};
+    callback->Call(2, argv);
+  }
+
+  StatusWorker(Nan::Callback *callback, git_repository *repository, Local<Value> path_filter)
+    : Nan::AsyncWorker(callback),
+      repository(repository) {
+
+    if (path_filter->IsArray()) {
+      Local<Array> js_paths = Local<Array>::Cast(path_filter);
+      path_count = js_paths->Length();
+      paths = reinterpret_cast<char **>(malloc(path_count * sizeof(char *)));
+      for (unsigned i = 0; i < path_count; i++) {
+        auto js_path = Local<String>::Cast(js_paths->Get(i));
+        paths[i] = reinterpret_cast<char *>(malloc(js_path->Utf8Length() + 1));
+        js_path->WriteUtf8(paths[i]);
+      }
+    } else {
+      paths = NULL;
+      path_count = 0;
+    }
+  }
+};
+
+NAN_METHOD(Repository::GetStatusAsync) {
+  auto callback = new Nan::Callback(Local<Function>::Cast(info[0]));
+  Local<Value> path_filter = info.Length() > 1 ? info[1] : Local<Value>::Cast(Nan::Null());
+  Nan::AsyncQueueWorker(new StatusWorker(callback, GetAsyncRepository(info), path_filter));
+}
 
 NAN_METHOD(Repository::GetStatus) {
-  Nan::HandleScope scope;
-  if (info.Length() < 1) {
-    Local<Object> result = Nan::New<Object>();
-    std::map<std::string, unsigned int> statuses;
-    git_status_options options = GIT_STATUS_OPTIONS_INIT;
-    options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
-                    GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
-    if (git_status_foreach_ext(GetRepository(info),
-                               &options,
-                               StatusCallback,
-                               &statuses) == GIT_OK) {
-      std::map<std::string, unsigned int>::iterator iter = statuses.begin();
-      for (; iter != statuses.end(); ++iter)
-        result->Set(Nan::New<String>(iter->first.c_str()).ToLocalChecked(),
-                    Nan::New<Number>(iter->second));
-    }
-    return info.GetReturnValue().Set(result);
+  Local<Value> path_filter = info.Length() > 0 ? info[0] : Local<Value>::Cast(Nan::Null());
+  StatusWorker worker(NULL, GetRepository(info), path_filter);
+  worker.Execute();
+  auto result = worker.Finish();
+  if (result.first->IsNull()) {
+    info.GetReturnValue().Set(worker.Finish().second);
   } else {
-    git_repository* repository = GetRepository(info);
-    std::string path(*String::Utf8Value(info[0]));
-    unsigned int status = 0;
-    if (git_status_file(&status, repository, path.c_str()) == GIT_OK)
-      return info.GetReturnValue().Set(Nan::New<Number>(status));
-    else
-      return info.GetReturnValue().Set(Nan::New<Number>(0));
+    info.GetReturnValue().Set(Nan::New<Object>());
   }
 }
 
-NAN_METHOD(Repository::GetStatusForPaths) {
-  Nan::HandleScope scope;
-
-  Local<Object> result = Nan::New<Object>();
-  if (info.Length() < 1)
-    return info.GetReturnValue().Set(result);
-
-  std::map<std::string, unsigned int> statuses;
-  git_status_options options = GIT_STATUS_OPTIONS_INIT;
-  // Ideally we'd use GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH here since we want
-  // to limit to a path, not a pathspec, but libgit2 seems to have a bug here:
-  // https://github.com/libgit2/libgit2/pull/3609
-  options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED |
-                  GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
-
-  Array *pathsArg = Array::Cast(*info[0]);
-  unsigned int pathsLength = pathsArg->Length();
-  if (pathsLength < 1)
-    return info.GetReturnValue().Set(result);
-
-  char *path = NULL;
-  char **paths = reinterpret_cast<char **>(malloc(pathsLength * sizeof(path)));
-  for (unsigned int i = 0; i < pathsLength; i++) {
-    String::Utf8Value utf8Path(pathsArg->Get(i));
-    path = strdup(*utf8Path);
-    paths[i] = path;
-  }
-
-  git_strarray pathsArray;
-  pathsArray.count = pathsLength;
-  pathsArray.strings = paths;
-  options.pathspec = pathsArray;
-
-  if (git_status_foreach_ext(GetRepository(info),
-                             &options,
-                             StatusCallback,
-                             &statuses) == GIT_OK) {
-    std::map<std::string, unsigned int>::iterator iter = statuses.begin();
-    for (; iter != statuses.end(); ++iter)
-      result->Set(Nan::New<String>(iter->first.c_str()).ToLocalChecked(),
-                  Nan::New<Number>(iter->second));
-  }
-
-  if (paths != NULL) {
-    git_strarray_free(&pathsArray);
-  }
-
-  return info.GetReturnValue().Set(result);
+NAN_METHOD(Repository::GetStatusForPath) {
+  git_repository* repository = GetRepository(info);
+  String::Utf8Value path(info[0]);
+  unsigned int status = 0;
+  if (git_status_file(&status, repository, *path) == GIT_OK)
+    return info.GetReturnValue().Set(Nan::New<Number>(status));
+  else
+    return info.GetReturnValue().Set(Nan::New<Number>(0));
 }
 
 NAN_METHOD(Repository::CheckoutHead) {
@@ -582,14 +603,6 @@ NAN_METHOD(Repository::GetIndexBlob) {
   Local<Value> value = Nan::New<String>(content).ToLocalChecked();
   git_blob_free(blob);
   return info.GetReturnValue().Set(value);
-}
-
-int Repository::StatusCallback(
-    const char* path, unsigned int status, void* payload) {
-  std::map<std::string, unsigned int>* statuses =
-      static_cast<std::map<std::string, unsigned int>*>(payload);
-  statuses->insert(std::make_pair(std::string(path), status));
-  return GIT_OK;
 }
 
 int Repository::SubmoduleCallback(
@@ -967,18 +980,38 @@ Repository::Repository(Local<String> path, Local<Boolean> search) {
   Nan::HandleScope scope;
 
   int flags = 0;
-  if (!search->BooleanValue())
+  if (!search->BooleanValue()) {
     flags |= GIT_REPOSITORY_OPEN_NO_SEARCH;
+  }
 
-  std::string repositoryPath(*String::Utf8Value(path));
-  if (git_repository_open_ext(
-        &repository, repositoryPath.c_str(), flags, NULL) != GIT_OK)
+  String::Utf8Value repository_path(path);
+  int result = git_repository_open_ext(&repository, *repository_path, flags, NULL);
+  if (result != GIT_OK) {
     repository = NULL;
+    async_repository = NULL;
+    return;
+  }
+
+  result = git_repository_open_ext(
+    &async_repository,
+    git_repository_path(repository),
+    GIT_REPOSITORY_OPEN_NO_SEARCH,
+    NULL
+  );
+  if (result != GIT_OK) {
+    repository = NULL;
+    async_repository = NULL;
+    return;
+  }
 }
 
 Repository::~Repository() {
   if (repository != NULL) {
     git_repository_free(repository);
     repository = NULL;
+  }
+  if (async_repository != NULL) {
+    git_repository_free(async_repository);
+    async_repository = NULL;
   }
 }

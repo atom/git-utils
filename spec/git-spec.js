@@ -554,14 +554,25 @@ describe('git', () => {
     describe('when no path is specified', () => {
       it('returns the status of all modified paths', () => {
         const statuses = repo.getStatus()
-        expect(_.keys(statuses).length).toBe(2)
-        expect(statuses['a.txt']).toBe(1 << 9)
-        expect(statuses['b.txt']).toBe(1 << 7)
+        expect(statuses).toEqual({
+          'a.txt': 1 << 9,
+          'b.txt': 1 << 7
+        })
+      })
+
+      it('resolves with the status of all modified paths', async () => {
+        const statuses = await repo.getStatusAsync()
+        expect(statuses).toEqual({
+          'a.txt': 1 << 9,
+          'b.txt': 1 << 7
+        })
       })
     })
 
     describe('when a path is specified', () => {
-      it('returns the status of the given path', () => expect(repo.getStatus('a.txt')).toBe(1 << 9))
+      it('returns the status of the given path', () => {
+        expect(repo.getStatus('a.txt')).toBe(1 << 9)
+      })
     })
   })
 
@@ -581,6 +592,15 @@ describe('git', () => {
     describe('when a path is specified', () => {
       it('returns the status of only that path', () => {
         const statuses = repo.getStatusForPaths(['dir/**'])
+        expect(_.keys(statuses).length).toBe(1)
+
+        const status = statuses['dir/a.txt']
+        expect(repo.isStatusModified(status)).toBe(true)
+        expect(repo.isStatusNew(status)).toBe(false)
+      })
+
+      it('returns the status of only that path', async () => {
+        const statuses = await repo.getStatusForPathsAsync(['dir/**'])
         expect(_.keys(statuses).length).toBe(1)
 
         const status = statuses['dir/a.txt']
