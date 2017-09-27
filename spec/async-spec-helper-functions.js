@@ -47,6 +47,6 @@ function waitsForPromise (promise, spec) {
     (e) => {
       spec.fail(e)
       done = true
-    },
+    }
   )
 }
