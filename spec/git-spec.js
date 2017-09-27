@@ -5,6 +5,7 @@ const {exec} = require('child_process')
 const wrench = require('wrench')
 const temp = require('temp')
 const _ = require('underscore')
+const {it, fit, beforeEach} = require('./async-spec-helper-functions')
 
 describe('git', () => {
   let repo
@@ -58,12 +59,22 @@ describe('git', () => {
         repo = git.open(path.join(__dirname, 'fixtures/master.git'))
         expect(repo.getHead()).toBe('refs/heads/master')
       })
+
+      it("resolves with the branch's full path", async () => {
+        repo = git.open(path.join(__dirname, 'fixtures/master.git'))
+        expect(await repo.getHeadAsync()).toBe('refs/heads/master')
+      })
     })
 
     describe('when the HEAD is detached', () => {
       it('return the SHA-1 that is checked out', () => {
         repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
         expect(repo.getHead()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
+      })
+
+      it('resolves with the SHA-1 that is checked out', async () => {
+        repo = git.open(path.join(__dirname, 'fixtures/detached.git'))
+        expect(await repo.getHeadAsync()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
       })
     })
   })
@@ -554,14 +565,25 @@ describe('git', () => {
     describe('when no path is specified', () => {
       it('returns the status of all modified paths', () => {
         const statuses = repo.getStatus()
-        expect(_.keys(statuses).length).toBe(2)
-        expect(statuses['a.txt']).toBe(1 << 9)
-        expect(statuses['b.txt']).toBe(1 << 7)
+        expect(statuses).toEqual({
+          'a.txt': 1 << 9,
+          'b.txt': 1 << 7
+        })
+      })
+
+      it('resolves with the status of all modified paths', async () => {
+        const statuses = await repo.getStatusAsync()
+        expect(statuses).toEqual({
+          'a.txt': 1 << 9,
+          'b.txt': 1 << 7
+        })
       })
     })
 
     describe('when a path is specified', () => {
-      it('returns the status of the given path', () => expect(repo.getStatus('a.txt')).toBe(1 << 9))
+      it('returns the status of the given path', () => {
+        expect(repo.getStatus('a.txt')).toBe(1 << 9)
+      })
     })
   })
 
@@ -581,6 +603,15 @@ describe('git', () => {
     describe('when a path is specified', () => {
       it('returns the status of only that path', () => {
         const statuses = repo.getStatusForPaths(['dir/**'])
+        expect(_.keys(statuses).length).toBe(1)
+
+        const status = statuses['dir/a.txt']
+        expect(repo.isStatusModified(status)).toBe(true)
+        expect(repo.isStatusNew(status)).toBe(false)
+      })
+
+      it('resolves with the status of only that path', async () => {
+        const statuses = await repo.getStatusForPathsAsync(['dir/**'])
         expect(_.keys(statuses).length).toBe(1)
 
         const status = statuses['dir/a.txt']
@@ -639,6 +670,23 @@ describe('git', () => {
       expect(counts).toEqual({ahead: 0, behind: 0})
 
       counts = repo.getAheadBehindCount('')
+      expect(counts).toEqual({ahead: 0, behind: 0})
+    })
+
+    it('resolves with the number of commits ahead of and behind the upstream branch', async () => {
+      let counts = await repo.getAheadBehindCountAsync()
+      expect(counts).toEqual({ahead: 3, behind: 2})
+
+      counts = await repo.getAheadBehindCountAsync('refs/heads/master')
+      expect(counts).toEqual({ahead: 3, behind: 2})
+
+      counts = await repo.getAheadBehindCountAsync('master')
+      expect(counts).toEqual({ahead: 3, behind: 2})
+
+      counts = await repo.getAheadBehindCountAsync('refs/heads/masterblaster')
+      expect(counts).toEqual({ahead: 0, behind: 0})
+
+      counts = await repo.getAheadBehindCountAsync('')
       expect(counts).toEqual({ahead: 0, behind: 0})
     })
   })
@@ -913,6 +961,34 @@ describe('git', () => {
     })
 
     it("throws an error if the file doesn't exist", () => expect(() => repo.add('missing.txt')).toThrow())
+  })
+
+  it('can handle multiple simultaneous async calls', async () => {
+    repoDirectory = temp.mkdirSync('node-git-repo-')
+    wrench.copyDirSyncRecursive(
+      path.join(__dirname, 'fixtures/subdir.git'),
+      path.join(repoDirectory, '.git')
+    )
+    repo = git.open(repoDirectory)
+
+    const operations = [
+      () => repo.getAheadBehindCountAsync(),
+      () => repo.getHeadAsync(),
+      () => repo.getStatusAsync(),
+      () => repo.getStatusAsync(['*']),
+    ]
+
+    for (let i = 0; i < 20; i++) {
+      const promises = []
+      for (let j = 0, count = random(100); j < count; j++) {
+        promises.push(operations[random(operations.length)]())
+      }
+      await Promise.all(promises)
+    }
+
+    function random (max) {
+      return Math.floor(Math.random() * max)
+    }
   })
 })
 

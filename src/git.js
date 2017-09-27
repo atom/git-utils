@@ -114,21 +114,37 @@ Repository.prototype.getAheadBehindCount = function (branch = 'HEAD') {
     branch = `refs/heads/${branch}`
   }
 
-  const counts = {ahead: 0, behind: 0}
   const headCommit = this.getReferenceTarget(branch)
-  if (!headCommit || headCommit.length === 0) return counts
+  if (!headCommit || headCommit.length === 0) return {ahead: 0, behind: 0}
 
   const upstream = this.getUpstreamBranch()
-  if (!upstream || upstream.length === 0) return counts
+  if (!upstream || upstream.length === 0) return {ahead: 0, behind: 0}
+
   const upstreamCommit = this.getReferenceTarget(upstream)
-  if (!upstreamCommit || upstreamCommit.length === 0) return counts
+  if (!upstreamCommit || upstreamCommit.length === 0) return {ahead: 0, behind: 0}
 
-  const mergeBase = this.getMergeBase(headCommit, upstreamCommit)
-  if (!mergeBase || mergeBase.length === 0) return counts
+  return this.compareCommits(headCommit, upstreamCommit)
+}
 
-  counts.ahead = this.getCommitCount(headCommit, mergeBase)
-  counts.behind = this.getCommitCount(upstreamCommit, mergeBase)
-  return counts
+Repository.prototype.getAheadBehindCountAsync = function (branch = 'HEAD') {
+  if (branch !== 'HEAD' && !branch.startsWith('refs/heads/')) {
+    branch = `refs/heads/${branch}`
+  }
+
+  const headCommit = this.getReferenceTarget(branch)
+  if (!headCommit || headCommit.length === 0) return {ahead: 0, behind: 0}
+
+  const upstream = this.getUpstreamBranch()
+  if (!upstream || upstream.length === 0) return {ahead: 0, behind: 0}
+
+  const upstreamCommit = this.getReferenceTarget(upstream)
+  if (!upstreamCommit || upstreamCommit.length === 0) return {ahead: 0, behind: 0}
+
+  return performAsyncWork(this, done => this.compareCommitsAsync(
+    done,
+    headCommit,
+    upstreamCommit
+  ))
 }
 
 Repository.prototype.checkoutReference = function (branch, create) {
@@ -227,6 +243,54 @@ Repository.prototype.isWorkingDirectory = function (path) {
   return false
 }
 
+const {getHeadAsync, getStatus, getStatusAsync, getStatusForPath} = Repository.prototype
+delete Repository.prototype.getStatusForPath
+
+Repository.prototype.getStatusForPaths = function (paths) {
+  if (paths && paths.length > 0) {
+    return getStatus.call(this, paths)
+  } else {
+    return {}
+  }
+}
+
+Repository.prototype.getStatus = function (path) {
+  if (typeof path === 'string') {
+    return getStatusForPath.call(this, path)
+  } else {
+    return getStatus.call(this)
+  }
+}
+
+Repository.prototype.getHeadAsync = function () {
+  return performAsyncWork(this, done => getHeadAsync.call(this, done))
+}
+
+Repository.prototype.getStatusAsync = function () {
+  return performAsyncWork(this, done => getStatusAsync.call(this, done))
+}
+
+Repository.prototype.getStatusForPathsAsync = function (paths) {
+  return performAsyncWork(this, done => getStatusAsync.call(this, done, paths))
+}
+
+function performAsyncWork (repo, fn) {
+  fn = promisify(fn)
+
+  if (repo._lastAsyncPromise) {
+    repo._lastAsyncPromise = repo._lastAsyncPromise.then(fn, fn)
+  } else {
+    repo._lastAsyncPromise = fn()
+  }
+  return repo._lastAsyncPromise
+}
+
+function promisify (fn) {
+  return () => new Promise((resolve, reject) =>
+    fn((error, result) => error ? reject(error) : resolve(result))
+  )
+}
+
 function realpath (unrealPath) {
   try {
     return fs.realpathSync(unrealPath)
@@ -272,7 +336,7 @@ function openSubmodules (repository) {
   for (let relativePath of repository.getSubmodulePaths()) {
     if (relativePath) {
       const submodulePath = path.join(repository.getWorkingDirectory(), relativePath)
-      const submoduleRepo = openRepository(submodulePath)
+      const submoduleRepo = openRepository(submodulePath, false)
       if (submoduleRepo) {
         if (submoduleRepo.getPath() === repository.getPath()) {
           submoduleRepo.release()
