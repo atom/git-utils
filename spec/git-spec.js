@@ -962,6 +962,34 @@ describe('git', () => {
 
     it("throws an error if the file doesn't exist", () => expect(() => repo.add('missing.txt')).toThrow())
   })
+
+  it('can handle multiple simultaneous async calls', async () => {
+    repoDirectory = temp.mkdirSync('node-git-repo-')
+    wrench.copyDirSyncRecursive(
+      path.join(__dirname, 'fixtures/subdir.git'),
+      path.join(repoDirectory, '.git')
+    )
+    repo = git.open(repoDirectory)
+
+    const operations = [
+      () => repo.getAheadBehindCountAsync(),
+      () => repo.getHeadAsync(),
+      () => repo.getStatusAsync(),
+      () => repo.getStatusAsync(['*']),
+    ]
+
+    for (let i = 0; i < 20; i++) {
+      const promises = []
+      for (let j = 0, count = random(100); j < count; j++) {
+        promises.push(operations[random(operations.length)]())
+      }
+      await Promise.all(promises)
+    }
+
+    function random (max) {
+      return Math.floor(Math.random() * max)
+    }
+  })
 })
 
 function execCommands (commands, callback) {

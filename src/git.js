@@ -140,13 +140,11 @@ Repository.prototype.getAheadBehindCountAsync = function (branch = 'HEAD') {
   const upstreamCommit = this.getReferenceTarget(upstream)
   if (!upstreamCommit || upstreamCommit.length === 0) return {ahead: 0, behind: 0}
 
-  return new Promise((resolve, reject) => {
-    this.compareCommitsAsync(
-      (error, result) => error ? reject(error) : resolve(result),
-      headCommit,
-      upstreamCommit
-    )
-  })
+  return performAsyncWork(this, done => this.compareCommitsAsync(
+    done,
+    headCommit,
+    upstreamCommit
+  ))
 }
 
 Repository.prototype.checkoutReference = function (branch, create) {
@@ -265,20 +263,31 @@ Repository.prototype.getStatus = function (path) {
 }
 
 Repository.prototype.getHeadAsync = function () {
-  return new Promise((resolve, reject) =>
-    getHeadAsync.call(this, (error, result) => error ? reject(error) : resolve(result))
-  )
+  return performAsyncWork(this, done => getHeadAsync.call(this, done))
 }
 
 Repository.prototype.getStatusAsync = function () {
-  return new Promise((resolve, reject) =>
-    getStatusAsync.call(this, (error, result) => error ? reject(error) : resolve(result))
-  )
+  return performAsyncWork(this, done => getStatusAsync.call(this, done))
 }
 
 Repository.prototype.getStatusForPathsAsync = function (paths) {
-  return new Promise((resolve, reject) =>
-    getStatusAsync.call(this, (error, result) => error ? reject(error) : resolve(result), paths)
+  return performAsyncWork(this, done => getStatusAsync.call(this, done, paths))
+}
+
+function performAsyncWork (repo, fn) {
+  fn = promisify(fn)
+
+  if (repo._lastAsyncPromise) {
+    repo._lastAsyncPromise = repo._lastAsyncPromise.then(fn, fn)
+  } else {
+    repo._lastAsyncPromise = fn()
+  }
+  return repo._lastAsyncPromise
+}
+
+function promisify (fn) {
+  return () => new Promise((resolve, reject) =>
+    fn((error, result) => error ? reject(error) : resolve(result))
   )
 }
 
@@ -327,7 +336,7 @@ function openSubmodules (repository) {
   for (let relativePath of repository.getSubmodulePaths()) {
     if (relativePath) {
       const submodulePath = path.join(repository.getWorkingDirectory(), relativePath)
-      const submoduleRepo = openRepository(submodulePath)
+      const submoduleRepo = openRepository(submodulePath, false)
       if (submoduleRepo) {
         if (submoduleRepo.getPath() === repository.getPath()) {
           submoduleRepo.release()
