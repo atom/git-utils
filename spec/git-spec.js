@@ -77,6 +77,18 @@ describe('git', () => {
         expect(await repo.getHeadAsync()).toBe('50719ab369dcbbc2fb3b7a0167c52accbd0eb40e')
       })
     })
+
+    describe('when repo has no commits', () => {
+      it('returns null', () => {
+        repo = git.open(path.join(__dirname, 'fixtures/no-commits.git'))
+        expect(repo.getHead()).toBe(null)
+      })
+
+      it('resolves with null', async () => {
+        repo = git.open(path.join(__dirname, 'fixtures/no-commits.git'))
+        expect(await repo.getHeadAsync()).toBe(null)
+      })
+    })
   })
 
   describe('.getShortHead()', () => {
