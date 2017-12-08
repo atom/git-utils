@@ -214,7 +214,7 @@ class HeadWorker : public Nan::AsyncWorker {
 
   std::pair<Local<Value>, Local<Value>> Finish() {
     if (result.empty()) {
-      return {Nan::Error("Git head failed"), Nan::Null()};
+      return {Nan::Null(), Nan::Null()};
     } else {
       return {Nan::Null(), Nan::New(result).ToLocalChecked()};
     }
