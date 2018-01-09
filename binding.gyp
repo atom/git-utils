@@ -304,14 +304,16 @@
       'conditions': [
         ['OS=="mac"', {
           'defines': [
-            'GIT_SECURE_TRANSPORT',
             'GIT_USE_STAT_MTIMESPEC'
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS.endswith("bsd")', {
           'cflags': [
             '-w',
           ],
+          'defines': [
+            'GIT_USE_STAT_MTIM'
+          ]
         }],
         ['OS=="win"', {
           'defines': [
