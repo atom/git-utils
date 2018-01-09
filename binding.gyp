@@ -40,7 +40,6 @@
       'type': 'static_library',
       'defines': [
         'GIT_THREADS',
-        'GIT_USE_STAT_MTIMESPEC',
         # Node's util.h may be accidentally included so use this to guard
         # against compilation error.
         'SRC_UTIL_H_',
@@ -303,6 +302,12 @@
         'deps/libgit2/src/hash/hash_openssl.h',
       ],
       'conditions': [
+        ['OS=="mac"', {
+          'defines': [
+            'GIT_SECURE_TRANSPORT',
+            'GIT_USE_STAT_MTIMESPEC'
+          ],
+        }],
         ['OS=="linux"', {
           'cflags': [
             '-w',
