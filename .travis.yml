@@ -9,6 +9,10 @@ node_js: node
 
 git:
   depth: 10
+  submodules: false
+
+before_install:
+  - git submodule update --init
 
 branches:
   only:
