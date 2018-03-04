@@ -5,3 +5,4 @@
 *.log
 *~
 .node-version
+.python2-bin

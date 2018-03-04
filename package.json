@@ -36,11 +36,13 @@
     "wrench": "~1.4.4"
   },
   "dependencies": {
-    "nan": "^2.0.0",
-    "fs-plus": "^3.0.0"
+    "@atom/dowsing-rod": "^1.0.0",
+    "fs-plus": "^3.0.0",
+    "nan": "^2.0.0"
   },
   "scripts": {
     "prepublish": "standard src spec",
-    "test": "jasmine-focused --captureExceptions spec"
+    "test": "jasmine-focused --captureExceptions spec",
+    "install": "with-python2-env node-gyp rebuild"
   }
 }
