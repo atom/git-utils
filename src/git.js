@@ -169,7 +169,7 @@ Repository.prototype.relativize = function (path) {
     if (workingDirectory) {
       workingDirectory = workingDirectory.toLowerCase()
       if (lowerCasePath.startsWith(`${workingDirectory}/`)) {
-        return path.substring(workingDirectory.length + 1)
+        return './' + path.substring(workingDirectory.length + 1)
       } else if (lowerCasePath === workingDirectory) {
         return ''
       }
@@ -178,7 +178,7 @@ Repository.prototype.relativize = function (path) {
     if (this.openedWorkingDirectory) {
       workingDirectory = this.openedWorkingDirectory.toLowerCase()
       if (lowerCasePath.startsWith(`${workingDirectory}/`)) {
-        return path.substring(workingDirectory.length + 1)
+        return './' + path.substring(workingDirectory.length + 1)
       } else if (lowerCasePath === workingDirectory) {
         return ''
       }
@@ -187,7 +187,7 @@ Repository.prototype.relativize = function (path) {
     workingDirectory = this.getWorkingDirectory()
     if (workingDirectory) {
       if (path.startsWith(`${workingDirectory}/`)) {
-        return path.substring(workingDirectory.length + 1)
+        return './' + path.substring(workingDirectory.length + 1)
       } else if (path === workingDirectory) {
         return ''
       }
@@ -195,7 +195,7 @@ Repository.prototype.relativize = function (path) {
 
     if (this.openedWorkingDirectory) {
       if (path.startsWith(`${this.openedWorkingDirectory}/`)) {
-        return path.substring(this.openedWorkingDirectory.length + 1)
+        return './' + path.substring(this.openedWorkingDirectory.length + 1)
       } else if (path === this.openedWorkingDirectory) {
         return ''
       }

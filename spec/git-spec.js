@@ -132,6 +132,7 @@ describe('git', () => {
         repo = git.open(ignoreRepoDir)
         expect(repo.isIgnored('a.txt')).toBe(true)
         expect(repo.isIgnored('subdir/subdir')).toBe(true)
+        expect(repo.isIgnored(repo.relativize(path.join(ignoreRepoDir, 'ignored.test')))).toBe(true)
       })
     })
 
@@ -854,8 +855,8 @@ describe('git', () => {
       repo = git.open(__dirname)
       const workingDirectory = repo.getWorkingDirectory()
 
-      expect(repo.relativize(path.join(workingDirectory, 'a.txt'))).toBe('a.txt')
-      expect(repo.relativize(path.join(workingDirectory, 'a/b/c.txt'))).toBe('a/b/c.txt')
+      expect(repo.relativize(path.join(workingDirectory, 'a.txt'))).toBe('./a.txt')
+      expect(repo.relativize(path.join(workingDirectory, 'a/b/c.txt'))).toBe('./a/b/c.txt')
       expect(repo.relativize('a.txt')).toBe('a.txt')
       expect(repo.relativize('/not/in/working/dir')).toBe('/not/in/working/dir')
       expect(repo.relativize(null)).toBe(null)
@@ -876,9 +877,9 @@ describe('git', () => {
         fs.symlinkSync(repoDirectory, linkDirectory)
 
         repo = git.open(linkDirectory)
-        expect(repo.relativize(path.join(repoDirectory, 'test1'))).toBe('test1')
-        expect(repo.relativize(path.join(linkDirectory, 'test2'))).toBe('test2')
-        expect(repo.relativize(path.join(linkDirectory, 'test2/test3'))).toBe('test2/test3')
+        expect(repo.relativize(path.join(repoDirectory, 'test1'))).toBe('./test1')
+        expect(repo.relativize(path.join(linkDirectory, 'test2'))).toBe('./test2')
+        expect(repo.relativize(path.join(linkDirectory, 'test2/test3'))).toBe('./test2/test3')
         expect(repo.relativize('test2/test3')).toBe('test2/test3')
       })
     })
@@ -890,8 +891,8 @@ describe('git', () => {
       repo.caseInsensitiveFs = true
       const workingDirectory = repo.getWorkingDirectory()
 
-      expect(repo.relativize(path.join(workingDirectory.toUpperCase(), 'a.txt'))).toBe('a.txt')
-      expect(repo.relativize(path.join(workingDirectory.toUpperCase(), 'a/b/c.txt'))).toBe('a/b/c.txt')
+      expect(repo.relativize(path.join(workingDirectory.toUpperCase(), 'a.txt'))).toBe('./a.txt')
+      expect(repo.relativize(path.join(workingDirectory.toUpperCase(), 'a/b/c.txt'))).toBe('./a/b/c.txt')
 
       const linkDirectory = path.join(fs.realpathSync(temp.mkdirSync('lower-case-symlink')), 'link')
       wrench.copyDirSyncRecursive(path.join(__dirname, 'fixtures/master.git'), path.join(repoDirectory, '.git'))
@@ -899,8 +900,8 @@ describe('git', () => {
 
       repo = git.open(linkDirectory)
       repo.caseInsensitiveFs = true
-      expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2'))).toBe('test2')
-      expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2/test3'))).toBe('test2/test3')
+      expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2'))).toBe('./test2')
+      expect(repo.relativize(path.join(linkDirectory.toUpperCase(), 'test2/test3'))).toBe('./test2/test3')
     })
   })
 
