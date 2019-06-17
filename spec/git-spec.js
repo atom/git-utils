@@ -132,6 +132,8 @@ describe('git', () => {
         repo = git.open(ignoreRepoDir)
         expect(repo.isIgnored('a.txt')).toBe(true)
         expect(repo.isIgnored('subdir/subdir')).toBe(true)
+        expect(repo.isIgnored('a.foo')).toBe(true)
+        expect(repo.isIgnored('subdir/a.foo')).toBe(true)
       })
     })
 
