@@ -129,8 +129,8 @@
         'deps/libgit2/src/fileops.h',
         'deps/libgit2/src/filter.c',
         'deps/libgit2/src/filter.h',
-        'deps/libgit2/src/fnmatch.c',
-        'deps/libgit2/src/fnmatch.h',
+        'deps/libgit2/src/wildmatch.c',
+        'deps/libgit2/src/wildmatch.h',
         'deps/libgit2/src/global.c',
         'deps/libgit2/src/global.h',
         'deps/libgit2/src/graph.c',
@@ -239,8 +239,8 @@
         'deps/libgit2/src/stash.c',
         'deps/libgit2/src/status.c',
         'deps/libgit2/src/status.h',
-        'deps/libgit2/src/stdalloc.c',
-        'deps/libgit2/src/stdalloc.h',
+        'deps/libgit2/src/allocators/stdalloc.c',
+        'deps/libgit2/src/allocators/stdalloc.h',
         'deps/libgit2/src/stream.h',
         'deps/libgit2/src/strmap.c',
         'deps/libgit2/src/strmap.h',
@@ -340,9 +340,10 @@
         ['OS=="win"', {
           'defines': [
             'GIT_WINHTTP',
+            'GIT_REGEX_BUILTIN',
           ],
-          'include_dirs': [
-            'deps/libgit2/deps/regex',
+          'dependencies': [
+            'pcre',
           ],
           'link_settings': {
             'libraries': [
@@ -380,6 +381,7 @@
             4013,  # 'InterlockedDecrement' undefined; assuming extern returning int
           ],
           'sources': [
+            'deps/libgit2/src/net.c',
             'deps/libgit2/src/win32/dir.c',
             'deps/libgit2/src/win32/dir.h',
             'deps/libgit2/src/win32/error.c',
@@ -410,8 +412,6 @@
             'deps/libgit2/src/win32/w32_util.c',
             'deps/libgit2/src/win32/w32_util.h',
             'deps/libgit2/src/win32/win32-compat.h',
-            'deps/libgit2/deps/regex/regex.c',
-            'deps/libgit2/deps/regex/regex.h',
           ],
         }, {
           'libraries': [
@@ -519,4 +519,58 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+          {
+            'target_name': 'pcre',
+            'win_delay_load_hook': 'false',
+            'type': 'static_library',
+            'sources': [
+              'deps/libgit2/deps/pcre/pcre_byte_order.c',
+              'deps/libgit2/deps/pcre/pcre_chartables.c',
+              'deps/libgit2/deps/pcre/pcre_compile.c',
+              'deps/libgit2/deps/pcre/pcre_config.c',
+              'deps/libgit2/deps/pcre/pcre_dfa_exec.c',
+              'deps/libgit2/deps/pcre/pcre_exec.c',
+              'deps/libgit2/deps/pcre/pcre_fullinfo.c',
+              'deps/libgit2/deps/pcre/pcre_get.c',
+              'deps/libgit2/deps/pcre/pcre_globals.c',
+              'deps/libgit2/deps/pcre/pcre_jit_compile.c',
+              'deps/libgit2/deps/pcre/pcre_maketables.c',
+              'deps/libgit2/deps/pcre/pcre_newline.c',
+              'deps/libgit2/deps/pcre/pcre_ord2utf8.c',
+              'deps/libgit2/deps/pcre/pcre_refcount.c',
+              'deps/libgit2/deps/pcre/pcre_string_utils.c',
+              'deps/libgit2/deps/pcre/pcre_study.c',
+              'deps/libgit2/deps/pcre/pcre_tables.c',
+              'deps/libgit2/deps/pcre/pcre_ucd.c',
+              'deps/libgit2/deps/pcre/pcre_valid_utf8.c',
+              'deps/libgit2/deps/pcre/pcre_version.c',
+              'deps/libgit2/deps/pcre/pcre_xclass.c',
+              'deps/libgit2/deps/pcre/pcreposix.c',
+             ],
+            'defines': [
+              'SUPPORT_PCRE8=1',
+              'LINK_SIZE=2',
+              'PARENS_NEST_LIMIT=250',
+              'MATCH_LIMIT=10000000',
+              'MATCH_LIMIT_RECURSION="MATCH_LIMIT"',
+              'NEWLINE="LF"',
+              'NO_RECURSE=1',
+              'POSIX_MALLOC_THRESHOLD=10',
+              'BSR_ANYCRLF=0',
+              'MAX_NAME_SIZE=32',
+              'MAX_NAME_COUNT=10000',
+            ],
+            'include_dirs': [],
+            'direct_dependent_settings': {
+              'include_dirs': [
+                'deps/libgit2/deps/pcre',
+              ],
+            },
+          },
+      ]
+    }]
+  ]
 }
