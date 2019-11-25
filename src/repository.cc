@@ -92,8 +92,7 @@ int Repository::GetBlob(Nan::NAN_METHOD_ARGS_TYPE args,
   int useIndex = false;
   if (args.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(args[2]));
-    if (optionsArg->Get(
-        Nan::New<String>("useIndex").ToLocalChecked())->BooleanValue())
+    if (Nan::To<bool>(optionsArg->Get(Nan::New<String>("useIndex").ToLocalChecked())).FromJust())
       useIndex = true;
   }
 
@@ -793,7 +792,7 @@ NAN_METHOD(Repository::GetLineDiffs) {
     ignoreEolWhitespace = optionsArg->Get(
         Nan::New<String>("ignoreEolWhitespace").ToLocalChecked());
 
-    if (ignoreEolWhitespace->BooleanValue())
+    if (Nan::To<bool>(ignoreEolWhitespace).FromJust())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
   }
 
@@ -866,7 +865,7 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
     ignoreEolWhitespace = optionsArg->Get(
         Nan::New<String>("ignoreEolWhitespace").ToLocalChecked());
 
-    if (ignoreEolWhitespace->BooleanValue())
+    if (Nan::To<bool>(ignoreEolWhitespace).FromJust())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
   }
 
@@ -971,7 +970,7 @@ NAN_METHOD(Repository::CheckoutReference) {
     return info.GetReturnValue().Set(Nan::New<Boolean>(false));
 
   bool shouldCreateNewRef;
-  if (info.Length() > 1 && info[1]->BooleanValue())
+  if (info.Length() > 1 && Nan::To<bool>(info[1]).FromJust())
     shouldCreateNewRef = true;
   else
     shouldCreateNewRef = false;
@@ -1057,7 +1056,7 @@ Repository::Repository(Local<String> path, Local<Boolean> search) {
   Nan::HandleScope scope;
 
   int flags = 0;
-  if (!search->BooleanValue()) {
+  if (!Nan::To<bool>(search).FromJust()) {
     flags |= GIT_REPOSITORY_OPEN_NO_SEARCH;
   }
 
