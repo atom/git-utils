@@ -87,7 +87,7 @@ git_repository* Repository::GetAsyncRepository(Nan::NAN_METHOD_ARGS_TYPE args) {
 
 int Repository::GetBlob(Nan::NAN_METHOD_ARGS_TYPE args,
                         git_repository* repo, git_blob*& blob) {
-  std::string path(*String::Utf8Value(args[0]));
+  std::string path(*Nan::Utf8String(args[0]));
 
   int useIndex = false;
   if (args.Length() >= 3) {
@@ -266,7 +266,7 @@ NAN_METHOD(Repository::IsIgnored) {
     return info.GetReturnValue().Set(Nan::New<Boolean>(false));
 
   git_repository* repository = GetRepository(info);
-  std::string path(*String::Utf8Value(info[0]));
+  std::string path(*Nan::Utf8String(info[0]));
   int ignored;
   if (git_ignore_path_is_ignored(&ignored,
                                  repository,
@@ -284,7 +284,7 @@ NAN_METHOD(Repository::IsSubmodule) {
   git_index* index;
   git_repository* repository = GetRepository(info);
   if (git_repository_index(&index, repository) == GIT_OK) {
-    std::string path(*String::Utf8Value(info[0]));
+    std::string path(*Nan::Utf8String(info[0]));
     const git_index_entry* entry = git_index_get_bypath(index, path.c_str(), 0);
     Local<Boolean> isSubmodule = Nan::New<Boolean>(
         entry != NULL && (entry->mode & S_IFMT) == GIT_FILEMODE_COMMIT);
@@ -305,7 +305,7 @@ NAN_METHOD(Repository::GetConfigValue) {
   if (git_repository_config_snapshot(&config, repository) != GIT_OK)
     return info.GetReturnValue().Set(Nan::Null());
 
-  std::string configKey(*String::Utf8Value(info[0]));
+  std::string configKey(*Nan::Utf8String(info[0]));
   const char* configValue;
   if (git_config_get_string(
         &configValue, config, configKey.c_str()) == GIT_OK) {
@@ -328,8 +328,8 @@ NAN_METHOD(Repository::SetConfigValue) {
   if (git_repository_config(&config, repository) != GIT_OK)
     return info.GetReturnValue().Set(Nan::New<Boolean>(false));
 
-  std::string configKey(*String::Utf8Value(info[0]));
-  std::string configValue(*String::Utf8Value(info[1]));
+  std::string configKey(*Nan::Utf8String(info[0]));
+  std::string configValue(*Nan::Utf8String(info[1]));
 
   int errorCode = git_config_set_string(
       config, configKey.c_str(), configValue.c_str());
@@ -434,7 +434,7 @@ NAN_METHOD(Repository::GetStatus) {
 
 NAN_METHOD(Repository::GetStatusForPath) {
   git_repository* repository = GetRepository(info);
-  String::Utf8Value path(info[0]);
+  Nan::Utf8String path(info[0]);
   unsigned int status = 0;
   if (git_status_file(&status, repository, *path) == GIT_OK)
     return info.GetReturnValue().Set(Nan::New<Number>(status));
@@ -447,7 +447,7 @@ NAN_METHOD(Repository::CheckoutHead) {
   if (info.Length() < 1)
     return info.GetReturnValue().Set(Nan::New<Boolean>(false));
 
-  String::Utf8Value utf8Path(info[0]);
+  Nan::Utf8String utf8Path(info[0]);
   char* path = *utf8Path;
 
   git_checkout_options options = GIT_CHECKOUT_OPTIONS_INIT;
@@ -467,7 +467,7 @@ NAN_METHOD(Repository::GetReferenceTarget) {
   if (info.Length() < 1)
     return info.GetReturnValue().Set(Nan::Null());
 
-  std::string refName(*String::Utf8Value(info[0]));
+  std::string refName(*Nan::Utf8String(info[0]));
   git_oid sha;
   if (git_reference_name_to_id(
         &sha, GetRepository(info), refName.c_str()) == GIT_OK) {
@@ -512,7 +512,7 @@ NAN_METHOD(Repository::GetDiffStats) {
   if (treeStatus != GIT_OK)
     return info.GetReturnValue().Set(result);
 
-  String::Utf8Value utf8Path(info[0]);
+  Nan::Utf8String utf8Path(info[0]);
   char* path = *utf8Path;
 
   git_diff_options options = CreateDefaultGitDiffOptions();
@@ -573,7 +573,7 @@ NAN_METHOD(Repository::GetHeadBlob) {
   if (info.Length() < 1)
     return info.GetReturnValue().Set(Nan::Null());
 
-  std::string path(*String::Utf8Value(info[0]));
+  std::string path(*Nan::Utf8String(info[0]));
 
   git_repository* repo = GetRepository(info);
   git_reference* head;
@@ -619,7 +619,7 @@ NAN_METHOD(Repository::GetIndexBlob) {
   if (info.Length() < 1)
     return info.GetReturnValue().Set(Nan::Null());
 
-  std::string path(*String::Utf8Value(info[0]));
+  std::string path(*Nan::Utf8String(info[0]));
 
   git_repository* repo = GetRepository(info);
   git_index* index;
@@ -713,8 +713,8 @@ class CompareCommitsWorker {
 
   CompareCommitsWorker(git_repository *repository, Local<Value> js_left_id,
                        Local<Value> js_right_id) : repository(repository) {
-    left_id = *String::Utf8Value(js_left_id);
-    right_id = *String::Utf8Value(js_right_id);
+    left_id = *Nan::Utf8String(js_left_id);
+    right_id = *Nan::Utf8String(js_right_id);
   }
 };
 
@@ -772,7 +772,7 @@ NAN_METHOD(Repository::GetLineDiffs) {
   if (info.Length() < 2)
     return info.GetReturnValue().Set(Nan::Null());
 
-  std::string text(*String::Utf8Value(info[1]));
+  std::string text(*Nan::Utf8String(info[1]));
 
   git_repository* repo = GetRepository(info);
 
@@ -845,7 +845,7 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
   if (info.Length() < 2)
     return info.GetReturnValue().Set(Nan::Null());
 
-  std::string text(*String::Utf8Value(info[1]));
+  std::string text(*Nan::Utf8String(info[1]));
 
   git_repository* repo = GetRepository(info);
 
@@ -976,7 +976,7 @@ NAN_METHOD(Repository::CheckoutReference) {
   else
     shouldCreateNewRef = false;
 
-  std::string strRefName(*String::Utf8Value(info[0]));
+  std::string strRefName(*Nan::Utf8String(info[0]));
   const char* refName = strRefName.c_str();
 
   git_repository* repo = GetRepository(info);
@@ -1021,7 +1021,7 @@ NAN_METHOD(Repository::Add) {
   Nan::HandleScope scope;
 
   git_repository* repository = GetRepository(info);
-  std::string path(*String::Utf8Value(info[0]));
+  std::string path(*Nan::Utf8String(info[0]));
 
   git_index* index;
   if (git_repository_index(&index, repository) != GIT_OK) {
@@ -1061,7 +1061,7 @@ Repository::Repository(Local<String> path, Local<Boolean> search) {
     flags |= GIT_REPOSITORY_OPEN_NO_SEARCH;
   }
 
-  String::Utf8Value repository_path(path);
+  Nan::Utf8String repository_path(path);
   int result = git_repository_open_ext(&repository, *repository_path, flags, NULL);
   if (result != GIT_OK) {
     repository = NULL;
