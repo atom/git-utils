@@ -63,8 +63,9 @@ void Repository::Init(Local<Object> target) {
   Nan::SetMethod(proto, "checkoutRef", Repository::CheckoutReference);
   Nan::SetMethod(proto, "add", Repository::Add);
 
-  target->Set(Nan::New<String>("Repository").ToLocalChecked(),
-                                newTemplate->GetFunction());
+  Nan::Set(target,
+            Nan::New<String>("Repository").ToLocalChecked(),
+            Nan::GetFunction(newTemplate).ToLocalChecked());
 }
 
 NODE_MODULE(git, Repository::Init)
@@ -92,7 +93,7 @@ int Repository::GetBlob(Nan::NAN_METHOD_ARGS_TYPE args,
   int useIndex = false;
   if (args.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(args[2]));
-    if (Nan::To<bool>(optionsArg->Get(Nan::New<String>("useIndex").ToLocalChecked())).FromJust())
+    if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("useIndex").ToLocalChecked()).ToLocalChecked()).FromJust())
       useIndex = true;
   }
 
@@ -185,7 +186,7 @@ NAN_METHOD(Repository::GetSubmodulePaths) {
   git_submodule_foreach(repository, SubmoduleCallback, &paths);
   Local<Object> v8Paths = Nan::New<Array>(paths.size());
   for (size_t i = 0; i < paths.size(); i++)
-    v8Paths->Set(i, Nan::New<String>(paths[i].data()).ToLocalChecked());
+    Nan::Set(v8Paths, i, Nan::New<String>(paths[i].data()).ToLocalChecked());
   info.GetReturnValue().Set(v8Paths);
 }
 
@@ -367,7 +368,8 @@ class StatusWorker {
     if (code == GIT_OK) {
       Local<Object> result = Nan::New<Object>();
       for (auto iter = statuses.begin(), end = statuses.end(); iter != end; ++iter) {
-        result->Set(
+        Nan::Set(
+          result,
           Nan::New<String>(iter->first.c_str()).ToLocalChecked(),
           Nan::New<Number>(iter->second)
         );
@@ -384,9 +386,9 @@ class StatusWorker {
       path_count = js_paths->Length();
       paths = reinterpret_cast<char **>(malloc(path_count * sizeof(char *)));
       for (unsigned i = 0; i < path_count; i++) {
-        auto js_path = Local<String>::Cast(js_paths->Get(i));
-        paths[i] = reinterpret_cast<char *>(malloc(js_path->Utf8Length() + 1));
-        js_path->WriteUtf8(paths[i]);
+        Nan::Utf8String js_path(Nan::Get(js_paths, i).ToLocalChecked());
+        paths[i] = reinterpret_cast<char *>(malloc(js_path.length() + 1));
+        strcpy(paths[i], *js_path);
       }
     } else {
       paths = NULL;
@@ -485,10 +487,12 @@ NAN_METHOD(Repository::GetDiffStats) {
   int added = 0;
   int deleted = 0;
   Local<Object> result = Nan::New<Object>();
-  result->Set(Nan::New<String>("added").ToLocalChecked(),
-                Nan::New<Number>(added));
-  result->Set(Nan::New<String>("deleted").ToLocalChecked(),
-                Nan::New<Number>(deleted));
+  Nan::Set(result,
+            Nan::New<String>("added").ToLocalChecked(),
+            Nan::New<Number>(added));
+  Nan::Set(result,
+            Nan::New<String>("deleted").ToLocalChecked(),
+            Nan::New<Number>(deleted));
 
   if (info.Length() < 1)
     return info.GetReturnValue().Set(result);
@@ -559,10 +563,12 @@ NAN_METHOD(Repository::GetDiffStats) {
   }
   git_patch_free(patch);
 
-  result->Set(Nan::New<String>("added").ToLocalChecked(),
-                Nan::New<Number>(added));
-  result->Set(Nan::New<String>("deleted").ToLocalChecked(),
-                Nan::New<Number>(deleted));
+  Nan::Set(result,
+            Nan::New<String>("added").ToLocalChecked(),
+            Nan::New<Number>(added));
+  Nan::Set(result,
+            Nan::New<String>("deleted").ToLocalChecked(),
+            Nan::New<Number>(deleted));
 
   return info.GetReturnValue().Set(result);
 }
@@ -705,8 +711,8 @@ class CompareCommitsWorker {
 
   std::pair<Local<Value>, Local<Value>> Finish() {
     Local<Object> result = Nan::New<Object>();
-    result->Set(Nan::New("ahead").ToLocalChecked(), Nan::New<Integer>(ahead_count));
-    result->Set(Nan::New("behind").ToLocalChecked(), Nan::New<Integer>(behind_count));
+    Nan::Set(result, Nan::New("ahead").ToLocalChecked(), Nan::New<Integer>(ahead_count));
+    Nan::Set(result, Nan::New("behind").ToLocalChecked(), Nan::New<Integer>(behind_count));
     return {Nan::Null(), result};
   }
 
@@ -789,8 +795,9 @@ NAN_METHOD(Repository::GetLineDiffs) {
   if (info.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(info[2]));
     Local<Value> ignoreEolWhitespace;
-    ignoreEolWhitespace = optionsArg->Get(
-        Nan::New<String>("ignoreEolWhitespace").ToLocalChecked());
+    ignoreEolWhitespace = Nan::Get(
+        optionsArg,
+        Nan::New<String>("ignoreEolWhitespace").ToLocalChecked()).ToLocalChecked();
 
     if (Nan::To<bool>(ignoreEolWhitespace).FromJust())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
@@ -803,15 +810,19 @@ NAN_METHOD(Repository::GetLineDiffs) {
     Local<Object> v8Ranges = Nan::New<Array>(ranges.size());
     for (size_t i = 0; i < ranges.size(); i++) {
       Local<Object> v8Range = Nan::New<Object>();
-      v8Range->Set(Nan::New<String>("oldStart").ToLocalChecked(),
-                   Nan::New<Number>(ranges[i].old_start));
-      v8Range->Set(Nan::New<String>("oldLines").ToLocalChecked(),
-                   Nan::New<Number>(ranges[i].old_lines));
-      v8Range->Set(Nan::New<String>("newStart").ToLocalChecked(),
-                   Nan::New<Number>(ranges[i].new_start));
-      v8Range->Set(Nan::New<String>("newLines").ToLocalChecked(),
-                   Nan::New<Number>(ranges[i].new_lines));
-      v8Ranges->Set(i, v8Range);
+      Nan::Set(v8Range,
+                Nan::New<String>("oldStart").ToLocalChecked(),
+                Nan::New<Number>(ranges[i].old_start));
+      Nan::Set(v8Range,
+                Nan::New<String>("oldLines").ToLocalChecked(),
+                Nan::New<Number>(ranges[i].old_lines));
+      Nan::Set(v8Range,
+                Nan::New<String>("newStart").ToLocalChecked(),
+                Nan::New<Number>(ranges[i].new_start));
+      Nan::Set(v8Range,
+                Nan::New<String>("newLines").ToLocalChecked(),
+                Nan::New<Number>(ranges[i].new_lines));
+      Nan::Set(v8Ranges, i, v8Range);
     }
     git_blob_free(blob);
     return info.GetReturnValue().Set(v8Ranges);
@@ -862,8 +873,9 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
   if (info.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(info[2]));
     Local<Value> ignoreEolWhitespace;
-    ignoreEolWhitespace = optionsArg->Get(
-        Nan::New<String>("ignoreEolWhitespace").ToLocalChecked());
+    ignoreEolWhitespace = Nan::Get(
+        optionsArg,
+        Nan::New<String>("ignoreEolWhitespace").ToLocalChecked()).ToLocalChecked();
 
     if (Nan::To<bool>(ignoreEolWhitespace).FromJust())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
@@ -877,24 +889,31 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
     for (size_t i = 0; i < lineDiffs.size(); i++) {
       Local<Object> v8Range = Nan::New<Object>();
 
-      v8Range->Set(Nan::New<String>("oldLineNumber").ToLocalChecked(),
-                   Nan::New<Number>(lineDiffs[i].line.old_lineno));
-      v8Range->Set(Nan::New<String>("newLineNumber").ToLocalChecked(),
-                   Nan::New<Number>(lineDiffs[i].line.new_lineno));
-      v8Range->Set(Nan::New<String>("oldStart").ToLocalChecked(),
-                   Nan::New<Number>(lineDiffs[i].hunk.old_start));
-      v8Range->Set(Nan::New<String>("newStart").ToLocalChecked(),
-                   Nan::New<Number>(lineDiffs[i].hunk.new_start));
-      v8Range->Set(Nan::New<String>("oldLines").ToLocalChecked(),
-                   Nan::New<Number>(lineDiffs[i].hunk.old_lines));
-      v8Range->Set(Nan::New<String>("newLines").ToLocalChecked(),
-                   Nan::New<Number>(lineDiffs[i].hunk.new_lines));
-      v8Range->Set(Nan::New<String>("line").ToLocalChecked(),
-                   Nan::New<String>(lineDiffs[i].line.content,
-                                    lineDiffs[i].line.content_len)
-                                        .ToLocalChecked());
+      Nan::Set(v8Range,
+                Nan::New<String>("oldLineNumber").ToLocalChecked(),
+                Nan::New<Number>(lineDiffs[i].line.old_lineno));
+      Nan::Set(v8Range,
+                Nan::New<String>("newLineNumber").ToLocalChecked(),
+                Nan::New<Number>(lineDiffs[i].line.new_lineno));
+      Nan::Set(v8Range,
+                Nan::New<String>("oldStart").ToLocalChecked(),
+                Nan::New<Number>(lineDiffs[i].hunk.old_start));
+      Nan::Set(v8Range,
+                Nan::New<String>("newStart").ToLocalChecked(),
+                Nan::New<Number>(lineDiffs[i].hunk.new_start));
+      Nan::Set(v8Range,
+                Nan::New<String>("oldLines").ToLocalChecked(),
+                Nan::New<Number>(lineDiffs[i].hunk.old_lines));
+      Nan::Set(v8Range,
+                Nan::New<String>("newLines").ToLocalChecked(),
+                Nan::New<Number>(lineDiffs[i].hunk.new_lines));
+      Nan::Set(v8Range,
+                Nan::New<String>("line").ToLocalChecked(),
+                Nan::New<String>(lineDiffs[i].line.content,
+                                lineDiffs[i].line.content_len)
+                                    .ToLocalChecked());
 
-      v8Ranges->Set(i, v8Range);
+      Nan::Set(v8Ranges, i, v8Range);
     }
     git_blob_free(blob);
     return info.GetReturnValue().Set(v8Ranges);
@@ -909,7 +928,7 @@ Local<Value> Repository::ConvertStringVectorToV8Array(
   size_t i = 0, size = vector.size();
   Local<Object> array = Nan::New<Array>(size);
   for (i = 0; i < size; i++)
-    array->Set(i, Nan::New<String>(vector[i].c_str()).ToLocalChecked());
+    Nan::Set(array, i, Nan::New<String>(vector[i].c_str()).ToLocalChecked());
 
   return array;
 }
@@ -933,12 +952,15 @@ NAN_METHOD(Repository::GetReferences) {
 
   git_strarray_free(&strarray);
 
-  references->Set(Nan::New<String>("heads").ToLocalChecked(),
-                    ConvertStringVectorToV8Array(heads));
-  references->Set(Nan::New<String>("remotes").ToLocalChecked(),
-                    ConvertStringVectorToV8Array(remotes));
-  references->Set(Nan::New<String>("tags").ToLocalChecked(),
-                    ConvertStringVectorToV8Array(tags));
+  Nan::Set(references,
+            Nan::New<String>("heads").ToLocalChecked(),
+            ConvertStringVectorToV8Array(heads));
+  Nan::Set(references,
+            Nan::New<String>("remotes").ToLocalChecked(),
+            ConvertStringVectorToV8Array(remotes));
+  Nan::Set(references,
+            Nan::New<String>("tags").ToLocalChecked(),
+            ConvertStringVectorToV8Array(tags));
 
   info.GetReturnValue().Set(references);
 }
