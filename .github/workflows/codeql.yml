@@ -28,9 +28,16 @@ jobs:
       with:
          languages: javascript, cpp
 
-    - run: |
+    - name: Build 
+      env:  
+        CC: clang 
+        CXX: clang++ 
+        npm_config_clang: 1  
+      run: |
+       git submodule update --init
        npm install
        npm run
+       
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
