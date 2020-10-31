@@ -742,10 +742,70 @@ describe('git', () => {
       it('ignores eol of line whitespace changes', () => {
         repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
 
-        let diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', {ignoreEolWhitespace: false})
+        let diffs = repo.getLineDiffs('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreEolWhitespace: false})
         expect(diffs.length).toBe(1)
 
-        diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', {ignoreEolWhitespace: true})
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreEolWhitespace: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: true})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: true})
+        expect(diffs.length).toBe(1)
+      })
+    })
+
+    describe('ignoreWhitespaceChange option', () => {
+      it('ignores whitespace changes', () => {
+        repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
+
+        let diffs = repo.getLineDiffs('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespaceChange: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespaceChange: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffs('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: true})
+        expect(diffs.length).toBe(1)
+      })
+    })
+
+    describe('ignoreWhitespace option', () => {
+      it('ignores whitespace', () => {
+        repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
+
+        let diffs = repo.getLineDiffs('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespace: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespace: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffs('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: false})
+        expect(diffs.length).toBe(1)
+
+        diffs = repo.getLineDiffs('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: true})
         expect(diffs.length).toBe(0)
       })
     })
@@ -815,10 +875,70 @@ describe('git', () => {
       it('ignores eol of line whitespace changes', () => {
         repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
 
-        let diffs = repo.getLineDiffDetails('file.txt', 'first\r\nsecond\r\nthird\r\n', {ignoreEolWhitespace: false})
+        let diffs = repo.getLineDiffDetails('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreEolWhitespace: false})
         expect(diffs.length).toBe(6)
 
-        diffs = repo.getLineDiffs('file.txt', 'first\r\nsecond\r\nthird\r\n', {ignoreEolWhitespace: true})
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreEolWhitespace: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: true})
+        expect(diffs.length).toBe(4)
+
+        diffs = repo.getLineDiffDetails('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreEolWhitespace: true})
+        expect(diffs.length).toBe(6)
+      })
+    })
+
+    describe('ignoreWhitespaceChange option', () => {
+      it('ignores whitespace changes', () => {
+        repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
+
+        let diffs = repo.getLineDiffDetails('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespaceChange: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespaceChange: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffDetails('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespaceChange: true})
+        expect(diffs.length).toBe(2)
+      })
+    })
+
+    describe('ignoreWhitespace option', () => {
+      it('ignores whitespace', () => {
+        repo = git.open(path.join(__dirname, 'fixtures/whitespace.git'))
+
+        let diffs = repo.getLineDiffDetails('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespace: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n second\r\n\tthird\r\n', {ignoreWhitespace: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', 'first\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: true})
+        expect(diffs.length).toBe(0)
+
+        diffs = repo.getLineDiffDetails('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: false})
+        expect(diffs.length).toBe(6)
+
+        diffs = repo.getLineDiffDetails('file.txt', ' \tfirst\r\n \tsecond\r\n \tthird\r\n', {ignoreWhitespace: true})
         expect(diffs.length).toBe(0)
       })
     })

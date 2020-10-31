@@ -4,4 +4,4 @@
 	bare = false
 	logallrefupdates = true
 	ignorecase = true
-	precomposeunicode = false
+	precomposeunicode = true
