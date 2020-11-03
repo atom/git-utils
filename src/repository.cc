@@ -791,16 +791,21 @@ NAN_METHOD(Repository::GetLineDiffs) {
   std::vector<git_diff_hunk> ranges;
   git_diff_options options = CreateDefaultGitDiffOptions();
 
-  // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
   if (info.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(info[2]));
-    Local<Value> ignoreEolWhitespace;
-    ignoreEolWhitespace = Nan::Get(
-        optionsArg,
-        Nan::New<String>("ignoreEolWhitespace").ToLocalChecked()).ToLocalChecked();
-
-    if (Nan::To<bool>(ignoreEolWhitespace).FromJust())
+    // Set GIT_DIFF_IGNORE_WHITESPACE when ignoreWhitespace: true
+    if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreAllSpace").ToLocalChecked()).ToLocalChecked()).FromJust())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE;
+    // Set GIT_DIFF_IGNORE_WHITESPACE_CHANGE when ignoreWhitespaceChange: true
+    else if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreSpaceChange").ToLocalChecked()).ToLocalChecked()).FromJust())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE_CHANGE;
+    // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
+    else if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreSpaceAtEOL").ToLocalChecked()).ToLocalChecked()).FromJust()
+      || Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreEolWhitespace").ToLocalChecked()).ToLocalChecked()).FromJust())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
+    // Set GIT_DIFF_NORMAL when none of the above are defined
+    else
+      options.flags = GIT_DIFF_NORMAL;
   }
 
   options.context_lines = 0;
@@ -869,16 +874,21 @@ NAN_METHOD(Repository::GetLineDiffDetails) {
   std::vector<LineDiff> lineDiffs;
   git_diff_options options = CreateDefaultGitDiffOptions();
 
-  // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
   if (info.Length() >= 3) {
     Local<Object> optionsArg(Local<Object>::Cast(info[2]));
-    Local<Value> ignoreEolWhitespace;
-    ignoreEolWhitespace = Nan::Get(
-        optionsArg,
-        Nan::New<String>("ignoreEolWhitespace").ToLocalChecked()).ToLocalChecked();
-
-    if (Nan::To<bool>(ignoreEolWhitespace).FromJust())
+    // Set GIT_DIFF_IGNORE_WHITESPACE when ignoreWhitespace: true
+    if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreAllSpace").ToLocalChecked()).ToLocalChecked()).FromJust())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE;
+    // Set GIT_DIFF_IGNORE_WHITESPACE_CHANGE when ignoreWhitespaceChange: true
+    else if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreSpaceChange").ToLocalChecked()).ToLocalChecked()).FromJust())
+      options.flags = GIT_DIFF_IGNORE_WHITESPACE_CHANGE;
+    // Set GIT_DIFF_IGNORE_WHITESPACE_EOL when ignoreEolWhitespace: true
+    else if (Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreSpaceAtEOL").ToLocalChecked()).ToLocalChecked()).FromJust()
+      || Nan::To<bool>(Nan::Get(optionsArg, Nan::New<String>("ignoreEolWhitespace").ToLocalChecked()).ToLocalChecked()).FromJust())
       options.flags = GIT_DIFF_IGNORE_WHITESPACE_EOL;
+    // Set GIT_DIFF_NORMAL when none of the above are defined
+    else
+      options.flags = GIT_DIFF_NORMAL;
   }
 
   options.context_lines = 0;
