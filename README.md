@@ -145,11 +145,12 @@ text.
 
 `options` - An optional object with the following keys:
 
-  * `ignoreEolWhitespace` - `true` to ignore changes in whitespace at the end of lines.
-  * `ignoreWhitespaceChange` - `true` to ignore changes in amount of whitespace.
+  * `ignoreSpaceAtEOL` - `true` to ignore changes in whitespace at the end of lines.
+    (ignoreEolWhitespace also works.)
+  * `ignoreSpaceChange` - `true` to ignore changes in amount of whitespace.
     This ignores whitespace at line end, and considers all other sequences of
     one or more whitespace characters to be equivalent.
-  * `ignoreWhitespace` - `true` to ignore whitespace when comparing lines.
+  * `ignoreAllSpace` - `true` to ignore whitespace when comparing lines.
     This ignores differences even if one line has whitespace where the other line has none.
   * `useIndex` - `true` to compare against the index version instead of the HEAD
     version.
