@@ -40,7 +40,8 @@
     "fs-plus": "^3.0.0"
   },
   "scripts": {
-    "prepublish": "standard src spec",
-    "test": "jasmine-focused --captureExceptions spec"
+    "lint": "standard src spec",
+    "test": "jasmine-focused --captureExceptions spec",
+    "prepare": "git submodule update --init --recursive"
   }
 }
