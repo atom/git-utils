@@ -345,7 +345,7 @@
             'GIT_REGEX_BUILTIN',
           ],
           'dependencies': [
-            'pcre',
+            'regex',
           ],
           'link_settings': {
             'libraries': [
@@ -533,32 +533,11 @@
     ['OS=="win"', {
       'targets': [
           {
-            'target_name': 'pcre',
+            'target_name': 'regex',
             'win_delay_load_hook': 'false',
             'type': 'static_library',
             'sources': [
-              'deps/libgit2/deps/pcre/pcre_byte_order.c',
-              'deps/libgit2/deps/pcre/pcre_chartables.c',
-              'deps/libgit2/deps/pcre/pcre_compile.c',
-              'deps/libgit2/deps/pcre/pcre_config.c',
-              'deps/libgit2/deps/pcre/pcre_dfa_exec.c',
-              'deps/libgit2/deps/pcre/pcre_exec.c',
-              'deps/libgit2/deps/pcre/pcre_fullinfo.c',
-              'deps/libgit2/deps/pcre/pcre_get.c',
-              'deps/libgit2/deps/pcre/pcre_globals.c',
-              'deps/libgit2/deps/pcre/pcre_jit_compile.c',
-              'deps/libgit2/deps/pcre/pcre_maketables.c',
-              'deps/libgit2/deps/pcre/pcre_newline.c',
-              'deps/libgit2/deps/pcre/pcre_ord2utf8.c',
-              'deps/libgit2/deps/pcre/pcre_refcount.c',
-              'deps/libgit2/deps/pcre/pcre_string_utils.c',
-              'deps/libgit2/deps/pcre/pcre_study.c',
-              'deps/libgit2/deps/pcre/pcre_tables.c',
-              'deps/libgit2/deps/pcre/pcre_ucd.c',
-              'deps/libgit2/deps/pcre/pcre_valid_utf8.c',
-              'deps/libgit2/deps/pcre/pcre_version.c',
-              'deps/libgit2/deps/pcre/pcre_xclass.c',
-              'deps/libgit2/deps/pcre/pcreposix.c',
+              'deps/libgit2/deps/regex/regex.c',
              ],
             'defines': [
               'SUPPORT_PCRE8=1',
@@ -573,10 +552,10 @@
               'MAX_NAME_SIZE=32',
               'MAX_NAME_COUNT=10000',
             ],
-            'include_dirs': [],
+            'include_dirs': ['deps/libgit2/deps/regex/'],
             'direct_dependent_settings': {
               'include_dirs': [
-                'deps/libgit2/deps/pcre',
+                'deps/libgit2/deps/regex',
               ],
             },
           },
