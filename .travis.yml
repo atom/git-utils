@@ -11,9 +11,6 @@ git:
   depth: 10
   submodules: false
 
-before_install:
-  - git submodule update --init
-
 branches:
   only:
     - master
@@ -22,3 +19,11 @@ sudo: false
 
 env:
   - CC=clang CXX=clang++ npm_config_clang=1
+
+install:
+  - npm run prepare
+  - npm install
+
+script:
+  - npm run lint
+  - npm run test

@@ -11,11 +11,11 @@ clone_depth: 10
 skip_tags: true
 
 install:
-  - git submodule update --init
   - ps: Install-Product node 6
+  - npm run prepare
   - npm install
+  - npm run lint
 
 build: off
 test: off
 deploy: off
-
