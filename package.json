@@ -29,10 +29,10 @@
   ],
   "main": "./src/git.js",
   "devDependencies": {
-    "jasmine-focused": "^1.0.4",
     "standard": "^10.0.3",
+    "jasmine-focused": "^1.0.7",
     "temp": "~0.9.4",
-    "underscore": "~1.5.2",
+    "underscore": "~1.12.0",
     "wrench": "~1.4.4"
   },
   "dependencies": {
