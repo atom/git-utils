@@ -343,6 +343,7 @@
           'defines': [
             'GIT_WINHTTP',
             'GIT_REGEX_BUILTIN',
+            'GIT_SHA1_WIN32'
           ],
           'dependencies': [
             'pcre',
