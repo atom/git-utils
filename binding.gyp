@@ -443,12 +443,14 @@
             '-Wno-missing-field-initializers',
             '-Wno-unused-variable',
             '-Wno-unused-function',
+            "-Wno-traditional" # because of static declaration follows non-static declaration in hash files
           ],
           'xcode_settings': {
             'WARNING_CFLAGS': [
               '-Wno-missing-field-initializers',
               '-Wno-unused-variable',
               '-Wno-unused-function',
+              "-Wno-traditional" # because of static declaration follows non-static declaration in hash files
             ],
           },
         }],
