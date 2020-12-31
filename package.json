@@ -42,6 +42,7 @@
   "scripts": {
     "lint": "standard src spec",
     "test": "jasmine-focused --captureExceptions spec",
-    "prepare": "git submodule update --init --recursive"
+    "prepare": "git submodule update --init --recursive",
+    "install": "node-gyp rebuild -j max"
   }
 }
