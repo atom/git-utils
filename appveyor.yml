@@ -11,7 +11,7 @@ clone_depth: 10
 skip_tags: true
 
 install:
-  - ps: Install-Product node 6
+  - ps: Install-Product node 12
   - npm run prepare
   - npm install
   - npm run lint
