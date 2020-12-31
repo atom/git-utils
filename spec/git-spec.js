@@ -424,8 +424,7 @@ describe('git', () => {
         const filePath = path.join(repo.getWorkingDirectory(), 'a.txt')
         fs.writeFileSync(filePath, 'changing a.txt', 'utf8')
         expect(repo.checkoutHead('a.txt')).toBe(true)
-        const lineEnding = process.platform === 'win32' ? '\r\n' : '\n'
-        expect(fs.readFileSync(filePath, 'utf8')).toBe(`first line${lineEnding}`)
+        expect(fs.readFileSync(filePath, 'utf8').replace('\r', '')).toBe(`first line\n`)
       })
     })
 
