@@ -1,6 +1,8 @@
 /build
 /spec
 /deps/libgit2/build
+/deps/libgit2/fuzzers
+/deps/libgit2/tests
 /deps/libgit2/tests-clar
 *.a
 *.o
