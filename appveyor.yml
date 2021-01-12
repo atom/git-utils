@@ -12,6 +12,10 @@ clone_depth: 10
 
 skip_tags: true
 
+init:
+  # Use CRLF to test correct Windows behavior
+  - git config --global core.autocrlf true
+
 install:
   - ps: Install-Product node 12
   - npm run prepare
