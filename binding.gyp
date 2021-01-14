@@ -580,7 +580,7 @@
         'PARENS_NEST_LIMIT=250',
         'MATCH_LIMIT=10000000',
         'MATCH_LIMIT_RECURSION="MATCH_LIMIT"',
-        'NEWLINE="LF"',
+        'NEWLINE="10"',  # LF
         'NO_RECURSE=1',
         'POSIX_MALLOC_THRESHOLD=10',
         'BSR_ANYCRLF=0',
