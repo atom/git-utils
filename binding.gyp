@@ -593,6 +593,14 @@
           'deps/libgit2/deps/pcre',
         ],
       },
+      "cflags": [
+        "-Wno-unused-function"
+      ],
+      'xcode_settings': {
+        'OTHER_CFLAGS': [
+          '-Wno-unused-function'
+        ],
+      },
     },
   ],
 }
