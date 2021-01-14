@@ -5,14 +5,11 @@ notifications:
     on_success: never
     on_failure: change
 
-node_js: "10"
+node_js: "12"
 
 git:
   depth: 10
   submodules: false
-
-before_install:
-  - git submodule update --init
 
 branches:
   only:
@@ -22,3 +19,11 @@ sudo: false
 
 env:
   - CC=clang CXX=clang++ npm_config_clang=1
+
+install:
+  - npm run prepare
+  - npm install
+
+script:
+  - npm run lint
+  - npm run test

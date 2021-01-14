@@ -10,9 +10,9 @@ Helpers for working with Git repositories built natively on top of
 npm install git-utils
 ```
 
-## Building
-  * Clone the repository with the `--recurse` option to get the libgit2
-    submodule
+## Development
+  * Clone the repository
+  * Run `npm run prepare` to get the submodule
   * Run `npm install`
   * Run `npm test` to run the specs
 

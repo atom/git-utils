@@ -1,5 +1,7 @@
 version: "{build}"
 
+image: Visual Studio 2015
+
 platform: x64
 
 branches:
@@ -10,12 +12,17 @@ clone_depth: 10
 
 skip_tags: true
 
+init:
+  # Use CRLF to test correct Windows behavior
+  - git config --global core.autocrlf true
+
 install:
-  - git submodule update --init
-  - ps: Install-Product node 6
+  - ps: Install-Product node 12
+  - npm run prepare
   - npm install
+  - npm run lint
+  - npm run test
 
 build: off
 test: off
 deploy: off
-
