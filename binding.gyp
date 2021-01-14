@@ -9,29 +9,24 @@
       'sources': [
         'src/repository.cc'
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'msvs_disabled_warnings': [
-            4244,  # conversion from 'ssize_t' to 'int32_t', possible loss of data
-            4530,  # C++ exception handler used, but unwind semantics are not enabled.
-            4506,  # no definition for inline function
-            4267,  # conversion from 'size_t' to 'int', possible loss of data
-            4344,  # behavior change
-          ],
-        }, {
-          'cflags': [
-            '-Wno-missing-field-initializers',
-          ],
-          'cflags_cc!': [
-            '-fno-delete-null-pointer-checks', # clang-3.4 doesn't understand this flag and fails.
-          ],
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              '-Wno-missing-field-initializers',
-            ],
-          },
-        }],
+      'msvs_disabled_warnings': [
+        4244,  # conversion from 'ssize_t' to 'int32_t', possible loss of data
+        4530,  # C++ exception handler used, but unwind semantics are not enabled.
+        4506,  # no definition for inline function
+        4267,  # conversion from 'size_t' to 'int', possible loss of data
+        4344,  # behavior change
       ],
+      'cflags': [
+        '-Wno-missing-field-initializers',
+      ],
+      'cflags_cc!': [
+        '-fno-delete-null-pointer-checks', # clang-3.4 doesn't understand this flag and fails.
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS': [
+          '-Wno-missing-field-initializers',
+        ],
+      },
     },
     {
       'target_name': 'libgit2',
