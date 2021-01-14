@@ -19,9 +19,6 @@
       'cflags': [
         '-Wno-missing-field-initializers',
       ],
-      'cflags_cc!': [
-        '-fno-delete-null-pointer-checks', # clang-3.4 doesn't understand this flag and fails.
-      ],
       'xcode_settings': {
         'WARNING_CFLAGS': [
           '-Wno-missing-field-initializers',
