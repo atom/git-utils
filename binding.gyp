@@ -336,6 +336,15 @@
         './deps/libgit2/src/zstream.h',
       ],
       'conditions': [
+        ["target_arch=='x64'", {
+          "defines": [
+            "GIT_ARCH_64"
+          ]
+        }, {
+          "defines": [
+            "GIT_ARCH_32"
+          ]
+        }],
         ['OS=="mac"', {
           'defines': [
             'GIT_USE_STAT_MTIMESPEC'
