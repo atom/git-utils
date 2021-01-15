@@ -574,18 +574,61 @@
         './deps/libgit2/deps/pcre/ucp.h',
 
        ],
-      'defines': [
-        'SUPPORT_PCRE8=1',
-        'LINK_SIZE=2',
-        'PARENS_NEST_LIMIT=250',
-        'MATCH_LIMIT=10000000',
-        'MATCH_LIMIT_RECURSION="MATCH_LIMIT"',
-        'NEWLINE="10"',  # LF
-        'NO_RECURSE=1',
-        'POSIX_MALLOC_THRESHOLD=10',
-        'BSR_ANYCRLF=0',
-        'MAX_NAME_SIZE=32',
-        'MAX_NAME_COUNT=10000',
+      "conditions": [
+        ["OS=='linux' or OS.endswith('bsd')", {
+          "defines": [
+            "HAVE_DIRENT_H",
+            "HAVE_SYS_STAT_H",
+            "HAVE_SYS_TYPES_H",
+            "HAVE_UNISTD_H",
+            "HAVE_STDINT_H",
+            "HAVE_INTTYPES_H",
+            "HAVE_BCOPY",
+            "HAVE_MEMMOVE",
+            "HAVE_STRERROR",
+            "HAVE_STRTOLL",
+            "HAVE_STRTOQ",
+            "SUPPORT_PCRE8",
+            "NO_RECURSE",
+            "HAVE_LONG_LONG",
+            "HAVE_UNSIGNED_LONG_LONG",
+            "NEWLINE=10",
+            "POSIX_MALLOC_THRESHOLD=10",
+            "LINK_SIZE=2",
+            "PARENS_NEST_LIMIT=250",
+            "MATCH_LIMIT=10000000",
+            "MATCH_LIMIT_RECURSION=10000000",
+            "PCREGREP_BUFSIZE",
+            "MAX_NAME_SIZE=32",
+            "MAX_NAME_COUNT=10000"
+          ]
+        }],
+        ["OS=='win'", {
+          "defines": [
+            "HAVE_SYS_STAT_H",
+            "HAVE_SYS_TYPES_H",
+            "HAVE_WINDOWS_H",
+            "HAVE_STDINT_H",
+            "HAVE_INTTYPES_H",
+            "HAVE_MEMMOVE",
+            "HAVE_STRERROR",
+            "HAVE_STRTOLL",
+            "HAVE__STRTOI64",
+            "SUPPORT_PCRE8",
+            "NO_RECURSE",
+            "HAVE_LONG_LONG",
+            "HAVE_UNSIGNED_LONG_LONG",
+            "NEWLINE=10",   # LF
+            "POSIX_MALLOC_THRESHOLD=10",
+            "LINK_SIZE=2",
+            "PARENS_NEST_LIMIT=250",
+            "MATCH_LIMIT=10000000",
+            "MATCH_LIMIT_RECURSION=10000000",
+            "PCREGREP_BUFSIZE",
+            "MAX_NAME_SIZE=32",
+            "MAX_NAME_COUNT=10000"
+          ]
+        }]
       ],
       'include_dirs': [],
       'direct_dependent_settings': {
