@@ -31,7 +31,8 @@
       'type': 'static_library',
       'defines': [
         'GIT_THREADS',
-        'LIBGIT2_NO_FEATURES_H',
+        "LIBGIT2_NO_FEATURES_H",
+        "GIT_HTTPS",
         # Node's util.h may be accidentally included so use this to guard
         # against compilation error.
         'SRC_UTIL_H_',
