@@ -355,6 +355,7 @@
             '-w',
           ],
           'defines': [
+            "GIT_USE_FUTIMENS",
             'GIT_USE_STAT_MTIM'
           ]
         }],
