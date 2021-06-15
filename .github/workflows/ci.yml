@@ -1,0 +1,24 @@
+name: CI
+
+on: [push]
+
+jobs:
+ Build:
+  runs-on: ubuntu-latest
+  env:
+      CC: clang
+      CXX: clang++
+      npm_config_clang: 1
+  steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 12
+    - name: Install
+      run: |
+        npm run prepare
+        npm install
+    - name: Test
+      run: |
+        npm run lint
+        npm run test
