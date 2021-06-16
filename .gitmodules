@@ -1,4 +1,4 @@
 [submodule "deps/libgit2"]
 	path = deps/libgit2
 	url = https://github.com/libgit2/libgit2.git
-	ignore = untracked
+	branch = maint/v1.1

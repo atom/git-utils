@@ -29,19 +29,20 @@
   ],
   "main": "./src/git.js",
   "devDependencies": {
-    "jasmine-focused": "^1.0.4",
     "standard": "^10.0.3",
+    "jasmine-focused": "^1.0.7",
     "temp": "~0.9.4",
-    "underscore": "~1.5.2",
+    "underscore": "~1.12.0",
     "wrench": "~1.4.4"
   },
   "dependencies": {
-    "nan": "^2.14.0",
-    "fs-plus": "^3.0.0"
+    "nan": "^2.14.2",
+    "fs-plus": "^3.1.1"
   },
   "scripts": {
     "lint": "standard src spec",
     "test": "jasmine-focused --captureExceptions spec",
-    "prepare": "git submodule update --init --recursive"
+    "prepare": "git submodule update --init --recursive",
+    "install": "node-gyp rebuild -j max"
   }
 }
