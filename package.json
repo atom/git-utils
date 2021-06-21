@@ -36,8 +36,8 @@
     "wrench": "~1.4.4"
   },
   "dependencies": {
-    "nan": "^2.14.0",
-    "fs-plus": "^3.0.0"
+    "fs-plus": "^3.0.0",
+    "nan": "^2.14.2"
   },
   "scripts": {
     "lint": "standard src spec",
