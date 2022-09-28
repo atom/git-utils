@@ -1,4 +1,5 @@
-# Git Node module [![CI](https://github.com/atom/git-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/atom/git-utils/actions/workflows/ci.yml)
+##### Atom and all repositories under Atom will be archived on December 15, 2022. Learn more in our [official announcement](https://github.blog/2022-06-08-sunsetting-atom/)
+ # Git Node module [![CI](https://github.com/atom/git-utils/actions/workflows/ci.yml/badge.svg)](https://github.com/atom/git-utils/actions/workflows/ci.yml)
 
 
 Helpers for working with Git repositories built natively on top of
